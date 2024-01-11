@@ -13,4 +13,3 @@ class DevMate(models.Model):
         "accounts.User", on_delete=models.CASCADE, related_name="received_users"
     )
     is_accepted = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
