@@ -2,7 +2,7 @@
 
 |김나영|김재민|오정배|황병헌|
 |:---:|:---:|:---:|:---:|
-|<img src="./static/assets/images/selfie/na.jpg" width="300">|<img src="./static/assets/images/selfie/jae.jpg" width="300">|<img src="./static/assets/images/selfie/oh.jpg" width="300">|<img src="./static/assets/images/selfie/hwang.jpg" width="300">|
+|<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/7fb52bfc-0c36-4af2-b631-47eeb085b6a0" width="300">|<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/97935960-0fed-4ca3-ac27-e5bf36911566" width="300">|<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/d7c54593-10b7-4363-a879-93f6d41b2e34" width="300">|<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/e380f227-cb07-4c7e-b1bf-4e702b147141" width="300">|
 |<a href="https://github.com/nayeongdev">🔗 kim Na Young</a>|<a href="https://github.com/jmkim648">🔗 Kim Jae Min</a>|<a href="https://github.com/Alexmint001">🔗 Oh Jeong Bae</a>|<a href="https://github.com/Ruler-H">🔗 Hwang Byeong Heon</a>|
 
 ## 목차
@@ -32,7 +32,7 @@
 - 커뮤니티 게시판 기능 제공(분야별 개발자 게시판 포함)
 - 분야별 참여형 Open CheatSheet 기능 제공  
 #### [Flow Chart]
-<img src="./static/assets/images/flow_chart.png" width="60%">
+<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/6234ac54-b2bf-4299-a67f-6e4639e6d3f3" width="60%">
 
 <div align="right">
   
@@ -78,7 +78,7 @@
 </div>
 
 ## 4. 개발 기능 목록
-<img src="./static/assets/images/function_flow.png">
+<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/c9a38083-2995-4d19-bfad-e44ad5263a66">
 
 <div align="right">
   
@@ -87,7 +87,7 @@
 </div>
 
 ## 5. DB 구조(ER Diagram)
-<img src="./static/assets/images/erd.png">
+<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/f3e1d0da-9ffe-4321-a79d-79c4f372c760">
 
 <div align="right">
   
