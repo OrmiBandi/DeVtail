@@ -45,9 +45,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # custom app
+    "accounts",
     "main",
     "studies",
-    "accounts",
     "alerts",
     "devmates",
     "todos",
@@ -160,3 +160,4 @@ EMAIL_HOST_USER = "elwl5515@gmail.com"
 EMAIL_HOST_PASSWORD = "egup jaut eqlb rlzw"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "/accounts/login/"
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1

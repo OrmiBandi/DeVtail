@@ -1,15 +1,18 @@
 import uuid
 from django.urls import reverse
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.core.mail import EmailMessage
 from django.views.generic import CreateView
 from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.auth import get_user_model
 
-from .models import User
+
+# from .models import User
 from .forms import SignupForm
 
 
 class SignupView(CreateView):
+    User = get_user_model()
     model = User
     form_class = SignupForm
     template_name = "accounts/signup.html"
@@ -41,6 +44,7 @@ def email_confirm(request, token):
     """
     이메일 인증 메서드
     """
+    User = get_user_model()
     user = User.objects.get(auth_code=token)
     user.auth_code = None
     user.is_active = True

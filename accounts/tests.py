@@ -1,9 +1,12 @@
 from django.urls import reverse
 from django.core import mail
 from django.test import TestCase
+from freezegun import freeze_time
+from django.utils import timezone
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth import get_user_model
 
-from .models import User
+User = get_user_model()
 
 
 class TestAccount(TestCase):
@@ -29,6 +32,7 @@ class TestAccount(TestCase):
             "content": "test",
         }
 
+    @freeze_time(timezone.now())
     def test_account_signup_email(self):
         """
         이메일 회원가입 테스트
