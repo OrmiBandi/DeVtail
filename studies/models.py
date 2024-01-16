@@ -16,12 +16,15 @@ class Study(models.Model):
     )
     goal = models.CharField(max_length=100)
     thumbnail = models.ImageField(
-        upload_to="study/imgs/%Y/%m/%d/", null=True, blank=True
+        upload_to="study/imgs/%Y/%m/%d/",
+        null=True,
+        blank=True,
+        default="thumbnail_default/thumbnail_default.png",
     )
     start_at = models.DateField()
     end_at = models.DateField()
     introduce = models.TextField(null=True, blank=True)
-    topic = models.CharField(max_length=100, null=True, blank=True)
+    title = models.CharField(max_length=100)
     difficulty = models.CharField(max_length=2, choices=difficulty_choices)
     current_member = models.IntegerField(default=0)
     max_member = models.IntegerField()
@@ -32,7 +35,7 @@ class Study(models.Model):
         verbose_name_plural = "스터디"
 
     def __str__(self):
-        return f"스터디 목표 : {self.study_goal}"
+        return f"스터디 목표 : {self.goal}"
 
 
 class Schedule(models.Model):
@@ -67,8 +70,8 @@ class Schedule(models.Model):
 class Category(models.Model):
     """
     카테고리 모델
-     - 스터디의 카테고리를 설정
-     - 운영진이 카테고리를 생성, 저장하고 목록을 제공하는 방식
+    - 스터디의 카테고리를 설정
+    - 운영진이 카테고리를 생성, 저장하고 목록을 제공하는 방식
     """
 
     name = models.CharField(max_length=20)
@@ -84,8 +87,8 @@ class Category(models.Model):
 class Tag(models.Model):
     """
     태그 모델
-     - 스터디의 태그 설정
-     - 스터디 생성 시 사용자가 입력한 태그를 저장
+    - 스터디의 태그 설정
+    - 스터디 생성 시 사용자가 입력한 태그를 저장
     """
 
     study = models.ForeignKey("Study", on_delete=models.CASCADE, related_name="tags")
@@ -102,8 +105,8 @@ class Tag(models.Model):
 class RefLink(models.Model):
     """
     참조링크 모델
-     - 스터디의 참조 링크 저장
-     - category의 경우 GitHub, Notion과 같은 링크 타입을 설명
+    - 스터디의 참조 링크 저장
+    - category의 경우 GitHub, Notion과 같은 링크 타입을 설명
     """
 
     study = models.ForeignKey(
@@ -123,7 +126,7 @@ class RefLink(models.Model):
 class Comment(models.Model):
     """
     댓글 모델
-     - 스터디 모집글, 내용 등에 댓글 노출
+    - 스터디 모집글, 내용 등에 댓글 노출
     """
 
     study = models.ForeignKey(
@@ -142,13 +145,13 @@ class Comment(models.Model):
         verbose_name_plural = "댓글"
 
     def __str__(self):
-        return f"스터디 : {self.study}, 작성자 : {self.user.username}"
+        return f"스터디 : {self.study}"
 
 
 class Recomment(models.Model):
     """
     대대댓글 모델
-     - 댓글에 대한 대댓글
+    - 댓글에 대한 대댓글
     """
 
     comment = models.ForeignKey(
@@ -167,7 +170,7 @@ class Recomment(models.Model):
         verbose_name_plural = "대댓글"
 
     def __str__(self):
-        return f"댓글 : {self.comment}, 작성자 : {self.user.username}"
+        return f"댓글 : {self.comment}"
 
 
 class StudyMember(models.Model):
@@ -187,7 +190,7 @@ class StudyMember(models.Model):
         verbose_name_plural = "스터디 멤버"
 
     def __str__(self):
-        return f"스터디 : {self.study}, 회원 : {self.user.username}"
+        return f"스터디 : {self.study}"
 
 
 class Blacklist(models.Model):
@@ -207,7 +210,7 @@ class Blacklist(models.Model):
         verbose_name_plural = "스터디 블랙리스트"
 
     def __str__(self):
-        return f"스터디 : {self.study}, 회원 : {self.user.username}"
+        return f"스터디 : {self.study}"
 
 
 class Favorite(models.Model):
@@ -227,4 +230,4 @@ class Favorite(models.Model):
         verbose_name_plural = "스터디 즐겨찾기"
 
     def __str__(self):
-        return f"스터디 즐겨찾기 : {self.study}, 회원 : {self.user.username}"
+        return f"스터디 즐겨찾기 : {self.study}"
