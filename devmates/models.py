@@ -4,6 +4,10 @@ from django.db import models
 class DevMate(models.Model):
     """
     DevMate 모델
+    Attributes:
+        sent_user: DevMate 신청한 사용자
+        received_user: DevMate 신청받은 사용자
+        is_accepted: 수락 여부
     """
 
     sent_user = models.ForeignKey(
