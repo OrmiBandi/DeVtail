@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>DeVtail</title>
+    </head>
+    <body>
+        <!-- 스터디 상세 페이지 -->
+        <h1>Study Detail</h1>
+        <h2>{{ study.title }}</h2>
+        <img src="{{ study.thumbnail.url }}" alt="{{ study.title }}">
+        <p>{{ study.introduce }}</p>
+        <p>{{ study.created_at }}</p>
+        <p>{{ study.updated_at }}</p>
+        
+        <form action="{% url 'studies:study_update' study.id %}" method="GET">
+            {% csrf_token %}
+            <input type="submit" value="Update">
+        </form>
+        <form action="{% url 'studies:study_delete' study.id %}" method="POST">
+            {% csrf_token %}
+            <input type="submit" value="Delete">
+        </form>
+
+        <a href="{% url 'studies:study_list' %}">Study List</a>
+
+        <!-- 댓글 리스트 -->
+        <h2>Comment List</h2>
+        <!-- 댓글 작성 -->
+        <form action="{% url 'studies:comment_create' study.id %}" method="POST">
+            {% csrf_token %}
+            <input name="content" id="">
+            <input type="submit" value="Create">
+        </form>
+        <ul>
+            {% for comment in study.comments.all %}
+                <li>{{ comment.content }}</li>
+                <!-- 댓글 수정 -->
+                <form action="{% url 'studies:comment_update' study.id comment.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="submit" value="Update">
+                </form>
+                <!-- 댓글 삭제 -->
+                <form action="{% url 'studies:comment_delete' study.id comment.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="submit" value="Delete">
+                </form>
+                <!-- 대댓글 작성 -->
+                <form action="{% url 'studies:recomment_create' study.id comment.id %}" method="POST">
+                    {% csrf_token %}
+                    <input name="content" id="">
+                    <input type="submit" value="Create">
+                </form>
+                <!-- 대댓글 리스트 -->
+                {% for recomment in comment.recomments.all %}
+                    <p>대댓글 : {{ recomment.content }}</p>
+                    <!-- 대댓글 수정 -->
+                    <form action="{% url 'studies:recomment_update' study.id comment.id recomment.id %}" method="POST">
+                        {% csrf_token %}
+                        <input type="submit" value="Update">
+                    </form>
+                    <!-- 대댓글 삭제 -->
+                    <form action="{% url 'studies:recomment_delete' study.id comment.id recomment.id %}" method="POST">
+                        {% csrf_token %}
+                        <input type="submit" value="Delete">
+                    </form>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+        
+    </body>
+</html>

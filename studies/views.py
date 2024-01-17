@@ -1,4 +1,4 @@
-from .models import Study, Comment, Recomment
+from .models import Study, Comment, Recomment, StudyMember
 from django.views.generic import (
     ListView,
     CreateView,
@@ -10,7 +10,10 @@ from django.urls import reverse_lazy
 from .forms import StudyForm, CommentForm, RecommentForm
 from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+
+User = get_user_model()
 
 
 class StudyList(ListView):
@@ -38,16 +41,24 @@ class StudyList(ListView):
         return queryset
 
 
-class StudyCreate(CreateView):
+class StudyCreate(LoginRequiredMixin, CreateView):
     """
     스터디 생성
     로그인한 유저만이 스터디를 생성할 수 있습니다.
+    스터디 생성시 studymember 모델의 user를 참조하여 지정하고, is_manager를 True로 지정합니다.
     """
 
     model = Study
     form_class = StudyForm
     success_url = reverse_lazy("studies:study_list")
     template_name = "studies/form.html"
+
+    def form_valid(self, form):
+        study = form.save(commit=False)
+        study.save()
+        StudyMember.objects.create(study=study, user=self.request.user, is_manager=True)
+
+        return super().form_valid(form)
 
 
 class StudyDetail(DetailView):
@@ -69,7 +80,7 @@ class StudyDetail(DetailView):
         return super().get_object(queryset)
 
 
-class StudyUpdate(UpdateView):
+class StudyUpdate(UserPassesTestMixin, UpdateView):
     """
     스터디 수정
     로그인한 유저 중 스터디 생성자만이 스터디를 수정할 수 있습니다.
@@ -83,8 +94,13 @@ class StudyUpdate(UpdateView):
     def get_success_url(self):
         return reverse_lazy("studies:study_detail", kwargs={"pk": self.object.pk})
 
+    def test_func(self):
+        study = self.get_object()
+        studymember = StudyMember.objects.get(study=study, user=self.request.user)
+        return studymember.user == self.request.user and studymember.is_manager
 
-class StudyDelete(DeleteView):
+
+class StudyDelete(UserPassesTestMixin, DeleteView):
     """
     스터디 삭제
     로그인한 유저 중 스터디 생성자만이 스터디를 삭제할 수 있습니다.
@@ -94,10 +110,17 @@ class StudyDelete(DeleteView):
     model = Study
     success_url = reverse_lazy("studies:study_list")
 
+    def test_func(self):
+        study = self.get_object()
+        studymember = StudyMember.objects.get(study=study, user=self.request.user)
+        return studymember.user == self.request.user and studymember.is_manager
 
-class CommentCreate(CreateView):
+
+class CommentCreate(LoginRequiredMixin, CreateView):
     """
     댓글 작성
+    로그인한 유저만이 댓글을 작성할 수 있습니다.
+    comment 모델의 user를 로그인한 유저 및 요청한 유저로 지정합니다.
     """
 
     model = Comment
@@ -108,13 +131,14 @@ class CommentCreate(CreateView):
         study = get_object_or_404(Study, pk=self.kwargs["pk"])
         comment = form.save(commit=False)
         comment.study = study
+        comment.user = self.request.user
         return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy("studies:study_detail", kwargs={"pk": self.object.study.pk})
 
 
-class CommentUpdate(UpdateView):
+class CommentUpdate(UserPassesTestMixin, UpdateView):
     """
     댓글 수정
     """
@@ -123,27 +147,41 @@ class CommentUpdate(UpdateView):
     form_class = CommentForm
     template_name = "studies/form.html"
 
+    def get_object(self, queryset=None):
+        return get_object_or_404(Comment, pk=self.kwargs["comment_pk"])
+
     def form_valid(self, form):
         comment = get_object_or_404(Comment, pk=self.kwargs["comment_pk"])
         form.instance.study = comment.study
         return super().form_valid(form)
 
+    def test_func(self):
+        comment = self.get_object()
+        return comment.user == self.request.user
+
     def get_success_url(self):
         return reverse_lazy("studies:study_detail", kwargs={"pk": self.object.study.pk})
 
 
-class CommentDelete(DeleteView):
+class CommentDelete(UserPassesTestMixin, DeleteView):
     """
     댓글 삭제
     """
 
     model = Comment
 
+    def get_object(self, queryset=None):
+        return get_object_or_404(Comment, pk=self.kwargs["comment_pk"])
+
+    def test_func(self):
+        comment = self.get_object()
+        return comment.user == self.request.user
+
     def get_success_url(self):
         return reverse_lazy("studies:study_detail", kwargs={"pk": self.object.study.pk})
 
 
-class RecommentCreate(CreateView):
+class RecommentCreate(LoginRequiredMixin, CreateView):
     """
     대댓글 작성
     """
@@ -156,6 +194,7 @@ class RecommentCreate(CreateView):
         comment = get_object_or_404(Comment, pk=self.kwargs["comment_pk"])
         recomment = form.save(commit=False)
         recomment.comment = comment
+        recomment.user = self.request.user
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -164,7 +203,7 @@ class RecommentCreate(CreateView):
         )
 
 
-class RecommentUpdate(UpdateView):
+class RecommentUpdate(UserPassesTestMixin, UpdateView):
     """
     대댓글 수정
     """
@@ -181,18 +220,29 @@ class RecommentUpdate(UpdateView):
         form.instance.comment = recomment.comment
         return super().form_valid(form)
 
+    def test_func(self):
+        recomment = self.get_object()
+        return recomment.user == self.request.user
+
     def get_success_url(self):
         return reverse_lazy(
             "studies:study_detail", kwargs={"pk": self.object.comment.study.pk}
         )
 
 
-class RecommentDelete(DeleteView):
+class RecommentDelete(UserPassesTestMixin, DeleteView):
     """
     대댓글 삭제
     """
 
     model = Recomment
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Recomment, pk=self.kwargs["recomment_pk"])
+
+    def test_func(self):
+        recomment = self.get_object()
+        return recomment.user == self.request.user
 
     def get_success_url(self):
         return reverse_lazy(
