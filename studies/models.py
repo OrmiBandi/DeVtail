@@ -35,7 +35,7 @@ class Study(models.Model):
         verbose_name_plural = "스터디"
 
     def __str__(self):
-        return f"스터디 목표 : {self.goal}"
+        return f"스터디 명칭 : {self.title}"
 
 
 class Schedule(models.Model):
