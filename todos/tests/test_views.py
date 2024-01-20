@@ -267,6 +267,8 @@ class PersonalToDoCreateTest(TestCase):
                 "start_at_1": timezone.now().time().isoformat(),
                 "end_at_0": timezone.now().date().isoformat(),
                 "end_at_1": timezone.now().time().isoformat(),
+                "status": "ToDo",
+                "alert_set": "없음",
             },
         )
 
@@ -291,8 +293,12 @@ class PersonalToDoCreateTest(TestCase):
             {
                 "title": "",
                 "content": "test",
-                "start_at": timezone.now(),
-                "end_at": timezone.now(),
+                "start_at_0": timezone.now().date().isoformat(),
+                "start_at_1": timezone.now().time().isoformat(),
+                "end_at_0": timezone.now().date().isoformat(),
+                "end_at_1": timezone.now().time().isoformat(),
+                "status": "ToDo",
+                "alert_set": "없음",
             },
         )
 
