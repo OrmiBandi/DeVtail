@@ -9,8 +9,11 @@ from todos.models import ToDo, ToDoAssignee
 User = get_user_model()
 
 
-# ToDoList 테스트
 class ToDoListTest(TestCase):
+    """
+    모두 확인가능한 투두 리스트 테스트
+    """
+
     @classmethod
     def setUpTestData(cls):
         # Create two users
@@ -68,13 +71,17 @@ class ToDoListTest(TestCase):
             assignee = User.objects.get(id=user_id)
             ToDoAssignee.objects.create(todo=todo, assignee=assignee)
 
-    # 로그인 안 했을 때 로그인 페이지로 리다이렉트 되는지 확인
     def test_redirect_if_not_logged_in(self):
+        """
+        로그인 안 했을 때 로그인 페이지로 리다이렉트 되는지 확인
+        """
         response = self.client.get(reverse("todo_list"))
         self.assertRedirects(response, "/accounts/login/?next=/todos/")
 
-    # 로그인 했을 때 올바른 템플릿인지 확인
     def test_logged_in_uses_correct_template(self):
+        """
+        로그인 했을 때 올바른 템플릿인지 확인
+        """
         login = self.client.login(
             email="testuser1@example.com", password="1X<ISRUkw+tuK"
         )
@@ -88,19 +95,22 @@ class ToDoListTest(TestCase):
         # 올바른 템플릿인지 확인
         self.assertTemplateUsed(response, "todos/todo_list.html")
 
-    # 자신의 할 일만 볼 수 있는지 테스트
     def test_logged_in_with_my_todos(self):
+        """
+        자신의 할 일만 볼 수 있는지 확인
+        """
         login = self.client.login(
             email="testuser1@example.com", password="1X<ISRUkw+tuK"
         )
         response = self.client.get(reverse("todo_list"))
 
-        # 자신의 할 일만 볼 수 있는지 확인
         self.assertTrue("todos" in response.context)
         self.assertEqual(len(response.context["todos"]), 3)
 
-    # 할 일이 없을 때 템플릿이 올바르게 출력되는지 테스트
     def test_view_with_no_todos(self):
+        """
+        할 일이 없을 때 아무것도 없는 상태인지 확인
+        """
         test_user = User.objects.create_user(
             nickname="testuser", email="testuser@example.com", password="3HJ1vRV0Z&2iD"
         )
@@ -115,6 +125,10 @@ class ToDoListTest(TestCase):
 
 
 class PersonalToDoList(TestCase):
+    """
+    개인 할 일 리스트 테스트
+    """
+
     @classmethod
     def setUpTestData(cls):
         test_user = User.objects.create_user(
@@ -154,39 +168,43 @@ class PersonalToDoList(TestCase):
             assignee = User.objects.get(id=1)
             ToDoAssignee.objects.create(todo=todo, assignee=assignee)
 
-    # 로그인 안 했을 때 로그인 페이지로 리다이렉트 되는지 확인
     def test_redirect_if_not_logged_in(self):
+        """
+        로그인 안 했을 때 로그인 페이지로 리다이렉트 되는지 확인
+        """
         response = self.client.get(reverse("personal_todo_list"))
         self.assertRedirects(response, "/accounts/login/?next=/todos/personal/")
 
-    # 로그인 했을 때 올바른 템플릿인지 확인
     def test_logged_in_uses_correct_template(self):
+        """
+        로그인 했을 때 올바른 템플릿인지 확인
+        """
         login = self.client.login(
             email="testuser@example.com", password="3HJ1vRV0Z&2iD"
         )
         response = self.client.get(reverse("personal_todo_list"))
 
-        # user가 로그인했는지 확인
         self.assertEqual(str(response.context["user"]), "testuser@example.com")
-        # "success" 응답을 받았는지 확인
         self.assertEqual(response.status_code, 200)
 
-        # 올바른 템플릿인지 확인
         self.assertTemplateUsed(response, "todos/todo_list.html")
 
-    # 자신의 할 일만 볼 수 있는지 테스트
     def test_logged_in_with_my_todos(self):
+        """
+        자신의 할 일만 볼 수 있는지 확인
+        """
         login = self.client.login(
             email="testuser@example.com", password="3HJ1vRV0Z&2iD"
         )
         response = self.client.get(reverse("personal_todo_list"))
 
-        # 자신의 할 일만 볼 수 있는지 확인
         self.assertTrue("todos" in response.context)
         self.assertEqual(len(response.context["todos"]), 2)
 
-    # 할 일이 없을 때 템플릿이 올바르게 출력되는지 테스트
     def test_view_with_no_todos(self):
+        """
+        할 일이 없을 때 아무것도 없는 상태인지 확인
+        """
         test_uuser = User.objects.create_user(
             nickname="testuuser",
             email="testuuser@example.com",
@@ -197,6 +215,88 @@ class PersonalToDoList(TestCase):
         )
         response = self.client.get(reverse("personal_todo_list"))
 
-        # 할 일이 없을 때 템플릿이 올바르게 출력되는지 확인
         self.assertTrue("todos" in response.context)
         self.assertEqual(len(response.context["todos"]), 0)
+
+
+class PersonalToDoCreateTest(TestCase):
+    """
+    개인 할 일 생성 테스트
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        test_user = User.objects.create_user(
+            nickname="testuser", email="testuser@example.com", password="3HJ1vRV0Z&2iD"
+        )
+        test_user.save()
+
+    def test_redirect_if_not_logged_in(self):
+        """
+        로그인 안 했을 때 로그인 페이지로 리다이렉트 되는지 확인
+        """
+        response = self.client.get(reverse("personal_todo_create"))
+        self.assertRedirects(response, "/accounts/login/?next=/todos/personal/create")
+
+    def test_logged_in_uses_correct_template(self):
+        """
+        로그인 했을 때 올바른 템플릿인지 확인
+        """
+        login = self.client.login(
+            email="testuser@example.com", password="3HJ1vRV0Z&2iD"
+        )
+        response = self.client.get(reverse("personal_todo_create"))
+
+        self.assertTemplateUsed(response, "todos/todo_form.html")
+
+    def test_create_todo(self):
+        """
+        할 일 생성 성공
+        """
+        login = self.client.login(
+            email="testuser@example.com", password="3HJ1vRV0Z&2iD"
+        )
+        response = self.client.get(reverse("personal_todo_create"))
+
+        response = self.client.post(
+            reverse("personal_todo_create"),
+            {
+                "title": "test",
+                "content": "test",
+                "start_at_0": timezone.now().date().isoformat(),
+                "start_at_1": timezone.now().time().isoformat(),
+                "end_at_0": timezone.now().date().isoformat(),
+                "end_at_1": timezone.now().time().isoformat(),
+            },
+        )
+
+        # 할 일 생성 성공
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(ToDo.objects.count(), 1)
+        self.assertEqual(ToDo.objects.get(id=1).title, "test")
+        self.assertEqual(ToDoAssignee.objects.count(), 1)
+        self.assertEqual(ToDoAssignee.objects.get(id=1).assignee.nickname, "testuser")
+
+    def test_create_todo_fail(self):
+        """
+        할 일 생성 실패
+        """
+        login = self.client.login(
+            email="testuser@example.com", password="3HJ1vRV0Z&2iD"
+        )
+        response = self.client.get(reverse("personal_todo_create"))
+
+        response = self.client.post(
+            reverse("personal_todo_create"),
+            {
+                "title": "",
+                "content": "test",
+                "start_at": timezone.now(),
+                "end_at": timezone.now(),
+            },
+        )
+
+        # 할 일 생성 실패
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ToDo.objects.count(), 0)
+        self.assertEqual(ToDoAssignee.objects.count(), 0)
