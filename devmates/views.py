@@ -1,10 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, UpdateView, DeleteView
 from .models import DevMate
 
 User = get_user_model()
@@ -45,7 +46,7 @@ class DevMateReceivedListView(LoginRequiredMixin, ListView):
         )
 
 
-class DevMateCreateView(LoginRequiredMixin, CreateView):
+class DevMateCreateView(LoginRequiredMixin, View):
     """
     DevMate 신청
     """
@@ -61,7 +62,7 @@ class DevMateCreateView(LoginRequiredMixin, CreateView):
 
         if existing_devmate.exists():
             messages.error(self.request, "이미 DevMate 신청을 보냈습니다.")
-            return redirect("devmate_list")
+            return redirect("devmates:devmate_list")
         else:
             DevMate.objects.create(
                 sent_user=self.request.user,
@@ -69,7 +70,7 @@ class DevMateCreateView(LoginRequiredMixin, CreateView):
                 is_accepted=False,
             )
             messages.success(self.request, "DevMate 신청이 완료되었습니다.")
-            return redirect("devmate_list")
+            return redirect("devmates:devmate_list")
 
 
 class DevMateUpdateView(LoginRequiredMixin, UpdateView):
@@ -78,14 +79,15 @@ class DevMateUpdateView(LoginRequiredMixin, UpdateView):
     """
 
     model = DevMate
-    http_method_names = ["put"]
+    http_method_names = ["post"]
+    fields = ["is_accepted"]
 
-    def put(self, request, *args, **kwargs):
-        devmate = self.get_object()
-        devmate.is_accepted = True
-        devmate.save()
-        messages.success(self.request, "DevMate 신청을 수락하였습니다.")
-        return HttpResponse(status=200)
+    def post(self, request, *args, **kwargs):
+        devmate = get_object_or_404(DevMate, pk=kwargs["pk"])
+        if request.POST.get("_method") == "put":
+            devmate.is_accepted = True
+            devmate.save()
+        return redirect("devmates:devmate_list")
 
 
 class DevMateDeleteView(LoginRequiredMixin, DeleteView):
@@ -94,10 +96,10 @@ class DevMateDeleteView(LoginRequiredMixin, DeleteView):
     """
 
     model = DevMate
-    http_method_names = ["delete"]
+    http_method_names = ["post"]
 
-    def delete(self, request, *args, **kwargs):
-        devmate = self.get_object()
-        devmate.delete()
-        messages.success(request, "DevMate를 삭제하였습니다.")
-        return HttpResponse(status=204)
+    def post(self, request, *args, **kwargs):
+        devmate = get_object_or_404(DevMate, pk=kwargs["pk"])
+        if request.POST.get("_method") == "delete":
+            devmate.delete()
+        return redirect("devmates:devmate_list")

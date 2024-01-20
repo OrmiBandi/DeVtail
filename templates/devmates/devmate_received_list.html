@@ -17,13 +17,18 @@
   {% endif %}
 
   {% for devmate in devmates %}
-    <p>{{ devmate.sent_user }}</p>
-    <p>{{ devmate.received_user }}</p>
-    <!-- 삭제하기 버튼 -->
+    <p>{{ devmate.sent_user }} 가 보낸 요청</p>
+    <!-- 수락하기 버튼 -->
+    <form action="{% url 'devmates:devmate_update' pk=devmate.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="_method" value="put">
+      <button type="submit">수락하기</button>
+    </form>
+    <!-- 거절하기 버튼 -->
     <form action="{% url 'devmates:devmate_delete' pk=devmate.id %}" method="post">
       {% csrf_token %}
       <input type="hidden" name="_method" value="delete">
-      <button type="submit">삭제하기</button>
+      <button type="submit">거절하기</button>
     </form>
   {% endfor %}
 
