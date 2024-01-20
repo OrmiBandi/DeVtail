@@ -14,7 +14,7 @@ from pathlib import Path
 import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 환경변수를 불러올 수 있는 상태로 세팅
 env = environ.Env(DEBUG=(bool, True))
@@ -45,9 +45,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # custom app
+    "accounts",
     "main",
     "studies",
-    "accounts",
     "alerts",
     "devmates",
     "todos",
@@ -151,3 +151,13 @@ AUTH_USER_MODEL = "accounts.User"
 
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "elwl5515@gmail.com"
+EMAIL_HOST_PASSWORD = "egup jaut eqlb rlzw"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "/accounts/login/"
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
