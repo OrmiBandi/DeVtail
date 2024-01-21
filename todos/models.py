@@ -1,6 +1,5 @@
 from django.db import models
-
-# Create your models here.
+from django.urls import reverse
 
 
 class ToDo(models.Model):
@@ -15,6 +14,12 @@ class ToDo(models.Model):
         ("하루 전", "하루 전"),
     )
 
+    STATUS_CATEGORY = (
+        ("ToDo", "ToDo"),
+        ("In Progress", "In Progress"),
+        ("Done", "Done"),
+    )
+
     study = models.ForeignKey(
         "studies.Study",
         on_delete=models.CASCADE,
@@ -23,15 +28,21 @@ class ToDo(models.Model):
         related_name="todos",
     )
     title = models.CharField(max_length=100)
-    content = models.CharField(max_length=200, null=True, blank=True)
+    content = models.TextField(blank=True, default="")
     start_at = models.DateTimeField(null=True, blank=True)
     end_at = models.DateTimeField(null=True, blank=True)
-    alert_set = models.CharField(choices=ALERT_CATEGORY, max_length=20, null=True)
-    status = models.IntegerField()
+    alert_set = models.CharField(choices=ALERT_CATEGORY, max_length=20, default="없음")
+    status = models.CharField(choices=STATUS_CATEGORY, max_length=20, default="ToDo")
 
     class Meta:
         verbose_name = "할 일"
         verbose_name_plural = "할 일"
+
+    def get_absolute_url(self):
+        return reverse("todo_detail", args=[self.id])
+
+    def __str__(self):
+        return self.title
 
 
 class ToDoAssignee(models.Model):
