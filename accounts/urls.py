@@ -7,4 +7,5 @@ urlpatterns = [
     path("email_confirm/<str:token>/", views.email_confirm, name="email_confirm"),
     path("social/signup/", views.social_signup, name="social_signup"),
     path("", include("allauth.urls")),
+    path("login/", views.login, name="login"),
 ]
