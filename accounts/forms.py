@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.core.validators import validate_email
+from django.contrib.auth import get_user_model
+from allauth.account.forms import SignupForm as BaseSignupForm
 
-from .models import User
+User = get_user_model()
 
 
 class SignupForm(UserCreationForm):
@@ -110,3 +111,57 @@ class SignupForm(UserCreationForm):
         if password1 != password2:
             raise forms.ValidationError("비밀번호가 일치하지 않습니다.")
         return super().clean()
+
+
+class CustomSignupForm(BaseSignupForm):
+    development_field = forms.ChoiceField(
+        required=True,
+        choices=User.DEVELOPMENT_FIELD_CHOICES,
+        error_messages={
+            "invalid_choice": "항목에 포함된 개발 분야를 선택해주세요.",
+            "required": "개발 분야를 선택해주세요.",
+        },
+    )
+    nickname = forms.CharField(
+        required=True,
+        error_messages={
+            "required": "닉네임을 입력해주세요.",
+            "unique": "중복된 닉네임입니다.",
+        },
+    )
+    content = forms.CharField(required=False)
+    profile_image = forms.ImageField(required=False)
+
+    class Meta:
+        model = User
+        fields = [
+            "email",
+            "password1",
+            "password2",
+            "nickname",
+            "development_field",
+            "content",
+            "auth_code",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        self.sociallogin = kwargs.pop("sociallogin", None)
+        super().__init__(*args, **kwargs)
+
+        # Get the sociallogin from the form's signup request
+        sociallogin = self.sociallogin
+        user_data = sociallogin.account.extra_data
+
+        # Set the initial values of the form fields
+        self.fields["email"].initial = user_data.get("email")
+        self.fields["nickname"].initial = user_data.get("login")
+
+    def save(self, request):
+        user = super().save(request)
+        user.email = self.cleaned_data["email"]
+        user.nickname = self.cleaned_data["nickname"]
+        user.development_field = self.cleaned_data["development_field"]
+        user.content = self.cleaned_data["content"]
+        user.save()
+        self.sociallogin.user = user
+        return user
