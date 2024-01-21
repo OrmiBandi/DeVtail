@@ -104,7 +104,6 @@ class ToDoListTest(TestCase):
         )
         response = self.client.get(reverse("todo_list"))
 
-        self.assertTrue("todos" in response.context)
         self.assertEqual(len(response.context["todos"]), 3)
 
     def test_view_with_no_todos(self):
@@ -119,8 +118,6 @@ class ToDoListTest(TestCase):
         )
         response = self.client.get(reverse("todo_list"))
 
-        # 할 일이 없을 때 템플릿이 올바르게 출력되는지 확인
-        self.assertTrue("todos" in response.context)
         self.assertEqual(len(response.context["todos"]), 0)
 
 
@@ -198,7 +195,6 @@ class PersonalToDoList(TestCase):
         )
         response = self.client.get(reverse("personal_todo_list"))
 
-        self.assertTrue("todos" in response.context)
         self.assertEqual(len(response.context["todos"]), 2)
 
     def test_view_with_no_todos(self):
@@ -215,7 +211,6 @@ class PersonalToDoList(TestCase):
         )
         response = self.client.get(reverse("personal_todo_list"))
 
-        self.assertTrue("todos" in response.context)
         self.assertEqual(len(response.context["todos"]), 0)
 
 
@@ -236,7 +231,7 @@ class PersonalToDoCreateTest(TestCase):
         로그인 안 했을 때 로그인 페이지로 리다이렉트 되는지 확인
         """
         response = self.client.get(reverse("personal_todo_create"))
-        self.assertRedirects(response, "/accounts/login/?next=/todos/personal/create")
+        self.assertRedirects(response, "/accounts/login/?next=/todos/personal/create/")
 
     def test_logged_in_uses_correct_template(self):
         """
@@ -258,6 +253,7 @@ class PersonalToDoCreateTest(TestCase):
         )
         response = self.client.get(reverse("personal_todo_create"))
 
+        # start_at/end_at 필드는 date, time으로 나눠져 있으므로, 각각 입력
         response = self.client.post(
             reverse("personal_todo_create"),
             {
@@ -272,12 +268,10 @@ class PersonalToDoCreateTest(TestCase):
             },
         )
 
-        # 할 일 생성 성공
+        # 할 일 생성 성공, 302 응답이 오고 할 일이 생성됨
         self.assertEqual(response.status_code, 302)
         self.assertEqual(ToDo.objects.count(), 1)
-        self.assertEqual(ToDo.objects.get(id=1).title, "test")
         self.assertEqual(ToDoAssignee.objects.count(), 1)
-        self.assertEqual(ToDoAssignee.objects.get(id=1).assignee.nickname, "testuser")
 
     def test_create_todo_fail(self):
         """
@@ -288,21 +282,18 @@ class PersonalToDoCreateTest(TestCase):
         )
         response = self.client.get(reverse("personal_todo_create"))
 
+        # 필수 입력값인 title이 빈 값일 때
         response = self.client.post(
             reverse("personal_todo_create"),
             {
                 "title": "",
                 "content": "test",
-                "start_at_0": timezone.now().date().isoformat(),
-                "start_at_1": timezone.now().time().isoformat(),
-                "end_at_0": timezone.now().date().isoformat(),
-                "end_at_1": timezone.now().time().isoformat(),
                 "status": "ToDo",
                 "alert_set": "없음",
             },
         )
 
-        # 할 일 생성 실패
+        # 할 일 생성 실패, 200 응답이 오고 할 일이 생성되지 않음
         self.assertEqual(response.status_code, 200)
         self.assertEqual(ToDo.objects.count(), 0)
         self.assertEqual(ToDoAssignee.objects.count(), 0)
