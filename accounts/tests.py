@@ -1,10 +1,10 @@
-from django.urls import reverse
-from django.core import mail
-from django.test import TestCase
 from freezegun import freeze_time
+from django.core import mail
+from django.urls import reverse
 from django.utils import timezone
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 
 User = get_user_model()
 

@@ -5,10 +5,9 @@ from django.core.mail import EmailMessage
 from django.views.generic import CreateView
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth import get_user_model
+from allauth.socialaccount.views import SignupView as BaseSignupView
 from django.contrib.auth.views import LoginView
 
-
-# from .models import User
 from .forms import SignupForm
 
 
@@ -41,6 +40,10 @@ class SignupView(CreateView):
             return JsonResponse(form.errors, status=400)
 
 
+class SocialSignupView(BaseSignupView):
+    template_name = "accounts/signup.html"
+
+
 def email_confirm(request, token):
     """
     이메일 인증 메서드
@@ -58,4 +61,5 @@ class LoginView(LoginView):
     template_name = "accounts/login.html"
 
 signup = SignupView.as_view()
+social_signup = SocialSignupView.as_view()
 login = LoginView.as_view()
