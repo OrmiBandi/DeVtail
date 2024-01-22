@@ -15,4 +15,5 @@ urlpatterns = [
         views.PersonalToDoUpdate.as_view(),
         name="personal_todo_edit",
     ),
+    path("delete/<int:pk>/", views.ToDoDelete.as_view(), name="todo_delete"),
 ]

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>deVtail-데브테일</title>
+</head>
+
+<body>
+  <main>
+    <h2>Delete</h2>
+    <form method="post">
+      {% csrf_token %}
+      <strong>{{ todo.title }}</strong>
+      <p>정말로 삭제하시겠습니까?</p>
+      <button type="submit">삭제하기</button>
+    </form>
+  </main>
+</body>
+
+</html>
