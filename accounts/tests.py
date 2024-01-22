@@ -1,8 +1,10 @@
 from freezegun import freeze_time
 from django.core import mail
 from django.urls import reverse
+from django.test import TestCase
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 
@@ -239,3 +241,66 @@ class TestAccount(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["email"][0], "중복된 이메일입니다.")
         print("이메일 회원가입 테스트 END")
+
+    def test_account_login(self):
+        """
+        로그인 테스트
+        1. 정상 로그인 테스트
+        2. 없는 사용자 테스트
+        3. 비밀번호 불일치 테스트
+        4. 이메일을 입력하지 않은 경우 테스트
+        5. 비밀번호를 입력하지 않은 경우 테스트
+        """
+        print("-- 로그인 테스트 BEGIN --")
+        self.client.post(reverse("signup"), self.signup_data, format="multipart")
+        email_body = mail.outbox[0].body
+        auth_url = email_body.split("인증 URL: ")[1].split("\n")[0]
+        self.client.get(auth_url)
+
+        # 정상 로그인 테스트
+        response = self.client.post(
+            reverse("login"),
+            {"username": self.email, "password": self.password},
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["user"].is_authenticated)
+        self.client.logout()
+
+        # 없는 사용자 테스트
+        response = self.client.post(
+            reverse("login"),
+            {"username": "test@test.com", "password": self.password},
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.content.decode("utf-8"), "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다."
+        )
+
+        # 비밀번호 불일치 테스트
+        response = self.client.post(
+            reverse("login"),
+            {"username": self.email, "password": "testtest12!@#"},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.content.decode("utf-8"), "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다."
+        )
+
+        # 이메일을 입력하지 않은 경우 테스트
+        response = self.client.post(
+            reverse("login"),
+            {"username": "", "password": self.password},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "이메일을 입력해주세요.")
+
+        # 비밀번호를 입력하지 않은 경우 테스트
+        response = self.client.post(
+            reverse("login"),
+            {"username": self.email, "password": ""},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "비밀번호를 입력해주세요.")
+        print("-- 로그인 테스트 END --")
