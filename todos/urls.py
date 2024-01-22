@@ -10,4 +10,9 @@ urlpatterns = [
         views.PersonalToDoCreate.as_view(),
         name="personal_todo_create",
     ),
+    path(
+        "personal/edit/<int:pk>/",
+        views.PersonalToDoUpdate.as_view(),
+        name="personal_todo_edit",
+    ),
 ]

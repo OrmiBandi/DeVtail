@@ -11,6 +11,12 @@
   <main>
     <h2>Detail</h2>
 
+    <a href="{% url 'todo_list' %}">목록</a>
+    {% if todo.study %}
+    {% else %}
+    <a href="{% url 'personal_todo_edit' todo.pk %}">수정</a>
+    {% endif %}
+
     <ul>
       {% if todo.study %}
       <li>
