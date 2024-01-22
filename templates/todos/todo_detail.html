@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>deVtail-데브테일</title>
+</head>
+
+<body>
+  <main>
+    <h2>Detail</h2>
+
+    <ul>
+      {% if todo.study %}
+      <li>
+        스터디 이름 : {{ todo.study.title }}
+      </li>
+      {% endif %}
+      <li>투두 이름 : {{ todo.title }}</li>
+      <li>상태 : {{ todo.status }}</li>
+      <li>내용 : {{ todo.content }}</li>
+      {% if todo.start_at %}
+      <li>{{ todo.start_at }} ~ {{ todo.end_at }}</li>
+      {% endif %}
+      <li>알림 설정 : {{ todo.alert_set }}</li>
+    </ul>
+  </main>
+</body>
+
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>deVtail-데브테일</title>
+</head>
+
+<body>
+  <main>
+    <h2>List</h2>
+
+    {% if todos %}
+    <ul>
+      {% for todo in todos %}
+      <li>
+        {% if todo.study %}[{{ todo.study.topic }}] {% endif %}{{ todo.title }} - {{ todo.status }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </main>
+</body>
+
+</html>
