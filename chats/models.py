@@ -32,6 +32,8 @@ class StudyChat(models.Model):
 class ChatMessage(models.Model):
     """
     채팅 메시지 모델
+    Detail:
+        메시지를 작성한 유저의 data가 삭제될 경우 author를 null로 설정, FE에서 별도 처리
     """
 
     message = models.CharField(max_length=500)
@@ -39,10 +41,10 @@ class ChatMessage(models.Model):
 
     author = models.ForeignKey("accounts.User", on_delete=models.SET_NULL, null=True)
     direct_chat = models.ForeignKey(
-        "DirectChat", on_delete=models.CASCADE, related_name="chat_messages"
+        "DirectChat", on_delete=models.CASCADE, related_name="chat_messages", null=True
     )
     study_chat = models.ForeignKey(
-        "StudyChat", on_delete=models.CASCADE, related_name="chat_messages"
+        "StudyChat", on_delete=models.CASCADE, related_name="chat_messages", null=True
     )
 
     class Meta:
