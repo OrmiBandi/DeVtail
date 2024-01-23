@@ -9,4 +9,5 @@ urlpatterns = [
     path("logout/", views.logout, name="logout"),
     path("", include("allauth.urls")),
     path("custom_login/", views.login, name="login"),
+    path("profile/<int:pk>/", views.profile, name="profile"),
 ]

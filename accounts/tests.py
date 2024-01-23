@@ -341,3 +341,45 @@ class TestAccount(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["user"].is_authenticated)
         print("-- 로그아웃 테스트 END --")
+
+    def test_account_profile(self):
+        """
+        프로필 테스트
+        1. 정상 프로필 응답 테스트
+        2. 존재하지 않는 사용자의 프로필 요청 테스트
+        3. 로그인하지 않은 사용자의 프로필 요청 테스트
+        """
+        print("-- 프로필 테스트 BEGIN --")
+        # 정상 프로필 응답 테스트
+        self.client.post(reverse("signup"), self.signup_data, format="multipart")
+        email_body = mail.outbox[0].body
+        auth_url = email_body.split("인증 URL: ")[1].split("\n")[0]
+        self.client.get(auth_url)
+        self.client.post(
+            reverse("login"),
+            {"username": self.email, "password": self.password},
+            follow=True,
+        )
+        response = self.client.get(reverse("profile", kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["user_profile"].email, self.email)
+        self.assertEqual(response.context["user_profile"].nickname, self.nickname)
+        self.assertEqual(
+            response.context["user_profile"].development_field, self.development_field
+        )
+        self.assertEqual(
+            response.context["user_profile"].content, self.signup_data["content"]
+        )
+
+        # 존재하지 않는 사용자의 프로필 요청 테스트
+        response = self.client.get(reverse("profile", kwargs={"pk": 2}), follow=True)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.content.decode("utf-8"), "존재하지 않는 사용자입니다.")
+
+        # 로그인하지 않은 사용자의 프로필 요청 테스트
+        self.client.logout()
+        response = self.client.get(reverse("profile", kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.content.decode("utf-8"), "로그인되지 않은 사용자입니다.")
+
+        print("-- 프로필 테스트 END --")
