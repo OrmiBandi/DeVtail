@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title></title>
+</head>
+<body>
+  <!-- header -->
+  <!-- /header -->
+  <!-- main -->
+
+  {% if user.is_authenticated %}
+    <p>Welcome, {{ user.username }}!</p>
+  {% else %}
+    <p>You are not logged in.</p>
+  {% endif %}
+
+  {% for devmate in devmates %}
+    <p>{{ devmate.sent_user }} 가 보낸 요청</p>
+    <!-- 수락하기 버튼 -->
+    <form action="{% url 'devmates:devmate_update' pk=devmate.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="_method" value="put">
+      <button type="submit">수락하기</button>
+    </form>
+    <!-- 거절하기 버튼 -->
+    <form action="{% url 'devmates:devmate_delete' pk=devmate.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="_method" value="delete">
+      <button type="submit">거절하기</button>
+    </form>
+  {% endfor %}
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+          event.preventDefault();
+          this.submit();
+        });
+      });
+    });
+  </script>
+
+  <!-- /main -->
+  <!-- footer -->
+  <!-- /footer -->
+</body>
+</html>

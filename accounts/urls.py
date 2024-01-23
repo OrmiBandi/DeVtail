@@ -6,6 +6,7 @@ urlpatterns = [
     path("signup/", views.signup, name="signup"),
     path("email_confirm/<str:token>/", views.email_confirm, name="email_confirm"),
     path("social/signup/", views.social_signup, name="social_signup"),
+    path("logout/", views.logout, name="logout"),
     path("", include("allauth.urls")),
-    path("login/", views.login, name="login"),
+    path("custom_login/", views.login, name="login"),
 ]
