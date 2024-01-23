@@ -26,83 +26,106 @@ class TestDevMate(TestCase):
         self.user2 = User.objects.create_user(
             email="test2@naver.com", password="test2", nickname="test2"
         )
+        self.user3 = User.objects.create_user(
+            email="test3@naver.com", password="test3", nickname="test3"
+        )
 
         # 다른 유저들 생성
         self.other_users = [
             User.objects.create_user(
                 email=f"test{i}@naver.com", password=f"test{i}", nickname=f"test{i}"
             )
-            for i in range(3, 11)
+            for i in range(4, 11)
         ]
 
-    def test_devmate_create(self):
-        """
-        devmate 신청 테스트
-        """
-        print("devmate 신청 테스트 START")
-        self.client.force_login(self.user1)
-
-        response = self.client.post(
-            reverse("devmates:devmate_create", kwargs={"pk": self.user2.id})
-        )
-
-        self.assertEqual(response.status_code, 302)  # 신청 성공, redirect
-        print("devmate 신청 테스트 END")
-
-    def test_devmate_accept(self):
-        """
-        devmate 수락 테스트
-        """
-        print("devmate 수락 테스트 START")
+        # devmate 생성
+        # user1이 user2에게 신청, 미수락
         DevMate.objects.create(
             sent_user=self.user1, received_user=self.user2, is_accepted=False
         )
-        self.client.force_login(self.user2, backend=None)
-        devmate_instance = DevMate.objects.get(
-            sent_user=self.user1, received_user=self.user2
+        # user1이 user3에게 신청, 수락
+        DevMate.objects.create(
+            sent_user=self.user1, received_user=self.user3, is_accepted=True
         )
-
-        response = self.client.post(
-            reverse("devmates:devmate_update", kwargs={"pk": devmate_instance.id}),
-            {"_method": "put"},
-        )
-
-        self.assertEqual(response.status_code, 302)  # 수락 성공, redirect
-        print("devmate 수락 테스트 END")
-
-    def test_devmate_list(self):
-        """
-        devmate 목록 조회 테스트
-        """
-        print("devmate 목록 조회 테스트 START")
+        # user1이 다수 유저에게 신청, 수락
         for user in self.other_users:
             DevMate.objects.create(
                 sent_user=self.user1, received_user=user, is_accepted=True
             )
+
+    def test_devmate_apply_with_login(self):
+        """
+        로그인 후 devmate 신청
+        """
         self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("devmates:devmate_create", kwargs={"pk": self.user2.id})
+        )
+        self.assertEqual(response.status_code, 302)  # 신청 성공, redirect
 
+    def test_devmate_apply_without_login(self):
+        """
+        로그인 하지 않고 devmate 신청
+        """
+        response = self.client.post(
+            reverse("devmates:devmate_create", kwargs={"pk": self.user2.id})
+        )
+        self.assertEqual(response.status_code, 302)  # 신청 실패, redirect
+
+    def test_show_devmate_list_with_login(self):
+        """
+        로그인 후 devmate 목록 조회
+        """
+        self.client.force_login(self.user1)
         response = self.client.get(reverse("devmates:devmate_list"))
-
         self.assertEqual(response.status_code, 200)  # 조회 성공
-        print("devmate 목록 조회 테스트 END")
+
+    def test_show_devmate_list_without_login(self):
+        """
+        로그인 하지 않고 devmate 목록 조회
+        """
+        response = self.client.get(reverse("devmates:devmate_list"))
+        self.assertEqual(response.status_code, 302)  # 조회 실패, redirect
+
+    def test_show_received_devmate_list_with_login(self):
+        """
+        로그인 후 신청받은 devmate 목록 조회
+        """
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse("devmates:devmate_received_list"))
+        self.assertEqual(response.status_code, 200)  # 조회 성공
+
+    def test_show_received_devmate_list_without_login(self):
+        """
+        로그인 하지 않고 신청받은 devmate 목록 조회
+        """
+        response = self.client.get(reverse("devmates:devmate_received_list"))
+        self.assertEqual(response.status_code, 302)  # 조회 실패, redirect
+
+    def test_devmate_accept(self):
+        """
+        devmate 수락
+        """
+        self.client.force_login(self.user2)
+        devmate_instance = DevMate.objects.get(
+            sent_user=self.user1, received_user=self.user2
+        )
+        response = self.client.post(
+            reverse("devmates:devmate_update", kwargs={"pk": devmate_instance.id}),
+            {"_method": "put"},
+        )
+        self.assertEqual(response.status_code, 302)  # 수락 성공, redirect
 
     def test_devmate_delete(self):
         """
-        devmate 삭제 테스트
+        devmate 삭제 및 거절
         """
-        print("devmate 삭제 테스트 START")
-        DevMate.objects.create(
-            sent_user=self.user1, received_user=self.user2, is_accepted=True
-        )
         self.client.force_login(self.user1)
         devmate_instance = DevMate.objects.get(
             sent_user=self.user1, received_user=self.user2
         )
-
         response = self.client.post(
             reverse("devmates:devmate_update", kwargs={"pk": devmate_instance.id}),
             {"_method": "delete"},
         )
-
         self.assertEqual(response.status_code, 302)  # 삭제 성공, redirect
-        print("devmate 삭제 테스트 END")
