@@ -379,3 +379,79 @@ class PersonalToDoUpdateTest(TestCase):
         response = self.client.get(reverse("personal_todo_edit", args=[1]))
 
         self.assertEqual(response.status_code, 403)
+
+
+class ToDoDeleteTest(TestCase):
+    """
+    할 일 삭제 테스트
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        test_user = User.objects.create_user(
+            nickname="testuser", email="testuser@example.com", password="3HJ1vRV0Z&2iD"
+        )
+        test_user.save()
+
+        todo = ToDo.objects.create(
+            title="Test ToDo",
+            content="Test Content",
+            start_at=timezone.now(),
+            end_at=timezone.now() + timezone.timedelta(days=1),
+            status="ToDo",
+            alert_set="없음",
+        )
+
+        todo.todo_assignees.create(assignee=test_user)
+
+    def test_redirect_if_not_logged_in(self):
+        """
+        로그인 안 했을 때 로그인 페이지로 리다이렉트 되는지 확인
+        """
+        response = self.client.get(reverse("todo_delete", args=[1]))
+        self.assertRedirects(response, "/accounts/login/?next=/todos/delete/1/")
+
+    def test_logged_in_uses_correct_template(self):
+        """
+        로그인 했을 때 올바른 템플릿인지 확인
+        """
+        login = self.client.login(
+            email="testuser@example.com", password="3HJ1vRV0Z&2iD"
+        )
+        response = self.client.get(reverse("todo_delete", args=[1]))
+
+        self.assertTemplateUsed(response, "todos/todo_confirm_delete.html")
+
+    def test_delete_todo(self):
+        """
+        할 일 삭제 성공
+        """
+        login = self.client.login(
+            email="testuser@example.com", password="3HJ1vRV0Z&2iD"
+        )
+        response = self.client.get(reverse("todo_delete", args=[1]))
+
+        response = self.client.post(reverse("todo_delete", args=[1]))
+
+        # 할 일 삭제 성공, 302 응답이 오고 할 일이 삭제됨
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(ToDo.objects.count(), 0)
+        self.assertEqual(ToDoAssignee.objects.count(), 0)
+
+    def test_delete_todo_access_fail(self):
+        """
+        다른 사용자가 할 일 삭제에 접근할 때 403 응답을 받는지 확인
+        """
+        test_user2 = User.objects.create_user(
+            nickname="testuser2",
+            email="testuser2@example.com",
+            password="3HJ1vRV0Z&2iD",
+        )
+        login = self.client.login(
+            email="testuser2@example.com",
+            password="3HJ1vRV0Z&2iD",
+        )
+
+        response = self.client.get(reverse("todo_delete", args=[1]))
+
+        self.assertEqual(response.status_code, 403)
