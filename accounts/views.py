@@ -11,6 +11,8 @@ from django.contrib.auth import get_user_model
 from allauth.socialaccount.views import SignupView as BaseSignupView
 from django.contrib.auth.views import LoginView
 from django.utils.translation import gettext_lazy as _
+from allauth.account.views import LogoutView
+from django.views.decorators.http import require_POST
 
 from .forms import SignupForm, CustomLoginForm
 
@@ -107,6 +109,21 @@ class CustomLoginView(LoginView):
             return HttpResponseBadRequest(_("비밀번호를 입력해주세요."))
 
 
+class CustomLogoutView(LogoutView):
+    """
+    로그아웃 View
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        """
+        로그아웃 메서드
+        """
+        if not request.user.is_authenticated:
+            return HttpResponseBadRequest(_("로그인되지 않은 사용자입니다."))
+        return super().dispatch(request, *args, **kwargs)
+
+
 signup = SignupView.as_view()
 social_signup = SocialSignupView.as_view()
 login = CustomLoginView.as_view()
+logout = CustomLogoutView.as_view()

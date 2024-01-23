@@ -304,3 +304,40 @@ class TestAccount(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content.decode("utf-8"), "비밀번호를 입력해주세요.")
         print("-- 로그인 테스트 END --")
+
+    def test_account_logout(self):
+        """
+        로그아웃 테스트
+        1. 정상 로그아웃 테스트
+        2. 로그인하지 않은 사용자 테스트
+        3. 로그아웃 후 로그인 테스트
+        """
+        print("-- 로그아웃 테스트 BEGIN --")
+        # 정상 로그아웃 테스트
+        self.client.post(reverse("signup"), self.signup_data, format="multipart")
+        email_body = mail.outbox[0].body
+        auth_url = email_body.split("인증 URL: ")[1].split("\n")[0]
+        self.client.get(auth_url)
+        self.client.post(
+            reverse("login"),
+            {"username": self.email, "password": self.password},
+            follow=True,
+        )
+        response = self.client.post(reverse("logout"), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["user"].is_authenticated)
+
+        # 로그인하지 않은 사용자 테스트
+        response = self.client.post(reverse("logout"), follow=True)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "로그인되지 않은 사용자입니다.")
+
+        # 로그아웃 후 로그인 테스트
+        response = self.client.post(
+            reverse("login"),
+            {"username": self.email, "password": self.password},
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["user"].is_authenticated)
+        print("-- 로그아웃 테스트 END --")
