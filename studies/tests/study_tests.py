@@ -1,6 +1,6 @@
 import datetime
 from django.test import TestCase
-from studies.models import Study, StudyMember, Category
+from studies.models import Study, StudyMember, Category, Tag
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
@@ -36,6 +36,8 @@ class TestStudy(TestCase):
 
         # 테스트용 스터디 생성 데이터
         self.study_object = Study.objects.get(pk=1)
+        tag = Tag.objects.create(name="tag_test")
+        self.study_object.tags.add(tag)
 
         # 테스트용 스터디 멤버 생성
         StudyMember.objects.create(
@@ -54,6 +56,17 @@ class TestStudy(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # 기존 스터디 1개 조회
+        self.assertEqual(len(response.context["studies"]), 1)
+
+    def test_study_list_by_tags(self):
+        """
+        태그를 통한 스터디 조회 테스트
+        """
+        tag = Tag.objects.get(name="tag_test")
+        response = self.client.get(f"/study/list/?q={tag}")
+        self.assertEqual(response.status_code, 200)
+
+        # 태그에 해당하는 기존 스터디 1개 조회
         self.assertEqual(len(response.context["studies"]), 1)
 
     def test_study_detail(self):

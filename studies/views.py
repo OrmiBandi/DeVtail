@@ -1,4 +1,4 @@
-from .models import Study, Comment, Recomment, StudyMember
+from .models import Study, Comment, Recomment, StudyMember, Tag
 from django.views.generic import (
     ListView,
     CreateView,
@@ -35,10 +35,17 @@ class StudyList(ListView):
 
         if q:
             queryset = queryset.filter(
-                Q(title__icontains=q) | Q(introduce__icontains=q)
+                Q(title__icontains=q)
+                | Q(introduce__icontains=q)
+                | Q(tags__name__icontains=q)
             )
 
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tags"] = Tag.objects.all()
+        return context
 
 
 class StudyCreate(LoginRequiredMixin, CreateView):

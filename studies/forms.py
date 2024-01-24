@@ -1,12 +1,16 @@
 from django import forms
-from .models import Study, Comment, Recomment
+from .models import Study, Comment, Recomment, Tag, Category
 import datetime
 
 
 class StudyForm(forms.ModelForm):
-    category = forms.CharField(
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
         required=True,
         error_messages={"required": "카테고리를 선택해주세요."},
+    )
+    tags = forms.CharField(
+        initial="(임시)태그를 ,로 구분하여 입력해주세요.",
     )
     goal = forms.CharField(
         required=True,
@@ -26,7 +30,8 @@ class StudyForm(forms.ModelForm):
         required=True,
         error_messages={"required": "스터디명을 입력해주세요."},
     )
-    difficulty = forms.CharField(
+    difficulty = forms.ChoiceField(
+        choices=Study.difficulty_choices,
         required=True,
         error_messages={"required": "난이도를 선택해주세요."},
     )
@@ -39,6 +44,7 @@ class StudyForm(forms.ModelForm):
         model = Study
         fields = [
             "category",
+            "tags",
             "goal",
             "thumbnail",
             "start_at",
@@ -54,7 +60,14 @@ class StudyForm(forms.ModelForm):
         study = super().save(commit=False)
         study.thumbnail = self.cleaned_data["thumbnail"]
         study.introduce = self.cleaned_data["introduce"]
-        study.save()
+
+        if commit:
+            study.save()
+            tags = self.cleaned_data["tags"].split(",")
+            for tag in tags:
+                tag = Tag.objects.get_or_create(name=tag.strip())[0]
+                study.tags.add(tag)
+
         return study
 
     def clean_start_at(self):
