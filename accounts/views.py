@@ -1,23 +1,39 @@
+from typing import Any
 import uuid
+from django.contrib.auth.forms import AuthenticationForm
+from django.db.models.base import Model as Model
+from django.core.exceptions import PermissionDenied
 from django.urls import reverse
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseBadRequest
+from django.urls import reverse_lazy
 from django.core.mail import EmailMessage
-from django.views.generic import CreateView
+from django.views.generic import CreateView, DetailView
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth import get_user_model
 from allauth.socialaccount.views import SignupView as BaseSignupView
 from django.contrib.auth.views import LoginView
+from django.utils.translation import gettext_lazy as _
+from allauth.account.views import LogoutView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .forms import SignupForm
+from .forms import SignupForm, CustomLoginForm
+
+User = get_user_model()
 
 
 class SignupView(CreateView):
-    User = get_user_model()
+    """
+    회원가입 View
+    """
+
     model = User
     form_class = SignupForm
     template_name = "accounts/signup.html"
 
     def post(self, request, *args, **kwargs):
+        """
+        회원가입 메서드
+        """
         form = self.form_class(request.POST)
         if form.is_valid():
             profile_image = request.FILES["profile_image"]
@@ -57,9 +73,94 @@ def email_confirm(request, token):
     return JsonResponse({"message": "이메일 인증이 완료되었습니다. 회원가입이 완료되었습니다."}, status=200)
 
 
-class LoginView(LoginView):
+class CustomLoginView(LoginView):
+    """
+    로그인 View
+    """
+
     template_name = "accounts/login.html"
+    form_class = CustomLoginForm
+    redirect_authenticated_user = True
+
+    def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        """
+        로그인 메서드
+        """
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def get_success_url(self) -> Any:
+        """
+        로그인 성공시 이동할 URL
+        """
+        url = self.get_redirect_url()
+        return url or reverse_lazy("home")
+
+    def form_invalid(self, form: AuthenticationForm):
+        """
+        로그인 실패시 메서드
+        """
+        form_errors = form.errors.get("__all__", [])
+        if "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다." in form_errors:
+            return HttpResponseBadRequest(_("존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다."))
+        elif "이메일을 입력해주세요." in form_errors:
+            return HttpResponseBadRequest(_("이메일을 입력해주세요."))
+        elif "비밀번호를 입력해주세요." in form_errors:
+            return HttpResponseBadRequest(_("비밀번호를 입력해주세요."))
+
+
+class CustomLogoutView(LogoutView):
+    """
+    로그아웃 View
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        """
+        로그아웃 메서드
+        """
+        if not request.user.is_authenticated:
+            return HttpResponseBadRequest(_("로그인되지 않은 사용자입니다."))
+        return super().dispatch(request, *args, **kwargs)
+
+
+class ProfileView(LoginRequiredMixin, DetailView):
+    login_url = "/accounts/login/"
+    model = User
+    template_name = "accounts/profile.html"
+    context_object_name = "user_profile"
+
+    def handle_no_permission(self):
+        """
+        로그인 하지 않은 사용자의 경우
+        "로그인되지 않은 사용자입니다."라는
+        메시지를 에러 메시지에 담는 메서드
+        """
+        return HttpResponse(_("로그인되지 않은 사용자입니다."), status=401)
+
+    def get_object(self):
+        """
+        입력받은 pk 값의 유저를 반환하는 메서드
+        """
+        pk = self.kwargs.get("pk")
+        obj = User.objects.filter(pk=pk).first()
+        return obj
+
+    def get(self, request, *args, **kwargs):
+        """
+        프로필 요청을 처리하는 get 메서드
+            - pk로 조회한 유저의 프로필이 없는 경우 404 에러 반환
+        """
+        obj = self.get_object()
+        if not obj:
+            return HttpResponse(_("존재하지 않는 사용자입니다."), status=404)
+        return super().get(request, *args, **kwargs)
+
 
 signup = SignupView.as_view()
 social_signup = SocialSignupView.as_view()
-login = LoginView.as_view()
+login = CustomLoginView.as_view()
+logout = CustomLogoutView.as_view()
+profile = ProfileView.as_view()

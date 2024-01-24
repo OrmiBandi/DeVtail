@@ -1,7 +1,9 @@
+from typing import Any
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from allauth.account.forms import SignupForm as BaseSignupForm
+from django.contrib.auth.forms import AuthenticationForm
 
 User = get_user_model()
 
@@ -165,3 +167,28 @@ class CustomSignupForm(BaseSignupForm):
         user.save()
         self.sociallogin.user = user
         return user
+
+
+class CustomLoginForm(AuthenticationForm):
+    username = forms.EmailField(label="이메일")
+
+    def clean(self):
+        username = self.cleaned_data.get("username")
+        password = self.cleaned_data.get("password")
+
+        if not username:
+            raise forms.ValidationError("이메일을 입력해주세요.")
+
+        if not password:
+            raise forms.ValidationError("비밀번호를 입력해주세요.")
+
+        if username is not None and password:
+            try:
+                self.user_cache = User.objects.get(email=username)
+                if not self.user_cache.check_password(password):
+                    raise forms.ValidationError("존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다.")
+                else:
+                    self.confirm_login_allowed(self.user_cache)
+            except User.DoesNotExist:
+                raise forms.ValidationError("존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다.")
+        return super().clean()

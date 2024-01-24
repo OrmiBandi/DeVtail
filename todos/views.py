@@ -1,8 +1,8 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import CreateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import ToDo
 from .forms import PersonalToDoForm
@@ -58,3 +58,30 @@ class PersonalToDoCreate(LoginRequiredMixin, CreateView):
         todo.save()
         todo.todo_assignees.create(assignee=self.request.user)
         return super().form_valid(form)
+
+
+class PersonalToDoUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """
+    개인 할 일 수정
+    """
+
+    model = ToDo
+    form_class = PersonalToDoForm
+    success_url = reverse_lazy("personal_todo_list")
+
+    def test_func(self):
+        todo = self.get_object()
+        return todo.todo_assignees.filter(assignee=self.request.user).exists()
+
+
+class ToDoDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """
+    할 일 삭제
+    """
+
+    model = ToDo
+    success_url = reverse_lazy("todo_list")
+
+    def test_func(self):
+        todo = self.get_object()
+        return todo.todo_assignees.filter(assignee=self.request.user).exists()
