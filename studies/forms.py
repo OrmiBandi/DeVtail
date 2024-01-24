@@ -77,6 +77,11 @@ class StudyForm(forms.ModelForm):
 
 
 class CommentForm(forms.ModelForm):
+    content = forms.CharField(
+        required=True,
+        error_messages={"required": "댓글을 입력해주세요."},
+    )
+
     class Meta:
         model = Comment
         fields = [
@@ -85,6 +90,11 @@ class CommentForm(forms.ModelForm):
 
 
 class RecommentForm(forms.ModelForm):
+    content = forms.CharField(
+        required=True,
+        error_messages={"required": "대댓글을 입력해주세요."},
+    )
+
     class Meta:
         model = Recomment
         fields = [
