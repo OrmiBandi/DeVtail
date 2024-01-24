@@ -14,6 +14,7 @@ class Study(models.Model):
     category = models.ForeignKey(
         "Category", on_delete=models.PROTECT, related_name="studies"
     )
+    tag = models.ManyToManyField("Tag", related_name="studies")
     goal = models.CharField(max_length=100)
     thumbnail = models.ImageField(
         upload_to="study/imgs/%Y/%m/%d/",
@@ -91,7 +92,7 @@ class Tag(models.Model):
     - 스터디 생성 시 사용자가 입력한 태그를 저장
     """
 
-    study = models.ForeignKey("Study", on_delete=models.CASCADE, related_name="tags")
+    study = models.ManyToManyField("Study", related_name="tags")
     name = models.CharField(max_length=100)
 
     class Meta:
