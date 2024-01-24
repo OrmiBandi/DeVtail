@@ -192,3 +192,50 @@ class CustomLoginForm(AuthenticationForm):
             except User.DoesNotExist:
                 raise forms.ValidationError("존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다.")
         return super().clean()
+
+
+class AccountUpdateForm(forms.ModelForm):
+    nickname = forms.CharField(
+        required=True,
+        error_messages={
+            "required": "닉네임을 입력해주세요.",
+            "unique": "중복된 닉네임입니다.",
+        },
+    )
+
+    development_field = forms.ChoiceField(
+        required=True,
+        choices=User.DEVELOPMENT_FIELD_CHOICES,
+        error_messages={
+            "invalid_choice": "항목에 포함된 개발 분야를 선택해주세요.",
+            "required": "개발 분야를 선택해주세요.",
+        },
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            "nickname",
+            "development_field",
+            "content",
+            "profile_image",
+        ]
+        widgets = {
+            "email": forms.EmailInput(attrs={"readonly": True}),
+        }
+
+    def clean_nickname(self):
+        """
+        닉네임 유효성 검사 메서드
+            - 닉네임 길이가 2자리 이상, 15자리 이하인지 검사
+            - 닉네임에 특수문자가 포함되어 있는지 검사
+        """
+        # 닉네임 길이가 2자리 이상, 15자리 이하인지 검사
+        nickname = self.cleaned_data.get("nickname")
+        if len(nickname) < 2 or len(nickname) > 15:
+            raise forms.ValidationError("닉네임은 2자리 이상, 15자리 이하로 입력해주세요.")
+        # 닉네임에 특수문자가 포함되어 있는지 검사
+        if any(char in nickname for char in "~!@#$%^&*()_+"):
+            raise forms.ValidationError("닉네임에 특수문자를 포함할 수 없습니다.")
+
+        return nickname

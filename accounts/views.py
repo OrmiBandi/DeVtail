@@ -1,22 +1,23 @@
-from typing import Any
 import uuid
-from django.contrib.auth.forms import AuthenticationForm
-from django.db.models.base import Model as Model
-from django.core.exceptions import PermissionDenied
+from typing import Any
 from django.urls import reverse
-from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseBadRequest
+from django.contrib import messages
 from django.urls import reverse_lazy
 from django.core.mail import EmailMessage
-from django.views.generic import CreateView, DetailView
-from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth import get_user_model
-from allauth.socialaccount.views import SignupView as BaseSignupView
 from django.contrib.auth.views import LoginView
+from django.db.models.base import Model as Model
+from django.views.generic.edit import UpdateView
 from django.utils.translation import gettext_lazy as _
-from allauth.account.views import LogoutView
+from django.views.generic import CreateView, DetailView
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.sites.shortcuts import get_current_site
+from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseBadRequest
+from allauth.account.views import LogoutView
+from allauth.socialaccount.views import SignupView as BaseSignupView
 
-from .forms import SignupForm, CustomLoginForm
+from .forms import SignupForm, CustomLoginForm, AccountUpdateForm
 
 User = get_user_model()
 
@@ -159,8 +160,54 @@ class ProfileView(LoginRequiredMixin, DetailView):
         return super().get(request, *args, **kwargs)
 
 
+class AccountUpdateView(LoginRequiredMixin, UpdateView):
+    model = User
+    template_name = "accounts/account_update.html"
+    form_class = AccountUpdateForm
+    context_object_name = "account"
+
+    def get_success_url(self):
+        """
+        수정 성공 시 프로필 페이지로 이동시키는 메서드
+        """
+        return reverse_lazy("profile", kwargs={"pk": self.object.pk})
+
+    def handle_no_permission(self):
+        """
+        로그인 하지 않은 사용자의 경우
+        "로그인되지 않은 사용자입니다."라는
+        메시지를 에러 메시지에 담는 메서드
+        """
+        return HttpResponse(_("로그인되지 않은 사용자입니다."), status=401)
+
+    def get_object(self, queryset=None):
+        """
+        현재 로그인한 유저를 반환하는 메서드
+        """
+        return self.request.user
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "사용자 정보가 수정되었습니다.")
+        return response
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        messages.error(self.request, "사용자 정보 수정에 실패했습니다.")
+        return response
+
+    def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        response = super().post(request, *args, **kwargs)
+        form = self.get_form()
+        if not form.is_valid():
+            error_message = str(list(form.errors.as_data().values())[0][0].messages[0])
+            return HttpResponseBadRequest(error_message)
+        return response
+
+
 signup = SignupView.as_view()
 social_signup = SocialSignupView.as_view()
 login = CustomLoginView.as_view()
 logout = CustomLogoutView.as_view()
 profile = ProfileView.as_view()
+account_update = AccountUpdateView.as_view()
