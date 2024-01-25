@@ -38,4 +38,35 @@ urlpatterns = [
         views.RecommentDelete.as_view(),
         name="recomment_delete",
     ),
+    path("<int:pk>/apply/", views.apply_study_join, name="apply_study_join"),
+    path(
+        "studymember/<int:studymember_id>/approve/",
+        views.approve_study_join,
+        name="approve_study_join",
+    ),
+    path(
+        "studymember/<int:studymember_id>/reject/",
+        views.reject_study_join,
+        name="reject_study_join",
+    ),
+    path(
+        "<int:pk>/studymember/apply/list/",
+        views.ApproveStudyJoinDetail.as_view(),
+        name="study_member_apply_list",
+    ),
+    path(
+        "<int:pk>/studymember/list/",
+        views.ManageStudyMemberList.as_view(),
+        name="study_member_list",
+    ),
+    path(
+        "<int:pk>/studymember/<int:studymember_id>/delete/",
+        views.DeleteStudyMember.as_view(),
+        name="delete_study_member",
+    ),
+    path(
+        "<int:pk>/studymember/<int:studymember_id>/manager/",
+        views.UpdateStudyMember.as_view(),
+        name="change_study_manager",
+    ),
 ]
