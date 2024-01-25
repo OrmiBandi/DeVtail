@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
+    "channels",
     # custom app
     "accounts",
     "main",
@@ -92,7 +93,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "deVtail.wsgi.application"
-
+ASGI_APPLICATION = "mysite.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
