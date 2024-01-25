@@ -37,10 +37,10 @@ class SignupView(CreateView):
         """
         form = self.form_class(request.POST)
         if form.is_valid():
-            profile_image = request.FILES["profile_image"]
             token = uuid.uuid4()
             user = form.save(commit=False)
-            if profile_image:
+            if "profile_image" in request.FILES:
+                profile_image = request.FILES["profile_image"]
                 user.profile_image = profile_image
             user.auth_code = token
             user.save()
