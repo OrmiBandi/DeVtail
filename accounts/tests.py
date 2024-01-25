@@ -383,3 +383,127 @@ class TestAccount(TestCase):
         self.assertEqual(response.content.decode("utf-8"), "로그인되지 않은 사용자입니다.")
 
         print("-- 프로필 테스트 END --")
+
+    def test_account_update(self):
+        """
+        사용자 정보 수정 테스트
+        1. 로그인하지 않은 사용자의 사용자 정보 수정 테스트
+        2. 정상 사용자 정보 수정 테스트
+        3. 닉네임 유효성 테스트
+            - 닉네임이 1자리일 경우
+            - 닉네임이 16자리 이상일 경우
+            - 닉네임에 특수문자가 있을 경우
+            - 닉네임이 비어있을 경우
+            - 중복된 닉네임일 경우
+        4. 개발 분야 유효성 테스트
+            - 개발 분야가 비어있을 경우
+            - 개발 항목에 없는 분야일 경우
+        """
+        print("-- 사용자 정보 수정 테스트 BEGIN --")
+        self.client.post(reverse("signup"), self.signup_data, format="multipart")
+        email_body = mail.outbox[0].body
+        auth_url = email_body.split("인증 URL: ")[1].split("\n")[0]
+        self.client.get(auth_url)
+
+        # 로그인하지 않은 사용자의 사용자 정보 수정 테스트
+        response = self.client.post(reverse("account_update"))
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.content.decode("utf-8"), "로그인되지 않은 사용자입니다.")
+
+        # 정상 사용자 정보 수정 테스트
+        self.client.post(
+            reverse("login"),
+            {"username": self.email, "password": self.password},
+            follow=True,
+        )
+        update_data = {
+            "nickname": "test1",
+            "development_field": "FE",
+            "content": "test",
+        }
+        response = self.client.post(reverse("account_update"), update_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            str(list(get_messages(response.wsgi_request))[0]), "사용자 정보가 수정되었습니다."
+        )
+        user = User.objects.get(pk=1)
+        self.assertEqual(user.nickname, update_data["nickname"])
+        self.assertEqual(user.development_field, update_data["development_field"])
+        self.assertEqual(user.content, update_data["content"])
+
+        # 닉네임 유효성 테스트 - 닉네임이 1자리일 경우
+        update_data_nickname_below_1 = update_data.copy()
+        update_data_nickname_below_1["nickname"] = "t"
+        response = self.client.post(
+            reverse("account_update"), update_data_nickname_below_1, follow=True
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.content.decode("utf-8"),
+            "닉네임은 2자리 이상, 15자리 이하로 입력해주세요.",
+        )
+
+        # 닉네임 유효성 테스트 - 닉네임이 16자리 이상일 경우
+        update_data_nickname_over_16 = update_data.copy()
+        update_data_nickname_over_16["nickname"] = "testtesttesttest"
+        response = self.client.post(
+            reverse("account_update"), update_data_nickname_over_16, follow=True
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.content.decode("utf-8"), "닉네임은 2자리 이상, 15자리 이하로 입력해주세요."
+        )
+
+        # 닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우
+        update_data_nickname_special = update_data.copy()
+        update_data_nickname_special["nickname"] = "test!@"
+        response = self.client.post(
+            reverse("account_update"), update_data_nickname_special, follow=True
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "닉네임에 특수문자를 포함할 수 없습니다.")
+
+        # 닉네임 유효성 테스트 - 닉네임이 비어있을 경우
+        update_data_empty_nickname = update_data.copy()
+        update_data_empty_nickname["nickname"] = ""
+        response = self.client.post(
+            reverse("account_update"), update_data_empty_nickname, follow=True
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "닉네임을 입력해주세요.")
+
+        # 닉네임 유효성 테스트 - 중복된 닉네임일 경우
+        signup_data2 = self.signup_data
+        signup_data2["email"] = "elwl5515@test.com"
+        self.client.post(
+            reverse("signup"), signup_data2, format="multipart", follow=True
+        )
+        email_body = mail.outbox[1].body
+        auth_url = email_body.split("인증 URL: ")[1].split("\n")[0]
+        self.client.get(auth_url)
+        update_data_duplicate_nickname = update_data.copy()
+        update_data_duplicate_nickname["nickname"] = "test"
+        response = self.client.post(
+            reverse("account_update"), update_data_duplicate_nickname
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "중복된 닉네임입니다.")
+
+        # 개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우
+        update_data_empty_development_field = update_data.copy()
+        update_data_empty_development_field["development_field"] = ""
+        response = self.client.post(
+            reverse("account_update"), update_data_empty_development_field
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "개발 분야를 선택해주세요.")
+
+        # 개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우
+        update_data_wrong_development_field = update_data.copy()
+        update_data_wrong_development_field["development_field"] = "test"
+        response = self.client.post(
+            reverse("account_update"), update_data_wrong_development_field
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "항목에 포함된 개발 분야를 선택해주세요.")
+        print("-- 사용자 정보 수정 테스트 END --")
