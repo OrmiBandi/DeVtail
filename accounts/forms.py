@@ -52,6 +52,7 @@ class SignupForm(UserCreationForm):
             "content",
             "is_active",
             "auth_code",
+            "profile_image",
         ]
 
     def save(self, commit=True):
