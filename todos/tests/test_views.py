@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 
-from studies.models import Study, Category
+from studies.models import Study, Category, StudyMember
 from todos.models import ToDo, ToDoAssignee
 
 User = get_user_model()
@@ -212,6 +212,168 @@ class PersonalToDoList(TestCase):
         response = self.client.get(reverse("personal_todo_list"))
 
         self.assertEqual(len(response.context["todos"]), 0)
+
+
+class StudyToDoList(TestCase):
+    """
+    스터디 할 일 리스트 테스트
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        """
+        study1 > testuser1~4
+        study2 > testuser1,4~5
+        todo 1~3 > study1
+        todo 4~5 > study2
+        todo 1-5 > testuser1-5 (1개씩 할당)
+        """
+        # Create users
+        number_of_users = 5
+        for user_id in range(1, number_of_users + 1):
+            User.objects.create_user(
+                nickname=f"testuser{user_id}",
+                email=f"testuser{user_id}@example.com",
+                password=f"{user_id}HJ1vRV0Z&2iD",
+            )
+
+        # Create a category
+        category = Category.objects.create(name="TestCategory")
+
+        # Create studies
+        study1 = Study.objects.create(
+            category=category,
+            goal="Test Goal1",
+            start_at=timezone.now().date(),
+            end_at=timezone.now().date() + timezone.timedelta(days=14),
+            difficulty="상",
+            max_member=4,
+        )
+        study2 = Study.objects.create(
+            category=category,
+            goal="Test Goal2",
+            start_at=timezone.now().date(),
+            end_at=timezone.now().date() + timezone.timedelta(days=7),
+            difficulty="하",
+            max_member=20,
+        )
+
+        # Create a study_member
+        # study1에 testuser1~4 추가
+        for user_id in range(1, 5):
+            StudyMember.objects.create(
+                study=study1,
+                user=User.objects.get(id=user_id),
+                is_accepted=True,
+            )
+
+        # study2에 testuser1,4~5 추가
+        StudyMember.objects.create(
+            study=study2,
+            user=User.objects.get(id=1),
+            is_accepted=True,
+        )
+        for user_id in range(4, 6):
+            StudyMember.objects.create(
+                study=study2,
+                user=User.objects.get(id=user_id),
+                is_accepted=True,
+            )
+
+        # Create a todo
+        number_of_todos = 3
+        for todo_id in range(1, number_of_todos + 1):
+            ToDo.objects.create(
+                title=f"test {todo_id}",
+                alert_set="없음",
+                status="ToDo",
+                study=study1,
+            )
+
+        for todo_id in range(number_of_todos + 1, number_of_todos * 2):
+            ToDo.objects.create(
+                title=f"test {todo_id}",
+                alert_set="없음",
+                status="ToDo",
+                study=study2,
+            )
+
+        # Create a todo_assignee
+        for todo_id in range(1, ToDo.objects.count() + 1):
+            todo = ToDo.objects.get(id=todo_id)
+            assignee = User.objects.get(id=todo_id)
+            ToDoAssignee.objects.create(todo=todo, assignee=assignee)
+
+    def test_redirect_if_not_logged_in(self):
+        """
+        로그인 안 했을 때 로그인 페이지로 리다이렉트 되는지 확인
+        """
+        response = self.client.get(reverse("study_todo_list"))
+        self.assertRedirects(response, "/accounts/login/?next=/todos/study/")
+
+    def test_logged_in_uses_correct_template(self):
+        """
+        로그인 했을 때 올바른 템플릿인지 확인
+        """
+        login = self.client.login(
+            email="testuser1@example.com", password="1HJ1vRV0Z&2iD"
+        )
+        response = self.client.get(reverse("study_todo_list"))
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertTemplateUsed(response, "todos/todo_list.html")
+
+    def test_logged_in_with_my_study_members(self):
+        """
+        해당 스터디의 멤버수 확인
+        """
+
+        login = self.client.login(
+            email="testuser1@example.com", password="1HJ1vRV0Z&2iD"
+        )
+
+        response = self.client.get(reverse("study_todo_list"), {"study": 1})
+
+        study = Study.objects.get(id=1)
+        self.assertEqual(len(response.context["members"][study]), 4)
+
+    def test_logged_in_with_my_study_todos(self):
+        """
+        자신이 속한 스터디의 할 일이 보이는지 확인
+        """
+        login = self.client.login(
+            email="testuser1@example.com", password="1HJ1vRV0Z&2iD"
+        )
+
+        response = self.client.get(reverse("study_todo_list"), {"study": 1})
+
+        self.assertEqual(len(response.context["todos"]), 3)
+
+    def test_logged_in_with_my_study_todos_by_user(self):
+        """
+        자신이 속한 스터디에서 유저별 할 일이 보이는지 확인
+        """
+        login = self.client.login(
+            email="testuser1@example.com", password="1HJ1vRV0Z&2iD"
+        )
+
+        response = self.client.get(reverse("study_todo_list"), {"study": 1, "user": 2})
+
+        self.assertEqual(len(response.context["todos"]), 1)
+
+    def test_logged_in_with_not_my_study_access_fail(self):
+        """
+        자신이 속한 스터디가 아닌 스터디에 접근 시 403 응답을 받는지 확인
+        """
+        login = self.client.login(
+            email="testuser5@example.com", password="5HJ1vRV0Z&2iD"
+        )
+
+        # testuser5는 study1에 속해있지 않으므로 403 응답을 받아야 함
+        response = self.client.get(reverse("study_todo_list"), {"study": 1})
+
+        self.assertEqual(response.status_code, 403)
 
 
 class PersonalToDoCreateTest(TestCase):
