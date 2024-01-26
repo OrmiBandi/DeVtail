@@ -755,3 +755,87 @@ class TestAccountUpdate(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content.decode("utf-8"), "항목에 포함된 개발 분야를 선택해주세요.")
         print("-- 사용자 정보 수정 테스트 - 개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우 END --")
+
+
+class TestAccountSecession(TestCase):
+    """
+    회원 탈퇴 테스트
+    1. 로그인하지 않은 사용자의 회원 탈퇴 테스트
+    2. 비밀번호를 입력하지 않은 경우 테스트
+    3. 비밀번호가 일치하지 않는 경우 테스트
+    4. 정상 회원 탈퇴 테스트
+    """
+
+    def setUp(self):
+        self.signup_data = {
+            "email": "elwl5515@gmail.com",
+            "password1": "testtest12!@",
+            "password2": "testtest12!@",
+            "nickname": "test",
+            "development_field": "BE",
+        }
+        User.objects.create_user(
+            email=self.signup_data["email"],
+            password=self.signup_data["password1"],
+            nickname=self.signup_data["nickname"],
+            development_field=self.signup_data["development_field"],
+        )
+        self.delete_data = {
+            "password": "testtest12!@",
+        }
+
+    def test_no_login(self):
+        """
+        로그인하지 않은 사용자의 회원 탈퇴 테스트
+        """
+        print("-- 회원 탈퇴 테스트 - 로그인하지 않은 사용자의 회원 탈퇴 테스트 BEGIN --")
+        response = self.client.post(reverse("account_delete"), data=self.delete_data)
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.content.decode("utf-8"), "로그인되지 않은 사용자입니다.")
+        print("-- 회원 탈퇴 테스트 - 로그인하지 않은 사용자의 회원 탈퇴 테스트 END --")
+
+    def test_password_empty(self):
+        """
+        비밀번호를 입력하지 않은 경우 테스트
+        """
+        print("-- 회원 탈퇴 테스트 - 비밀번호를 입력하지 않은 경우 테스트 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        response = self.client.post(reverse("account_delete"), data={})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "비밀번호를 입력해주세요.")
+        print("-- 회원 탈퇴 테스트 - 비밀번호를 입력하지 않은 경우 테스트 END --")
+
+    def test_password_wrong(self):
+        """
+        비밀번호가 일치하지 않는 경우 테스트
+        """
+        print("-- 회원 탈퇴 테스트 - 비밀번호가 일치하지 않는 경우 테스트 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        self.delete_data["password"] = "testtest12!@#"
+        response = self.client.post(reverse("account_delete"), data=self.delete_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "비밀번호가 일치하지 않습니다.")
+        print("-- 회원 탈퇴 테스트 - 비밀번호가 일치하지 않는 경우 테스트 END --")
+
+    def test_success(self):
+        """
+        정상 회원 탈퇴 테스트
+        """
+        print("-- 회원 탈퇴 테스트 - 정상 회원 탈퇴 테스트 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        response = self.client.post(
+            reverse("account_delete"), follow=True, data=self.delete_data
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            str(list(get_messages(response.wsgi_request))[0]), "회원 탈퇴가 완료되었습니다."
+        )
+        self.assertFalse(response.context["user"].is_authenticated)
+        self.assertEqual(User.objects.count(), 0)
+        print("-- 회원 탈퇴 테스트 - 정상 회원 탈퇴 테스트 END --")

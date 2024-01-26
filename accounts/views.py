@@ -1,5 +1,6 @@
 import uuid
 from typing import Any
+from django.db.models.query import QuerySet
 from django.urls import reverse
 from django.contrib import messages
 from django.urls import reverse_lazy
@@ -7,7 +8,7 @@ from django.core.mail import EmailMessage
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import LoginView
 from django.db.models.base import Model as Model
-from django.views.generic.edit import UpdateView
+from django.views.generic.edit import UpdateView, DeleteView
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DetailView
 from django.contrib.auth.forms import AuthenticationForm
@@ -17,7 +18,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseBad
 from allauth.account.views import LogoutView
 from allauth.socialaccount.views import SignupView as BaseSignupView
 
-from .forms import SignupForm, CustomLoginForm, AccountUpdateForm
+from .forms import SignupForm, CustomLoginForm, AccountUpdateForm, AccountDeleteForm
 
 User = get_user_model()
 
@@ -205,9 +206,49 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         return response
 
 
+class AccountDeleteView(LoginRequiredMixin, DeleteView):
+    model = User
+    form_class = AccountDeleteForm
+    template_name = "accounts/account_delete.html"
+    context_object_name = "account"
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        password = form.cleaned_data["password"]
+        user = self.request.user
+        if user.check_password(password):
+            messages.success(self.request, "회원 탈퇴가 완료되었습니다.")
+            return super(AccountDeleteView, self).delete(
+                self.request, *self.args, **self.kwargs
+            )
+        else:
+            error_message = "비밀번호가 일치하지 않습니다."
+            return HttpResponseBadRequest(error_message)
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def handle_no_permission(self):
+        """
+        로그인 하지 않은 사용자의 경우
+        "로그인되지 않은 사용자입니다."라는
+        메시지를 에러 메시지에 담는 메서드
+        """
+        return HttpResponse(_("로그인되지 않은 사용자입니다."), status=401)
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        form = self.get_form()
+        if not form.is_valid():
+            error_message = str(list(form.errors.as_data().values())[0][0].messages[0])
+            return HttpResponseBadRequest(error_message)
+        return response
+
+
 signup = SignupView.as_view()
 social_signup = SocialSignupView.as_view()
 login = CustomLoginView.as_view()
 logout = CustomLogoutView.as_view()
 profile = ProfileView.as_view()
 account_update = AccountUpdateView.as_view()
+account_delete = AccountDeleteView.as_view()
