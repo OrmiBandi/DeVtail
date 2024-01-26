@@ -11,15 +11,94 @@
   <main>
     <h2>List</h2>
 
-    {% if todos %}
-    <ul>
-      {% for todo in todos %}
-      <li>
-        {% if todo.study %}[{{ todo.study.topic }}] {% endif %}{{ todo.title }} - {{ todo.status }}
-      </li>
+    {% if studies %}
+    <form action="" method="GET">
+      <label for="study">Study</label>
+      <select name="study" id="study">
+        {% for study in studies %}
+        <option value="{{ study.id }}" {% if request.GET.study == study.id|stringformat:"s" %}selected{% endif %}>
+          {{ study.title }}
+        </option>
+        {% endfor %}
+      </select>
+      <button type="submit">조회</button>
+    </form>
+
+    <section>
+      <h3>Member</h3>
+      {% if members %}
+      {% for study_members in members.values %}
+      <ul>
+        {% with request.GET.copy as params %}
+        {% if params.study %}
+        <li><a href="?study={{ params.study }}&user=all">ALL</a></li>
+        {% else %}
+        <li><a href="?user=all">ALL</a></li>
+        {% endif %}
+        {% for member in study_members %}
+        {% if params.study %}
+        <li><a href="?study={{ params.study }}&user={{ member.user.id }}">{{ member.user }}</a></li>
+        {% else %}
+        <li><a href="?user={{ member.user.id }}">{{ member.user }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% endwith %}
+      </ul>
       {% endfor %}
-    </ul>
-    {% endif %}
+      {% else %}
+      <p>멤버가 없습니다.</p>
+      {% endif %}
+      {% endif %}
+    </section>
+
+    <section>
+      <h3>ToDo</h3>
+      <ul>
+        <li>
+          <h4>Todo</h4>
+          {% if todos %}
+          <ul>
+            {% for todo in todos %}
+            {% if todo.status == 'ToDo' %}
+            <li>
+              <a href="{% url 'todo_detail' pk=todo.id %}">{{ todo.title }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </li>
+        <li>
+          <h4>In Progress</h4>
+          {% if todos %}
+          <ul>
+            {% for todo in todos %}
+            {% if todo.status == 'In Progress' %}
+            <li>
+              <a href="{% url 'todo_detail' pk=todo.id %}">{{ todo.title }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </li>
+        <li>
+          <h4>Done</h4>
+          {% if todos %}
+          <ul>
+            {% for todo in todos %}
+            {% if todo.status == 'Done' %}
+            <li>
+              <a href="{% url 'todo_detail' pk=todo.id %}">{{ todo.title }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </li>
+      </ul>
+    </section>
+
   </main>
 </body>
 

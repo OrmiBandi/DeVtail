@@ -5,6 +5,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import ToDo
+from studies.models import Study, StudyMember
 from .forms import PersonalToDoForm
 
 
@@ -16,6 +17,7 @@ class ToDoList(LoginRequiredMixin, ListView):
     model = ToDo
     context_object_name = "todos"
     ordering = "-id"
+    template_name = "todos/todo_calendar.html"
 
     def get_queryset(self):
         # ToDoAssignee에 연결된 ToDo 목록 가져오기
@@ -38,6 +40,75 @@ class PersonalToDoList(LoginRequiredMixin, ListView):
             todo_assignees__assignee=self.request.user, study__isnull=True
         )
         return todos
+
+
+class StudyToDoList(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """
+    스터디 할 일 리스트
+    """
+
+    model = ToDo
+    context_object_name = "todos"
+    ordering = "-id"
+
+    def get_queryset(self):
+        study_id = self.request.GET.get("study")
+        user_id = self.request.GET.get("user")
+
+        # 스터디가 선택되지 않은 경우, 사용자가 속한 첫번째 스터디의 할 일을 가져옴
+        if not study_id:
+            study_id = (
+                StudyMember.objects.filter(user=self.request.user).first().study.id
+            )
+            todos = ToDo.objects.filter(study=study_id)
+
+        # 스터디가 선택된 경우, 해당 스터디의 할 일을 가져옴
+        else:
+            if not StudyMember.objects.filter(
+                study=study_id, user=self.request.user
+            ).exists():
+                return ToDo.objects.none()
+
+            todos = ToDo.objects.filter(study=study_id)
+
+        # 사용자가 선택된 경우, 해당 사용자가 담당자인 할 일을 가져옴
+        if user_id and user_id != "all":
+            todos = todos.filter(todo_assignees__assignee=user_id)
+
+        return todos
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["studies"] = Study.objects.filter(members__user=self.request.user)
+
+        study_id = self.request.GET.get("study")
+
+        if study_id:
+            selected_study = Study.objects.get(id=study_id)
+            context["members"] = {
+                selected_study: StudyMember.objects.filter(study=selected_study)
+            }
+        else:
+            first_study = context["studies"].first()
+            context["members"] = {
+                first_study: StudyMember.objects.filter(study=first_study)
+            }
+
+        return context
+
+    def test_func(self):
+        study_id = self.request.GET.get("study")
+
+        # 스터디가 선택되지 않은 경우, 사용자가 속한 첫 번째 스터디를 가져옴
+        if not study_id:
+            study_id = (
+                StudyMember.objects.filter(user=self.request.user).first().study.id
+            )
+
+        # 현재 접근하려는 스터디에 대한 권한 확인
+        return StudyMember.objects.filter(
+            study=study_id, user=self.request.user
+        ).exists()
 
 
 class ToDoDetail(LoginRequiredMixin, DetailView):
