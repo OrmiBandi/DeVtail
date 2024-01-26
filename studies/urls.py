@@ -66,7 +66,12 @@ urlpatterns = [
     ),
     path(
         "<int:pk>/studymember/<int:studymember_id>/manager/",
-        views.UpdateStudyMember.as_view(),
+        views.DelegateAuthorityView.as_view(),
         name="change_study_manager",
+    ),
+    path(
+        "<int:pk>/studymember/delete/",
+        views.WithdrawStudy.as_view(),
+        name="withdraw_study",
     ),
 ]

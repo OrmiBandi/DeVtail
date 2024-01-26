@@ -8,7 +8,7 @@
     </head>
     <body>
     <h1>멤버 관리 리스트</h1>
-    {% for studymember in StudyMembers %}
+    {% for studymember in study_members %}
     <div style="display:flex; gap:10px;">
         <span>{{ studymember.user }}</span>
         {% if studymember.is_manager %}
@@ -20,8 +20,6 @@
         </form>
         <form action="{% url 'studies:change_study_manager' study.id studymember.id %}" method="POST">
             {% csrf_token %}
-            <input type="hidden" name="is_accepted" value="True">
-            <input type="hidden" name="is_manager" value="True">
             <input type="submit" value="리더 위임">
         </form>
         {% endif %}

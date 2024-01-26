@@ -1,4 +1,10 @@
-from .models import Study, Comment, Recomment, StudyMember, Tag
+from .models import (
+    Study,
+    Comment,
+    Recomment,
+    StudyMember,
+    Tag,
+)
 from django.views.generic import (
     ListView,
     CreateView,
@@ -79,14 +85,11 @@ class StudyDetail(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["StudyLeader"] = StudyMember.objects.get(
+        context["study_leader"] = StudyMember.objects.get(
             study=self.object, is_manager=True, is_accepted=True
         )
-        context["StudyMembers"] = StudyMember.objects.filter(
+        context["study_members"] = StudyMember.objects.filter(
             study=self.object, is_accepted=True
-        )
-        context["StudyAppliers"] = StudyMember.objects.filter(
-            study=self.object, is_accepted=False
         )
         return context
 
@@ -283,10 +286,10 @@ class ApproveStudyJoinDetail(UserPassesTestMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["StudyLeader"] = StudyMember.objects.get(
+        context["study_leader"] = StudyMember.objects.get(
             study=self.object, is_manager=True
         )
-        context["StudyMembers"] = StudyMember.objects.filter(
+        context["study_members"] = StudyMember.objects.filter(
             study=self.object, is_accepted=False
         )
         return context
@@ -311,10 +314,10 @@ class ManageStudyMemberList(UserPassesTestMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["StudyLeader"] = StudyMember.objects.get(
+        context["study_leader"] = StudyMember.objects.get(
             study=self.object, is_manager=True
         )
-        context["StudyMembers"] = StudyMember.objects.filter(
+        context["study_members"] = StudyMember.objects.filter(
             study=self.object, is_accepted=True
         )
         return context
@@ -347,7 +350,7 @@ class DeleteStudyMember(UserPassesTestMixin, DeleteView):
         )
 
 
-class UpdateStudyMember(UserPassesTestMixin, UpdateView):
+class DelegateAuthorityView(UserPassesTestMixin, UpdateView):
     """
     스터디 멤버 수정
     스터디 생성자만이 스터디 멤버를 수정할 수 있습니다.
@@ -355,7 +358,7 @@ class UpdateStudyMember(UserPassesTestMixin, UpdateView):
     """
 
     model = StudyMember
-    fields = ["is_manager", "is_accepted"]
+    fields = ["is_manager"]
 
     def get_object(self, queryset=None):
         return get_object_or_404(StudyMember, pk=self.kwargs["studymember_id"])
@@ -365,12 +368,33 @@ class UpdateStudyMember(UserPassesTestMixin, UpdateView):
         studyleader = StudyMember.objects.get(study=studymember.study, is_manager=True)
         return studyleader.user == self.request.user
 
+    def get_success_url(self):
+        return reverse_lazy("studies:study_detail", kwargs={"pk": self.object.study.pk})
+
     def form_valid(self, form):
         studymember = self.get_object()
         studyleader = StudyMember.objects.get(study=studymember.study, is_manager=True)
         studyleader.is_manager = False
         studyleader.save()
+
+        # 폼을 통해 처리되는 특정 모델의 인스턴스를 참조하는 경우
+        form.instance.is_manager = True
         return super().form_valid(form)
+
+
+class WithdrawStudy(LoginRequiredMixin, DeleteView):
+    """
+    스터디 탈퇴
+    스터디 멤버만이 스터디를 탈퇴할 수 있습니다.
+    스터디 멤버가 스터디를 탈퇴하면 studymember 모델을 삭제합니다.
+    """
+
+    model = StudyMember
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(
+            StudyMember, study=self.kwargs["pk"], user=self.request.user
+        )
 
     def get_success_url(self):
         return reverse_lazy("studies:study_detail", kwargs={"pk": self.object.study.pk})
