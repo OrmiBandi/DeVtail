@@ -252,3 +252,68 @@ class AccountDeleteForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["password"]
+
+
+class PasswordChangeForm(forms.ModelForm):
+    old_password = forms.CharField(
+        required=True,
+        error_messages={"required": "비밀번호를 입력해주세요."},
+        widget=forms.PasswordInput,
+    )
+    new_password1 = forms.CharField(
+        required=True,
+        error_messages={"required": "새 비밀번호를 입력해주세요."},
+        widget=forms.PasswordInput,
+    )
+    new_password2 = forms.CharField(
+        required=True,
+        error_messages={"required": "새 비밀번호 확인을 입력해주세요."},
+        widget=forms.PasswordInput,
+    )
+
+    class Meta:
+        model = User
+        fields = ["old_password", "new_password1", "new_password2"]
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        """
+        유효성 검사 메서드
+            - 이전 비밀번호가 일치하는지 검사
+            - 새 비밀번호와 새 비밀번호 확인이 일치하는지 검사
+        """
+        old_password = self.cleaned_data.get("old_password")
+        new_password1 = self.cleaned_data.get("new_password1")
+        new_password2 = self.cleaned_data.get("new_password2")
+
+        if not self.user.check_password(old_password):
+            raise forms.ValidationError("이전 비밀번호가 일치하지 않습니다.")
+
+        if new_password1 != new_password2:
+            raise forms.ValidationError("새 비밀번호가 일치하지 않습니다.")
+
+    def clean_new_password1(self):
+        """
+        새 비밀번호 유효성 검사 메서드
+            - 새 비밀번호 길이가 8자리 이상, 15자리 이하인지 검사
+            - 특수문자가 포함되어 있는지 검사
+            - 새 비밀번호에 숫자가 포함되어 있는지 검사
+            - 새 비밀번호에 영문자가 포함되어 있는지 검사
+        """
+        new_password1 = self.cleaned_data.get("new_password1")
+        # 새 비밀번호 길이가 8자리 이상, 15자리 이하인지 검사
+        if len(new_password1) < 8 or len(new_password1) > 15:
+            raise forms.ValidationError("비밀번호는 8자리 이상, 15자리 이하로 입력해주세요.")
+        # 특수문자가 포함되어 있는지 검사
+        if not any(char in new_password1 for char in "~!@#$%^&*()_+"):
+            raise forms.ValidationError("비밀번호에 특수문자를 포함해주세요.")
+        # 새 비밀번호에 숫자가 포함되어 있는지 검사
+        if not any(char.isdigit() for char in new_password1):
+            raise forms.ValidationError("비밀번호에 숫자를 포함해주세요.")
+        # 새 비밀번호에 영문자가 포함되어 있는지 검사
+        if not any(char.isalpha() for char in new_password1):
+            raise forms.ValidationError("비밀번호에 영문을 포함해주세요.")
+        return new_password1
