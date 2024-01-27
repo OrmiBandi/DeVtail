@@ -113,3 +113,12 @@ class RecommentForm(forms.ModelForm):
         fields = [
             "content",
         ]
+
+
+class BlacklistForm(forms.ModelForm):
+    class Meta:
+        model = Blacklist
+        fields = [
+            "user",
+            "study",
+        ]

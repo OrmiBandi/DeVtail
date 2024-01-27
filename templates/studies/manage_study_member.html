@@ -22,9 +22,13 @@
             {% csrf_token %}
             <input type="submit" value="리더 위임">
         </form>
+        <form action="{% url 'studies:add_blacklist_user' study.id studymember.id %}" method="POST">
+            {% csrf_token %}
+            <input type="submit" value="블랙리스트 추가">
+        </form>
         {% endif %}
     </div>
     {% endfor %}
-
+    <a href="{% url 'studies:study_detail' study.id %}">스터디 상세 페이지로</a>
     </body>
 </html>
