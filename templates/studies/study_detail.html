@@ -9,6 +9,8 @@
     <body>
         <!-- 스터디 상세 페이지 -->
         <h1>Study Detail</h1>
+        <h2>스터디 그룹의 리더 : {{ study_leader.user }}</h2>
+        <h2>현재 로그인한 사용자 : {{ user }}</h2>
         <h2>{{ study.category }}</h2>
         {% for tag in study.tags.all %}
         <a href="{% url 'studies:study_list' %}?q={{ tag }}">#{{ tag }} </a>
@@ -19,16 +21,41 @@
         <p>{{ study.created_at }}</p>
         <p>{{ study.updated_at }}</p>
         
+        {% for studymember in study_members %}
+        <!-- 스터디 그룹 리더일 경우에만 표시 -->
+        {% if user == studymember.user and studymember.is_manager %}
         <form action="{% url 'studies:study_update' study.id %}" method="GET">
             {% csrf_token %}
-            <input type="submit" value="Update">
+            <input type="submit" value="수정">
         </form>
         <form action="{% url 'studies:study_delete' study.id %}" method="POST">
             {% csrf_token %}
-            <input type="submit" value="Delete">
+            <input type="submit" value="삭제">
         </form>
+        <!-- 스터디 그룹 리더만 접속 가능한 가입 신청 리스트 페이지 이동 링크 -->
+        <a href="{% url 'studies:study_member_apply_list' study.id %}">가입 신청 리스트</a>
+        <a href="{% url 'studies:study_member_list' study.id %}">멤버 관리 리스트</a>
+        {% endif %}
+        
+        <!-- 스터디 그룹 리더가 아닌 기본 스터디 그룹 멤버일 경우에만 표시 -->
+        {% if user == studymember.user and not studymember.is_manager %}
+        <form action="{% url 'studies:withdraw_study' study.id %}" method="POST">
+            {% csrf_token %}
+            <input type="submit" value="스터디 탈퇴">
+        </form>
+        {% endif %}
 
-        <a href="{% url 'studies:study_list' %}">Study List</a>
+        {% endfor %}
+        <!-- 현재 유저가 로그인한 유저이고 스터디 멤버가 아닌 경우에만 표시 -->
+        {% if user not in study_members %}
+        <form action="{% url 'studies:apply_study_join' study.id %}" method="POST">
+            {% csrf_token %}
+            <input type="submit" value="가입 신청">
+        </form>
+        {% endif %}
+        
+
+        <a href="{% url 'studies:study_list' %}">목록으로</a>
 
         <!-- 댓글 리스트 -->
         <h2>Comment List</h2>

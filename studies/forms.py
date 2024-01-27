@@ -1,5 +1,5 @@
 from django import forms
-from .models import Study, Comment, Recomment, Tag, Category
+from .models import Study, Comment, Recomment, Tag, Category, Blacklist
 import datetime
 
 
