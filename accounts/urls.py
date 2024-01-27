@@ -10,5 +10,6 @@ urlpatterns = [
     path("login/", views.login, name="login"),
     path("profile/<int:pk>/", views.profile, name="profile"),
     path("edit/", views.account_update, name="account_update"),
+    path("delete/", views.account_delete, name="account_delete"),
     path("", include("allauth.urls")),
 ]

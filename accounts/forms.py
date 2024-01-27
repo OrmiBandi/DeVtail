@@ -240,3 +240,15 @@ class AccountUpdateForm(forms.ModelForm):
             raise forms.ValidationError("닉네임에 특수문자를 포함할 수 없습니다.")
 
         return nickname
+
+
+class AccountDeleteForm(forms.ModelForm):
+    password = forms.CharField(
+        required=True,
+        error_messages={"required": "비밀번호를 입력해주세요."},
+        widget=forms.PasswordInput,
+    )
+
+    class Meta:
+        model = User
+        fields = ["password"]
