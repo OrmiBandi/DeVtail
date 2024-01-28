@@ -416,6 +416,7 @@ class AddBlacklistUser(UserPassesTestMixin, CreateView):
         study = get_object_or_404(Study, pk=self.kwargs["pk"])
         studymember = get_object_or_404(StudyMember, pk=self.kwargs["studymember_id"])
         self.object = Blacklist.objects.create(study=study, user=studymember.user)
+        studymember.delete()
         return HttpResponseRedirect(self.get_success_url())
 
     def get_object(self, queryset=None):
@@ -458,7 +459,7 @@ class BlacklistUserList(UserPassesTestMixin, DetailView):
 class DeleteBlacklistUser(UserPassesTestMixin, DeleteView):
     """
     스터디 블랙리스트 삭제
-    스터디 생성자만이 스터디 블랙리스트를 삭제할 수 있습니다.
+    스터디 생성자만이 스터디 블랙리스트내에서 취소할 수 있습니다.
     """
 
     model = Blacklist
@@ -483,12 +484,15 @@ def apply_study_join(request, pk):
     스터디 가입 신청
     스터디 가입 신청 시 studymember 모델의 user를 로그인한 유저로 지정합니다.
     1번 신청이 된 스터디는 다시 승인 혹은 취소 전까지 신청할 수 없습니다.
+    블랙리스트에 등록된 유저는 스터디 가입을 신청할 수 없습니다.
     """
     study = get_object_or_404(Study, pk=pk)
     studymember = StudyMember.objects.filter(study=study, user=request.user)
+    blacklists = Blacklist.objects.filter(study=study, user=request.user)
     if studymember:
         return redirect("studies:study_detail", pk=pk)
-
+    elif blacklists:
+        return redirect("studies:study_detail", pk=pk)
     StudyMember.objects.create(study=study, user=request.user)
 
     return redirect("studies:study_detail", pk=pk)
