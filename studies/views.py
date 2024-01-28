@@ -22,6 +22,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
+from django.core.exceptions import PermissionDenied
 
 User = get_user_model()
 
@@ -508,7 +509,7 @@ def approve_study_join(request, studymember_id):
     studymember = get_object_or_404(StudyMember, id=studymember_id)
     studyleader = StudyMember.objects.get(study=studymember.study, is_manager=True)
     if request.user != studyleader.user:
-        return redirect("studies:study_detail", pk=studymember.study.pk)
+        raise PermissionDenied("접근 권한이 없습니다.")
 
     studymember.is_accepted = True
     studymember.is_manager = False
@@ -527,7 +528,7 @@ def reject_study_join(request, studymember_id):
     studymember = get_object_or_404(StudyMember, id=studymember_id)
     studyleader = StudyMember.objects.get(study=studymember.study, is_manager=True)
     if request.user != studyleader.user:
-        return redirect("studies:study_detail", pk=studymember.study.pk)
+        raise PermissionDenied("접근 권한이 없습니다.")
 
     studymember.delete()
 
