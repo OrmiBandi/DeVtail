@@ -1,6 +1,5 @@
 import uuid
 from typing import Any
-from django.db.models.query import QuerySet
 from django.urls import reverse
 from django.contrib import messages
 from django.urls import reverse_lazy
@@ -18,7 +17,13 @@ from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseBad
 from allauth.account.views import LogoutView
 from allauth.socialaccount.views import SignupView as BaseSignupView
 
-from .forms import SignupForm, CustomLoginForm, AccountUpdateForm, AccountDeleteForm
+from .forms import (
+    SignupForm,
+    CustomLoginForm,
+    AccountUpdateForm,
+    AccountDeleteForm,
+    PasswordChangeForm,
+)
 
 User = get_user_model()
 
@@ -245,6 +250,56 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
         return response
 
 
+class PasswordChangeView(LoginRequiredMixin, UpdateView):
+    model = User
+    template_name = "accounts/password_change.html"
+    form_class = PasswordChangeForm
+    context_object_name = "account"
+
+    def get_success_url(self):
+        """
+        수정 성공 시 프로필 페이지로 이동시키는 메서드
+        """
+        return reverse_lazy("profile", kwargs={"pk": self.object.pk})
+
+    def handle_no_permission(self):
+        """
+        로그인 하지 않은 사용자의 경우
+        "로그인되지 않은 사용자입니다."라는
+        메시지를 에러 메시지에 담는 메서드
+        """
+        return HttpResponse(_("로그인되지 않은 사용자입니다."), status=401)
+
+    def get_object(self, queryset=None):
+        """
+        현재 로그인한 유저를 반환하는 메서드
+        """
+        return self.request.user
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "비밀번호가 변경되었습니다.")
+        return response
+
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        messages.error(self.request, "비밀번호 변경에 실패했습니다.")
+        return response
+
+    def post(self, request: HttpRequest, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        form = self.get_form()
+        if not form.is_valid():
+            error_message = str(list(form.errors.as_data().values())[0][0].messages[0])
+            return HttpResponseBadRequest(error_message)
+        return response
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+
 signup = SignupView.as_view()
 social_signup = SocialSignupView.as_view()
 login = CustomLoginView.as_view()
@@ -252,3 +307,4 @@ logout = CustomLogoutView.as_view()
 profile = ProfileView.as_view()
 account_update = AccountUpdateView.as_view()
 account_delete = AccountDeleteView.as_view()
+password_change = PasswordChangeView.as_view()

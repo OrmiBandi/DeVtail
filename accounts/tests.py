@@ -1,8 +1,6 @@
-from freezegun import freeze_time
 from django.core import mail
 from django.urls import reverse
 from django.test import TestCase
-from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -839,3 +837,223 @@ class TestAccountSecession(TestCase):
         self.assertFalse(response.context["user"].is_authenticated)
         self.assertEqual(User.objects.count(), 0)
         print("-- 회원 탈퇴 테스트 - 정상 회원 탈퇴 테스트 END --")
+
+
+class TestPasswordChange(TestCase):
+    """
+    비밀번호 변경 테스트
+    1. 로그인하지 않은 사용자의 비밀번호 변경 테스트
+    2. 정상 비밀번호 변경 테스트
+    3. 이전 비밀번호가 일치하지 않는 경우 테스트
+    4. 비밀번호 유효성 테스트
+        - 비밀번호가 8자리 이하일 경우
+        - 비밀번호가 16자리 이상일 경우
+        - 비밀번호에 특수문자가 없을 경우
+        - 비밀번호에 숫자가 없을 경우
+        - 비밀번호에 영문이 없을 경우
+        - 비밀번호가 비어있을 경우
+        - 비밀번호 확인이 비어있을 경우
+        - 비밀번호와 비밀번호 확인이 다를 경우
+    """
+
+    def setUp(self):
+        self.signup_data = {
+            "email": "elwl5515@gmail.com",
+            "password1": "testtest12!@",
+            "password2": "testtest12!@",
+            "nickname": "test",
+            "development_field": "BE",
+        }
+        User.objects.create_user(
+            email=self.signup_data["email"],
+            password=self.signup_data["password1"],
+            nickname=self.signup_data["nickname"],
+            development_field=self.signup_data["development_field"],
+        )
+        self.password_change_data = {
+            "old_password": self.signup_data["password1"],
+            "new_password1": "testtest12!@#",
+            "new_password2": "testtest12!@#",
+        }
+
+    def test_no_login(self):
+        """
+        로그인하지 않은 사용자의 비밀번호 변경 테스트
+        """
+        print("-- 비밀번호 변경 테스트 - 로그인하지 않은 사용자의 비밀번호 변경 테스트 BEGIN --")
+        response = self.client.post(
+            reverse("password_change"), self.password_change_data
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.content.decode("utf-8"), "로그인되지 않은 사용자입니다.")
+        print("-- 비밀번호 변경 테스트 - 로그인하지 않은 사용자의 비밀번호 변경 테스트 END --")
+
+    def test_success(self):
+        """
+        정상 비밀번호 변경 테스트
+        """
+        print("-- 비밀번호 변경 테스트 - 정상 비밀번호 변경 테스트 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        response = self.client.post(
+            reverse("password_change"), self.password_change_data, follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            str(list(get_messages(response.wsgi_request))[0]), "비밀번호가 변경되었습니다."
+        )
+        print("-- 비밀번호 변경 테스트 - 정상 비밀번호 변경 테스트 END --")
+
+    def test_wrong_old_password(self):
+        """
+        이전 비밀번호가 일치하지 않는 경우 테스트
+        """
+        print("-- 비밀번호 변경 테스트 - 이전 비밀번호가 일치하지 않는 경우 테스트 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        self.password_change_data["old_password"] = "testtest12!@#"
+        response = self.client.post(
+            reverse("password_change"), self.password_change_data
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "이전 비밀번호가 일치하지 않습니다.")
+        print("-- 비밀번호 변경 테스트 - 이전 비밀번호가 일치하지 않는 경우 테스트 END --")
+
+    def test_password_below_8(self):
+        """
+        비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우
+        """
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        self.password_change_data["new_password1"] = "te12!@"
+        self.password_change_data["new_password2"] = "te12!@"
+        response = self.client.post(
+            reverse("password_change"), self.password_change_data, follow=True
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.content.decode("utf-8"), "비밀번호는 8자리 이상, 15자리 이하로 입력해주세요."
+        )
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우 END --")
+
+    def test_password_over_16(self):
+        """
+        비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우
+        """
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        self.password_change_data["new_password1"] = "testtesttest12!@"
+        self.password_change_data["new_password2"] = "testtesttest12!@"
+        response = self.client.post(
+            reverse("password_change"), self.password_change_data
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.content.decode("utf-8"), "비밀번호는 8자리 이상, 15자리 이하로 입력해주세요."
+        )
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우 END --")
+
+    def test_password_no_special(self):
+        """
+        비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우
+        """
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        self.password_change_data["new_password1"] = "testtest12"
+        self.password_change_data["new_password2"] = "testtest12"
+        response = self.client.post(
+            reverse("password_change"), self.password_change_data
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "비밀번호에 특수문자를 포함해주세요.")
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우 END --")
+
+    def test_password_no_number(self):
+        """
+        비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우
+        """
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        self.password_change_data["new_password1"] = "testtest!@"
+        self.password_change_data["new_password2"] = "testtest!@"
+        response = self.client.post(
+            reverse("password_change"), self.password_change_data
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "비밀번호에 숫자를 포함해주세요.")
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우 END --")
+
+    def test_password_no_alphabet(self):
+        """
+        비밀번호 유효성 테스트 - 비밀번호에 영문이 없을 경우
+        """
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 영문이 없을 경우 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        self.password_change_data["new_password1"] = "12!@12!@12!@"
+        self.password_change_data["new_password2"] = "12!@12!@12!@"
+        response = self.client.post(
+            reverse("password_change"), self.password_change_data
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "비밀번호에 영문을 포함해주세요.")
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 영문이 없을 경우 END --")
+
+    def test_password_empty(self):
+        """
+        비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우
+        """
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        self.password_change_data["new_password1"] = ""
+        response = self.client.post(
+            reverse("password_change"), self.password_change_data
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "새 비밀번호를 입력해주세요.")
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우 END --")
+
+    def test_password_confirm_empty(self):
+        """
+        비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우
+        """
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        self.password_change_data["new_password2"] = ""
+        response = self.client.post(
+            reverse("password_change"), self.password_change_data
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "새 비밀번호 확인을 입력해주세요.")
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우 END --")
+
+    def test_password_not_match(self):
+        """
+        비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우
+        """
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우 BEGIN --")
+        self.client.force_login(
+            User.objects.get(email=self.signup_data["email"]), backend=None
+        )
+        self.password_change_data["new_password2"] = "testtest12!@"
+        response = self.client.post(
+            reverse("password_change"), self.password_change_data
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode("utf-8"), "새 비밀번호가 일치하지 않습니다.")
+        print("-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우 END --")
