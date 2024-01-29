@@ -5,6 +5,7 @@ from .models import (
     StudyMember,
     Tag,
     Blacklist,
+    Favorite,
 )
 from django.views.generic import (
     ListView,
@@ -63,7 +64,7 @@ class StudyCreate(LoginRequiredMixin, CreateView):
     """
     스터디 생성
     로그인한 유저만이 스터디를 생성할 수 있습니다.
-    스터디 생성시 studymember 모델의 user를 참조하여 지정하고, is_manager를 True로 지정합니다.
+    스터디 생성시 studymember 모델의 user를 참조하여 지정하고, is_manager와 is_accepted를 True로 지정합니다.
     """
 
     model = Study
@@ -74,7 +75,9 @@ class StudyCreate(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         study = form.save(commit=False)
         study.save()
-        StudyMember.objects.create(study=study, user=self.request.user, is_manager=True)
+        StudyMember.objects.create(
+            study=study, user=self.request.user, is_manager=True, is_accepted=True
+        )
 
         return super().form_valid(form)
 
@@ -477,6 +480,37 @@ class DeleteBlacklistUser(UserPassesTestMixin, DeleteView):
         return reverse_lazy(
             "studies:blacklist_user_list", kwargs={"pk": self.object.study.pk}
         )
+
+
+class FavoriteStudy(LoginRequiredMixin, CreateView):
+    """
+    스터디 즐겨찾기 추가
+    """
+
+    model = Favorite
+
+    def post(self, request, *args, **kwargs):
+        study = get_object_or_404(Study, pk=self.kwargs["pk"])
+        self.object = Favorite.objects.create(study=study, user=request.user)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse_lazy("studies:study_detail", kwargs={"pk": self.object.study.pk})
+
+
+class FavoriteStudyList(LoginRequiredMixin, ListView):
+    """
+    스터디 즐겨찾기 리스트 조회
+    """
+
+    model = Favorite
+    template_name = "studies/favorite_study_list.html"
+    context_object_name = "favorites"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(user=self.request.user)
+        return queryset
 
 
 @login_required
