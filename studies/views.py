@@ -482,37 +482,6 @@ class DeleteBlacklistUser(UserPassesTestMixin, DeleteView):
         )
 
 
-class FavoriteStudy(LoginRequiredMixin, CreateView):
-    """
-    스터디 즐겨찾기 추가
-    """
-
-    model = Favorite
-
-    def post(self, request, *args, **kwargs):
-        study = get_object_or_404(Study, pk=self.kwargs["pk"])
-        self.object = Favorite.objects.create(study=study, user=request.user)
-        return HttpResponseRedirect(self.get_success_url())
-
-    def get_success_url(self):
-        return reverse_lazy("studies:study_detail", kwargs={"pk": self.object.study.pk})
-
-
-class FavoriteStudyList(LoginRequiredMixin, ListView):
-    """
-    스터디 즐겨찾기 리스트 조회
-    """
-
-    model = Favorite
-    template_name = "studies/favorite_study_list.html"
-    context_object_name = "favorites"
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.filter(user=self.request.user)
-        return queryset
-
-
 @login_required
 def apply_study_join(request, pk):
     """
