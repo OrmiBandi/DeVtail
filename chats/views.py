@@ -1,31 +1,57 @@
-from django.shortcuts import render
+# chats/views.py
 
-"""
-로그인 필요
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+from .models import DirectChat
+from django.contrib.auth import get_user_model
 
-1:1 채팅 list
-스터디 채팅 list
-
-1:1 채팅 생성
-스터디 채팅 생성 (스터디 생성 시 자동 생성된다면 스터디 createView에서 생성 ( StudyChat.objects.create(study=study.id) ))
-채팅 삭제
-
-채팅 진입은 누군가와의 채팅버튼을 눌렀을 때만 가능한지?
-채팅하기 버튼일 경우 - 스터디ID or 사용자 ID가 주어짐
-채팅방이 아니라 채팅 기능 입장이 있을 경우 - 1:1 or 스터디 채팅의 first로 이동             네비바에서 채팅방 입장 가능!
+User = get_user_model()
 
 
-채팅 메뉴 중 불러와야할 것 (1:1과 스터디 구분)
-- 공통
-  * 스터디 채팅 목록
-  * (1:1 채팅 진입 버튼)
+@login_required
+def create_or_connect_direct_chat(request):
+    # 대화 상대의 ID를 GET 매개변수로 가져옴
+    target_user_id = request.GET.get("target_user_id")
 
-- 1:1 채팅을 눌렀을 때
-  * 1:1 채팅 목록
-  - 1:1 채팅 목록 중 사용자를 눌렀을 때
-    - 대상과의 채팅 내용
+    # 대화 상대의 ID가 없으면 에러 응답
+    if not target_user_id:
+        return JsonResponse({"error": "Target user ID is required."}, status=400)
 
-- 스터디 채팅 눌렀을 때
-  * 스터디 채팅 내용, 사용자 목록
+    # 현재 로그인한 사용자와 대화 상대의 ID를 가져옴
+    current_user_id = request.user.id
+    target_user = get_object_or_404(User, id=target_user_id)
 
-"""
+    # 이미 생성된 채팅방이 있는지 확인
+    existing_chat = (
+        DirectChat.objects.filter(users=current_user_id)
+        .filter(users=target_user_id)
+        .first()
+    )
+
+    if existing_chat:
+        # 이미 존재하는 채팅방에 연결
+        room_id = existing_chat.id
+    else:
+        # 채팅방이 없으면 생성 후 연결
+        new_chat = DirectChat.objects.create()
+        new_chat.users.add(current_user_id, target_user_id)
+        room_id = new_chat.id
+
+    # 생성 또는 연결된 채팅방 ID를 JsonResponse로 반환
+    if room_id:
+        # 채팅 페이지로의 리다이렉션을 위한 URL 생성
+        # redirect_url = reverse("chats:redirect_to_chat_page", args=[room_id])
+        # return JsonResponse({"room_id": room_id, "redirect_url": redirect_url})
+        return render(request, "chats/temp_direct_chat.html", {"room_id": room_id})
+
+    return JsonResponse(
+        {"error": "Failed to create or connect to the chat room."}, status=500
+    )
+
+
+@login_required
+def redirect_to_chat_page(request, room_id):
+    return render(request, "chats/temp_direct_chat.html", {"room_id": room_id})
