@@ -74,4 +74,19 @@ urlpatterns = [
         views.WithdrawStudy.as_view(),
         name="withdraw_study",
     ),
+    path(
+        "<int:pk>/studymember/<int:studymember_id>/addblacklist/",
+        views.AddBlacklistUser.as_view(),
+        name="add_blacklist_user",
+    ),
+    path(
+        "<int:pk>/blacklist/",
+        views.BlacklistUserList.as_view(),
+        name="blacklist_user_list",
+    ),
+    path(
+        "<int:pk>/blacklist/<int:blacklist_id>/delete/",
+        views.DeleteBlacklistUser.as_view(),
+        name="delete_blacklist_user",
+    ),
 ]

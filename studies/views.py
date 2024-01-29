@@ -4,6 +4,7 @@ from .models import (
     Recomment,
     StudyMember,
     Tag,
+    Blacklist,
 )
 from django.views.generic import (
     ListView,
@@ -14,12 +15,14 @@ from django.views.generic import (
 )
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from .forms import StudyForm, CommentForm, RecommentForm
+from .forms import StudyForm, CommentForm, RecommentForm, BlacklistForm
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponseRedirect
+from django.core.exceptions import PermissionDenied
 
 User = get_user_model()
 
@@ -352,9 +355,8 @@ class DeleteStudyMember(UserPassesTestMixin, DeleteView):
 
 class DelegateAuthorityView(UserPassesTestMixin, UpdateView):
     """
-    스터디 멤버 수정
-    스터디 생성자만이 스터디 멤버를 수정할 수 있습니다.
-    요청한 유저에게 is_manager를 True로 지정하는 동시에 스터디 생성자의 is_manager를 False로 지정합니다.
+    스터디 멤버 관리자 위임
+    스터디 생성자만이 스터디 멤버 관리자를 위임할 수 있습니다.
     """
 
     model = StudyMember
@@ -400,18 +402,98 @@ class WithdrawStudy(LoginRequiredMixin, DeleteView):
         return reverse_lazy("studies:study_detail", kwargs={"pk": self.object.study.pk})
 
 
+class AddBlacklistUser(UserPassesTestMixin, CreateView):
+    """
+    스터디 블랙리스트 추가
+    post 요청을 보낼 경우 스터디 블랙리스트에 유저를 추가합니다.
+    스터디 생성자만이 스터디 블랙리스트에 유저를 추가할 수 있습니다.
+    """
+
+    model = Blacklist
+    form_class = BlacklistForm
+    template_name = "studies/form.html"
+
+    def post(self, request, *args, **kwargs):
+        study = get_object_or_404(Study, pk=self.kwargs["pk"])
+        studymember = get_object_or_404(StudyMember, pk=self.kwargs["studymember_id"])
+        self.object = Blacklist.objects.create(study=study, user=studymember.user)
+        studymember.delete()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(StudyMember, pk=self.kwargs["studymember_id"])
+
+    def test_func(self):
+        studymember = self.get_object()
+        studyleader = StudyMember.objects.get(study=studymember.study, is_manager=True)
+        return studyleader.user == self.request.user
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "studies:study_member_list", kwargs={"pk": self.object.study.pk}
+        )
+
+
+class BlacklistUserList(UserPassesTestMixin, DetailView):
+    """
+    스터디 블랙리스트 조회
+    스터디 생성자만이 스터디 블랙리스트를 조회할 수 있습니다.
+    """
+
+    model = StudyMember, Study
+    template_name = "studies/blacklist_user_list.html"
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Study, pk=self.kwargs["pk"])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["blacklist_users"] = Blacklist.objects.filter(study=self.object)
+        return context
+
+    def test_func(self):
+        study = self.get_object()
+        studyleader = StudyMember.objects.get(study=study, is_manager=True)
+        return studyleader.user == self.request.user
+
+
+class DeleteBlacklistUser(UserPassesTestMixin, DeleteView):
+    """
+    스터디 블랙리스트 삭제
+    스터디 생성자만이 스터디 블랙리스트내에서 취소할 수 있습니다.
+    """
+
+    model = Blacklist
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Blacklist, pk=self.kwargs["blacklist_id"])
+
+    def test_func(self):
+        studymember = self.get_object()
+        studyleader = StudyMember.objects.get(study=studymember.study, is_manager=True)
+        return studyleader.user == self.request.user
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "studies:blacklist_user_list", kwargs={"pk": self.object.study.pk}
+        )
+
+
 @login_required
 def apply_study_join(request, pk):
     """
     스터디 가입 신청
     스터디 가입 신청 시 studymember 모델의 user를 로그인한 유저로 지정합니다.
     1번 신청이 된 스터디는 다시 승인 혹은 취소 전까지 신청할 수 없습니다.
+    블랙리스트에 등록된 유저는 스터디 가입을 신청할 수 없습니다.
     """
     study = get_object_or_404(Study, pk=pk)
     studymember = StudyMember.objects.filter(study=study, user=request.user)
+    blacklists = Blacklist.objects.filter(study=study, user=request.user)
     if studymember:
         return redirect("studies:study_detail", pk=pk)
-
+    elif blacklists:
+        return redirect("studies:study_detail", pk=pk)
     StudyMember.objects.create(study=study, user=request.user)
 
     return redirect("studies:study_detail", pk=pk)
@@ -427,7 +509,7 @@ def approve_study_join(request, studymember_id):
     studymember = get_object_or_404(StudyMember, id=studymember_id)
     studyleader = StudyMember.objects.get(study=studymember.study, is_manager=True)
     if request.user != studyleader.user:
-        return redirect("studies:study_detail", pk=studymember.study.pk)
+        raise PermissionDenied("접근 권한이 없습니다.")
 
     studymember.is_accepted = True
     studymember.is_manager = False
@@ -446,7 +528,7 @@ def reject_study_join(request, studymember_id):
     studymember = get_object_or_404(StudyMember, id=studymember_id)
     studyleader = StudyMember.objects.get(study=studymember.study, is_manager=True)
     if request.user != studyleader.user:
-        return redirect("studies:study_detail", pk=studymember.study.pk)
+        raise PermissionDenied("접근 권한이 없습니다.")
 
     studymember.delete()
 
