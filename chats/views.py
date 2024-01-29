@@ -1,5 +1,3 @@
-# chats/views.py
-
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -40,18 +38,8 @@ def create_or_connect_direct_chat(request):
         new_chat.users.add(current_user_id, target_user_id)
         room_id = new_chat.id
 
-    # 생성 또는 연결된 채팅방 ID를 JsonResponse로 반환
+    # 생성된 채팅방으로 리다이렉트
     if room_id:
-        # 채팅 페이지로의 리다이렉션을 위한 URL 생성
-        # redirect_url = reverse("chats:redirect_to_chat_page", args=[room_id])
-        # return JsonResponse({"room_id": room_id, "redirect_url": redirect_url})
         return render(request, "chats/temp_direct_chat.html", {"room_id": room_id})
-
-    return JsonResponse(
-        {"error": "Failed to create or connect to the chat room."}, status=500
-    )
-
-
-@login_required
-def redirect_to_chat_page(request, room_id):
-    return render(request, "chats/temp_direct_chat.html", {"room_id": room_id})
+    # 우선 JsonResponse로 에러 처리 (추후 리다이렉트로 변경)
+    return JsonResponse({"error": "Invalid room ID."}, status=400)
