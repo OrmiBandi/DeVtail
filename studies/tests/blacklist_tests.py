@@ -40,7 +40,6 @@ class TestBlacklist(TestCase):
             max_member=10,
         )
 
-        # 테스트용 스터디 생성 데이터
         self.study_object = Study.objects.get(pk=1)
 
         # 테스트용 스터디 멤버 생성
@@ -50,8 +49,6 @@ class TestBlacklist(TestCase):
         StudyMember.objects.create(
             study=self.study_object, user=self.user2, is_manager=False
         )
-
-        self.study_create_data = Study.objects.values()[0]
 
         # 테스트용 블랙리스트 생성
         Blacklist.objects.create(user=self.user3, study=self.study_object)
@@ -181,125 +178,4 @@ class TestBlacklist(TestCase):
 
         # 스터디 신청 확인
         # 스터디 신청 후에 스터디 가입 신청 리스트에 추가되지 않음.
-        self.assertEqual(StudyMember.objects.count(), 2)
-
-    def test_apply_study_join(self):
-        """
-        스터디 신청 테스트
-        """
-
-        # user4으로 로그인 후 스터디 신청
-        self.client.force_login(self.user4)
-        response = self.client.post(
-            reverse("studies:apply_study_join", kwargs={"pk": 1}),
-        )
-        self.assertEqual(response.status_code, 302)
-
-        # 스터디 신청 확인
-        # 스터디 신청 후에 스터디 가입 신청 리스트에 추가됨.
-        # 이 때 해당 유저의 is_accepted는 False로 저장됨.
-        self.assertEqual(StudyMember.objects.count(), 3)
-        self.assertEqual(StudyMember.objects.last().user, self.user4)
-        self.assertEqual(StudyMember.objects.last().is_accepted, False)
-
-    def test_approve_study_join_not_author(self):
-        """
-        작성자가 아닌 유저가 스터디 가입 승인 테스트
-        """
-
-        # user4으로 로그인 후 스터디 신청
-        self.client.force_login(self.user4)
-        response = self.client.post(
-            reverse("studies:apply_study_join", kwargs={"pk": 1}),
-        )
-        self.assertEqual(response.status_code, 302)
-
-        # user2으로 로그인 후 스터디 가입 승인
-        self.client.force_login(self.user2)
-        studymember = StudyMember.objects.get(user=self.user4)
-        response = self.client.post(
-            reverse(
-                "studies:approve_study_join",
-                kwargs={"studymember_id": studymember.id},
-            ),
-        )
-        self.assertEqual(response.status_code, 403)
-
-    def test_approve_study_join_author(self):
-        """
-        작성자가 스터디 가입 승인 테스트
-        """
-
-        # user4으로 로그인 후 스터디 신청
-        self.client.force_login(self.user4)
-        response = self.client.post(
-            reverse("studies:apply_study_join", kwargs={"pk": 1}),
-        )
-        self.assertEqual(response.status_code, 302)
-
-        # user1으로 로그인 후 스터디 가입 승인
-        self.client.force_login(self.user1)
-        studymember = StudyMember.objects.get(user=self.user4)
-        response = self.client.post(
-            reverse(
-                "studies:approve_study_join",
-                kwargs={"studymember_id": studymember.id},
-            ),
-        )
-        self.assertEqual(response.status_code, 302)
-
-        # 스터디 가입 승인 확인
-        # 스터디 가입 승인 후 스터디 멤버에 추가되고, 스터디 가입 신청 리스트에서 삭제됨.
-        self.assertEqual(StudyMember.objects.count(), 3)
-        self.assertEqual(StudyMember.objects.last().user, self.user4)
-        self.assertEqual(StudyMember.objects.last().is_accepted, True)
-
-    def test_reject_study_join_not_author(self):
-        """
-        작성자가 아닌 유저가 스터디 가입 거절 테스트
-        """
-
-        # user4으로 로그인 후 스터디 신청
-        self.client.force_login(self.user4)
-        response = self.client.post(
-            reverse("studies:apply_study_join", kwargs={"pk": 1}),
-        )
-        self.assertEqual(response.status_code, 302)
-
-        # user2으로 로그인 후 스터디 가입 거절
-        self.client.force_login(self.user2)
-        studymember = StudyMember.objects.get(user=self.user4)
-        response = self.client.post(
-            reverse(
-                "studies:reject_study_join",
-                kwargs={"studymember_id": studymember.id},
-            ),
-        )
-        self.assertEqual(response.status_code, 302)
-
-    def test_reject_study_join_author(self):
-        """
-        작성자가 스터디 가입 거절 테스트
-        """
-
-        # user4으로 로그인 후 스터디 신청
-        self.client.force_login(self.user4)
-        response = self.client.post(
-            reverse("studies:apply_study_join", kwargs={"pk": 1}),
-        )
-        self.assertEqual(response.status_code, 302)
-
-        # user1으로 로그인 후 스터디 가입 거절
-        self.client.force_login(self.user1)
-        studymember = StudyMember.objects.get(user=self.user4)
-        response = self.client.post(
-            reverse(
-                "studies:reject_study_join",
-                kwargs={"studymember_id": studymember.id},
-            ),
-        )
-        self.assertEqual(response.status_code, 302)
-
-        # 스터디 가입 거절 확인
-        # 스터디 가입 거절 후 스터디 가입 신청 리스트에서 삭제됨.
         self.assertEqual(StudyMember.objects.count(), 2)
