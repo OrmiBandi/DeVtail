@@ -8,6 +8,7 @@ from .models import (
     StudyMember,
     Recomment,
     Blacklist,
+    Favorite,
 )
 
 admin.site.register(Study)
@@ -18,3 +19,4 @@ admin.site.register(Comment)
 admin.site.register(Recomment)
 admin.site.register(StudyMember)
 admin.site.register(Blacklist)
+admin.site.register(Favorite)

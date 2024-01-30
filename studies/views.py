@@ -16,7 +16,7 @@ from django.views.generic import (
 )
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from .forms import StudyForm, CommentForm, RecommentForm, BlacklistForm
+from .forms import StudyForm, CommentForm, RecommentForm, BlacklistForm, FavoriteForm
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -58,6 +58,25 @@ class StudyList(ListView):
         context = super().get_context_data(**kwargs)
         context["tags"] = Tag.objects.all()
         return context
+
+
+class MyStudyList(LoginRequiredMixin, ListView):
+    """
+    내 스터디 리스트 조회
+    로그인한 유저가 가입한 스터디를 리스트에서 조회 가능
+    스터디 생성 시 생성된 스터디를 리스트에서 조회 가능
+    """
+
+    model = StudyMember
+
+    template_name = "studies/my_study_list.html"
+    context_object_name = "mystudies"
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(user=self.request.user)
+        return queryset
 
 
 class StudyCreate(LoginRequiredMixin, CreateView):
@@ -480,6 +499,63 @@ class DeleteBlacklistUser(UserPassesTestMixin, DeleteView):
         return reverse_lazy(
             "studies:blacklist_user_list", kwargs={"pk": self.object.study.pk}
         )
+
+
+class FavoriteStudyCreate(LoginRequiredMixin, CreateView):
+    """
+    스터디 즐겨찾기 추가
+    로그인한 유저만이 스터디를 즐겨찾기에 추가할 수 있습니다.
+    """
+
+    model = Favorite
+    form_class = FavoriteForm
+    template_name = "studies/form.html"
+
+    def post(self, request, *args, **kwargs):
+        study = get_object_or_404(Study, pk=self.kwargs["pk"])
+        favorite = Favorite.objects.filter(study=study, user=request.user)
+        if favorite:
+            return HttpResponseRedirect(self.get_success_url())
+        self.object = Favorite.objects.create(study=study, user=request.user)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse_lazy("studies:study_list")
+
+
+class FaveriteStudyList(LoginRequiredMixin, ListView):
+    """
+    스터디 즐겨찾기 조회
+    로그인한 유저만이 스터디 즐겨찾기를 조회할 수 있습니다.
+    """
+
+    model = Favorite
+    template_name = "studies/favorite_study_list.html"
+    context_object_name = "favorite_studies"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(user=self.request.user)
+        return queryset
+
+
+class FavoriteStudyDelete(UserPassesTestMixin, DeleteView):
+    """
+    스터디 즐겨찾기 삭제
+    로그인한 유저만이 스터디 즐겨찾기를 삭제할 수 있습니다.
+    """
+
+    model = Favorite
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Favorite, pk=self.kwargs["favorite_id"])
+
+    def test_func(self):
+        favorite = self.get_object()
+        return favorite.user == self.request.user
+
+    def get_success_url(self):
+        return reverse_lazy("studies:favorite_study_list")
 
 
 @login_required

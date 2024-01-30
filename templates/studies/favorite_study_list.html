@@ -8,24 +8,21 @@
     </head>
     <body>
         <h1><a href="{% url 'studies:study_list' %}">Study List</a></h1>
-        {% for tag in tags %}
-            <a href="{% url 'studies:study_list' %}?q={{ tag }}">#{{ tag }} </a>
-        {% endfor %}
         <ul>
-            {% for study in studies %}
+            {% for favorite in favorite_studies %}
             <li>
                 <div style="display:flex;">
-                    <a href="{% url 'studies:study_detail' study.id %}">{{ study.title }}</a>
-                    <form action="{% url 'studies:favorite_study_create' study.id %}" method="POST">
+                    <a href="{% url 'studies:study_detail' favorite.id %}">{{ favorite.study.title }}</a>
+                    <form action="{% url 'studies:favorite_study_delete' favorite.id %}" method="POST">
                         {% csrf_token %}
-                        <input type="submit" value="즐겨찾기 추가">
+                        <input type="submit" value="즐겨찾기 삭제">
                     </form>
                 </div>
             </li>
             {% endfor %}
         </ul>
         <a href="{% url 'studies:study_create' %}">New Study</a>
-        <a href="{% url 'studies:my_study_list' %}">My Study List</a>
+        <a href="{% url 'studies:study_list' %}">Study List</a>
 
     </body>
 </html>
