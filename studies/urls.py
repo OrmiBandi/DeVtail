@@ -103,6 +103,6 @@ urlpatterns = [
     path(
         "favorite/<int:favorite_id>/delete/",
         views.FavoriteStudyDelete.as_view(),
-        name="delete_favorite_study",
+        name="favorite_study_delete",
     ),
 ]
