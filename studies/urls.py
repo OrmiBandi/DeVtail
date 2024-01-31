@@ -6,6 +6,7 @@ app_name = "studies"
 
 urlpatterns = [
     path("list/", views.StudyList.as_view(), name="study_list"),
+    path("mylist/", views.MyStudyList.as_view(), name="my_study_list"),
     path("create/", views.StudyCreate.as_view(), name="study_create"),
     path("<int:pk>/", views.StudyDetail.as_view(), name="study_detail"),
     path("<int:pk>/update/", views.StudyUpdate.as_view(), name="study_update"),
@@ -73,5 +74,35 @@ urlpatterns = [
         "<int:pk>/studymember/delete/",
         views.WithdrawStudy.as_view(),
         name="withdraw_study",
+    ),
+    path(
+        "<int:pk>/studymember/<int:studymember_id>/addblacklist/",
+        views.AddBlacklistUser.as_view(),
+        name="add_blacklist_user",
+    ),
+    path(
+        "<int:pk>/blacklist/",
+        views.BlacklistUserList.as_view(),
+        name="blacklist_user_list",
+    ),
+    path(
+        "<int:pk>/blacklist/<int:blacklist_id>/delete/",
+        views.DeleteBlacklistUser.as_view(),
+        name="delete_blacklist_user",
+    ),
+    path(
+        "<int:pk>/favorite/create/",
+        views.FavoriteStudyCreate.as_view(),
+        name="favorite_study_create",
+    ),
+    path(
+        "favorite/",
+        views.FaveriteStudyList.as_view(),
+        name="favorite_study_list",
+    ),
+    path(
+        "favorite/<int:favorite_id>/delete/",
+        views.FavoriteStudyDelete.as_view(),
+        name="favorite_study_delete",
     ),
 ]

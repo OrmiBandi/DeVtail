@@ -11,23 +11,34 @@
   <!-- main -->
 
   {% if user.is_authenticated %}
-    <p>Welcome, {{ user.username }}!</p>
+  <p>Welcome, {{ user.username }}!</p>
+    {% for devmate in devmates %}
+      <p>{{ devmate.sent_user }}</p>
+      <p>{{ devmate.received_user }}</p>
+      <!-- 버튼 생성 -->
+      <form action="{% url 'chats:create_or_connect_direct_chat' %}" method="get">
+        {% csrf_token %}
+  <input type="hidden" name="target_user_id" value="{% if request.user.id == devmate.sent_user.id %}{{ devmate.received_user.id }}{% else %}{{ devmate.sent_user.id }}{% endif %}">
+  <button type="submit">Start Direct Chat</button>
+      </form>
+      <!-- 삭제하기 버튼 -->
+      <form action="{% url 'devmates:devmate_delete' pk=devmate.id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="_method" value="delete">
+        <button type="submit">삭제하기</button>
+      </form>
+    {% endfor %}
   {% else %}
     <p>You are not logged in.</p>
   {% endif %}
 
-  {% for devmate in devmates %}
-    <p>{{ devmate.sent_user }}</p>
-    <p>{{ devmate.received_user }}</p>
-    <!-- 삭제하기 버튼 -->
-    <form action="{% url 'devmates:devmate_delete' pk=devmate.id %}" method="post">
-      {% csrf_token %}
-      <input type="hidden" name="_method" value="delete">
-      <button type="submit">삭제하기</button>
-    </form>
-  {% endfor %}
-
   <script>
+    function createDirectChat(devmateId) {
+    // 대화 상대의 ID를 포함한 폼을 찾아서 전송
+    const form = document.getElementById(`createChatForm_${devmateId}`);
+    form.submit();
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
       document.querySelectorAll('form').forEach(function(form) {
         form.addEventListener('submit', function(event) {

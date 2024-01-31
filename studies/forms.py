@@ -1,5 +1,5 @@
 from django import forms
-from .models import Study, Comment, Recomment, Tag, Category, Blacklist
+from .models import Study, Comment, Recomment, Tag, Category, Blacklist, Favorite
 import datetime
 
 
@@ -112,4 +112,22 @@ class RecommentForm(forms.ModelForm):
         model = Recomment
         fields = [
             "content",
+        ]
+
+
+class BlacklistForm(forms.ModelForm):
+    class Meta:
+        model = Blacklist
+        fields = [
+            "user",
+            "study",
+        ]
+
+
+class FavoriteForm(forms.ModelForm):
+    class Meta:
+        model = Favorite
+        fields = [
+            "user",
+            "study",
         ]

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>채팅</title>
+</head>
+<body>
+  <div id="chat-container">
+    <div id="chat-messages"></div>
+    <div id="chat-input">
+      <input type="text" id="message-input" placeholder="메시지 입력">
+      <button onclick="sendMessage()">전송</button>
+    </div>
+  </div>
+
+  <script>
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const room_id = '{{ room_id }}';
+    const wsEndpoint = `${wsProtocol}//${window.location.host}/ws/directchat/${room_id}/`;
+    const socket = new WebSocket(wsEndpoint);
+
+    socket.addEventListener('open', (event) => {
+      console.log('WebSocket 연결 성공:', event);
+    });
+
+    socket.addEventListener('message', (event) => {
+      const message = JSON.parse(event.data);
+      addMessage(message.message, message.sender);
+    });
+
+    socket.addEventListener('close', (event) => {
+      console.log('WebSocket 연결 종료:', event);
+    });
+
+    function addMessage(message, sender) {
+      const messageElement = document.createElement('div');
+      messageElement.innerText = `${sender}: ${message}`;
+      chatMessages.appendChild(messageElement);
+    }
+
+    function sendMessage() {
+      const message = messageInput.value;
+      if (message.trim() !== '') {
+        const sender = 'Me';
+        const data = { message, sender };
+        socket.send(JSON.stringify(data));
+        messageInput.value = '';
+      }
+    }
+  </script>
+</body>
+</html>
