@@ -9,7 +9,7 @@
     <body>
         <h1><a href="{% url 'studies:study_list' %}">Study List</a></h1>
         {% for tag in tags %}
-            <a href="{% url 'studies:study_list' %}?q={{ tag }}">#{{ tag }} </a>
+            <a href="{% url 'studies:study_list' %}?tq={{ tag }}">#{{ tag }} </a>
         {% endfor %}
         <ul>
             {% for study in studies %}

@@ -13,7 +13,7 @@
         <h2>현재 로그인한 사용자 : {{ user }}</h2>
         <h2>{{ study.category }}</h2>
         {% for tag in study.tags.all %}
-        <a href="{% url 'studies:study_list' %}?q={{ tag }}">#{{ tag }} </a>
+        <a href="{% url 'studies:study_list' %}?tq={{ tag }}">#{{ tag }} </a>
         {% endfor %}
         <h2>{{ study.title }}</h2>
         <img src="{{ study.thumbnail.url }}" alt="{{ study.title }}">

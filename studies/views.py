@@ -44,14 +44,15 @@ class StudyList(ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         q = self.request.GET.get("q", "")
+        tq = self.request.GET.get("tq", "")
 
         if q:
             queryset = queryset.filter(
-                Q(title__icontains=q)
-                | Q(introduce__icontains=q)
-                | Q(tags__name__icontains=q)
+                Q(title__icontains=q) | Q(introduce__icontains=q)
             )
 
+        if tq:
+            queryset = queryset.filter(tags__name__in=[tq])
         return queryset
 
     def get_context_data(self, **kwargs):
