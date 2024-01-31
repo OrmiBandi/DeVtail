@@ -617,3 +617,124 @@ class ToDoDeleteTest(TestCase):
         response = self.client.get(reverse("todo_delete", args=[1]))
 
         self.assertEqual(response.status_code, 403)
+
+
+class StudyToDoCreateTest(TestCase):
+    """
+    스터디 할 일 생성 테스트
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        number_of_users = 5
+        for user_id in range(1, number_of_users + 1):
+            User.objects.create_user(
+                nickname=f"testuser{user_id}",
+                email=f"testuser{user_id}@example.com",
+                password=f"{user_id}HJ1vRV0Z&2iD",
+            )
+
+        # Create a category
+        category = Category.objects.create(name="TestCategory")
+
+        # Create studies
+        study1 = Study.objects.create(
+            category=category,
+            goal="Test Goal1",
+            start_at=timezone.now().date(),
+            end_at=timezone.now().date() + timezone.timedelta(days=14),
+            difficulty="상",
+            max_member=4,
+        )
+        study2 = Study.objects.create(
+            category=category,
+            goal="Test Goal2",
+            start_at=timezone.now().date(),
+            end_at=timezone.now().date() + timezone.timedelta(days=7),
+            difficulty="하",
+            max_member=20,
+        )
+
+        # Create a study_member
+        # study1에 testuser1~4 추가
+        for user_id in range(1, 5):
+            StudyMember.objects.create(
+                study=study1,
+                user=User.objects.get(id=user_id),
+                is_accepted=True,
+            )
+
+        # study2에 testuser1,4~5 추가
+        StudyMember.objects.create(
+            study=study2,
+            user=User.objects.get(id=1),
+            is_accepted=True,
+        )
+        for user_id in range(4, 6):
+            StudyMember.objects.create(
+                study=study2,
+                user=User.objects.get(id=user_id),
+                is_accepted=True,
+            )
+
+    def test_redirect_if_not_logged_in(self):
+        """
+        로그인 안 했을 때 로그인 페이지로 리다이렉트 되는지 확인
+        """
+        response = self.client.get(reverse("study_todo_create", kwargs={"pk": 1}))
+        self.assertRedirects(response, "/accounts/login/?next=/todos/study/1/create/")
+
+    def test_logged_in_uses_correct_template(self):
+        """
+        로그인 했을 때 올바른 템플릿인지 확인
+        """
+        login = self.client.login(
+            email="testuser1@example.com", password="1HJ1vRV0Z&2iD"
+        )
+        response = self.client.get(reverse("study_todo_create", kwargs={"pk": 1}))
+
+        self.assertTemplateUsed(response, "todos/todo_form.html")
+
+    def test_create_todo(self):
+        """
+        할 일 생성 성공
+        """
+        login = self.client.login(
+            email="testuser1@example.com", password="1HJ1vRV0Z&2iD"
+        )
+
+        response = self.client.post(
+            reverse("study_todo_create", kwargs={"pk": 1}),
+            {
+                "title": "test",
+                "content": "test",
+                "start_at_0": timezone.now().date().isoformat(),
+                "start_at_1": timezone.now().time().isoformat(),
+                "end_at_0": timezone.now().date().isoformat(),
+                "end_at_1": timezone.now().time().isoformat(),
+                "status": "ToDo",
+                "alert_set": "없음",
+                "assignees": [1, 2, 3, 4],
+            },
+        )
+
+        self.assertTrue(ToDo.objects.get(study=1))
+        self.assertEqual(ToDo.objects.count(), 1)
+        self.assertEqual(ToDoAssignee.objects.count(), 4)
+
+    def test_create_todo_redirect(self):
+        login = self.client.login(
+            email="testuser1@example.com", password="1HJ1vRV0Z&2iD"
+        )
+
+        response = self.client.post(
+            reverse("study_todo_create", kwargs={"pk": 1}),
+            {
+                "title": "test",
+                "status": "ToDo",
+                "alert_set": "없음",
+                "assignees": [1, 2, 3, 4],
+            },
+        )
+
+        self.assertRedirects(response, "/todos/study/?study=1")
