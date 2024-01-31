@@ -188,3 +188,7 @@ SOCIALACCOUNT_FORMS = {"signup": "accounts.forms.CustomSignupForm"}
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_ADAPTER = "accounts.adapters.CustomAccountAdapter"
 LOGIN_REDIRECT_URL = "/"
+
+LOGIN_URL = "login"
+
+PASSWORD_RESET_TIMEOUT = 3600
