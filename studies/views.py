@@ -6,6 +6,7 @@ from .models import (
     Tag,
     Blacklist,
     Favorite,
+    Schedule,
 )
 from django.views.generic import (
     ListView,
@@ -116,6 +117,10 @@ class StudyDetail(DetailView):
         context["study_members"] = StudyMember.objects.filter(
             study=self.object, is_accepted=True
         )
+        schedules = Schedule.objects.filter(study=self.object)
+        for schedule in schedules:
+            schedule.day_display = dict(Schedule.day_choices).get(schedule.day, "")
+        context["schedules"] = schedules
         return context
 
     def get_object(self, queryset=None):
