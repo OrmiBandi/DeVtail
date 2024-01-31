@@ -1,66 +1,252 @@
 import json
-from channels.generic.websocket import AsyncWebsocketConsumer
-from asgiref.sync import sync_to_async
+from channels.layers import get_channel_layer
+from channels.generic.websocket import JsonWebsocketConsumer
+from asgiref.sync import async_to_sync
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate
+
+from .models import DirectChat
 from .models import ChatMessage
 
+User = get_user_model()
 
-class BaseChatConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        await self.accept()
 
-    async def disconnect(self, close_code):
-        pass
+class OnlineUserManager:
+    """
+    현재 접속자 관리자
+    """
 
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json["message"]
-        room_id = text_data_json["room_id"]
+    _instance = None
+    chat_rooms = {}
 
-        await self.save_message(room_id, message)
+    def __new__(cls, chat_room_name):
+        if chat_room_name not in cls.chat_rooms:
+            cls.chat_rooms[chat_room_name] = super(OnlineUserManager, cls).__new__(cls)
+            cls.chat_rooms[chat_room_name].online_users = set()
+        return cls.chat_rooms[chat_room_name]
 
-        await self.send(
+    def add_user(self, user):
+        self.online_users.add(user)
+
+    def remove_user(self, user):
+        self.online_users.discard(user)
+
+    def get_online_users(self):
+        return list(self.online_users)
+
+
+class DirectChatConsumer(JsonWebsocketConsumer):
+    layer = get_channel_layer()
+    room_group_name = None
+
+    def connect(self):
+        """
+        웹소켓 연결 시 호출되는 함수
+        """
+        room_id = self.scope["url_route"]["kwargs"]["room_id"]
+        self.chat_room = DirectChat.objects.get(id=room_id)
+
+        if not self.chat_room:
+            sent_user = self.scope["user"]
+            received_user_id = int(self.scope["request"].POST.get("received_user", 0))
+            if received_user_id == 0:
+                self.close()
+                return
+
+            received_user = User.objects.get(id=received_user_id)
+
+            self.chat_room = DirectChat.objects.create()
+            self.chat_room.users.add(sent_user, received_user)
+
+        self.accept()
+        self.send(
             text_data=json.dumps(
                 {
-                    "message": message,
+                    "type": "login",
+                    "name": str(self.chat_room),
+                    "message": "required",
                 }
             )
         )
 
-    @sync_to_async
-    def save_message(self, room_id, message):
-        # 메시지 저장 로직
-        pass
+        return
 
+    def disconnect(self, close_code):
+        """
+        사용자의 연결이 끊겼을 때 호출되는 함수
+        """
 
-class DirectChatConsumer(BaseChatConsumer):
-    async def connect(self):
-        self.room_id = self.scope["url_route"]["kwargs"]["room_id"]
-        self.room_group_name = f"directchat_{self.room_id}"
+        self.remove_user_to_group()
 
-        # 채팅방 참가
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+    def authorize(self, message):
+        is_login = self.login(message)
+        if is_login is False:
+            return
 
-        await super().connect()
+        user = self.scope["user"]
+        if user.is_anonymous:
+            self.close()
+            return
 
-    async def disconnect(self, close_code):
-        # 채팅방 나가기
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        chat_room = self.get_chatroom()
+        if chat_room is None:
+            self.close()
+            return
 
-        await super().disconnect()
+        self.room_group_name = f"chatroom_{chat_room.id}"
+        self.add_user_to_group()
+        self.fetch_previous_message()
 
+    def receive_json(self, content_dict, **kwargs):
+        if content_dict["type"] == "auth":
+            self.authorize(message=content_dict)
+            return
 
-class StudyChatConsumer(BaseChatConsumer):
-    async def connect(self):
-        self.study_id = self.scope["url_route"]["kwargs"]["study_id"]
-        self.study_group_name = f"studychat_{self.study_id}"
+        if content_dict["type"] == "chat_message":
+            room_id = self.scope["url_route"]["kwargs"]["room_id"]
+            user_id = self.scope["user"].id
 
-        # 채팅방 참가
-        await self.channel_layer.group_add(self.study_group_name, self.channel_name)
+            content_dict["sender"] = user_id
 
-        await super().connect()
+            chat_room = DirectChat.objects.get(id=room_id)
+            user = User.objects.get(id=user_id)
 
-    async def disconnect(self, close_code):
-        # 채팅방 나가기
-        await self.channel_layer.group_discard(self.study_group_name, self.channel_name)
+            _ = ChatMessage.objects.create(
+                content=content_dict["message"], chatroom=chat_room, user=user
+            )
 
-        await super().disconnect()
+            nickname = self.scope["user"].nickname
+            content_dict["nickname"] = nickname
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name, content_dict
+            )
+
+    def login(self, message):
+        user = self.scope["user"]
+        if user is None:
+            self.close()
+            return False
+        self.scope["user"] = user
+        return True
+
+    def chat_message(self, event):
+        """
+        그룹에서 채팅 메시지를 받았을 때 호출되는 함수
+        """
+        user_id = self.scope["user"].id
+
+        message = event["message"]
+        sender = event["sender"]
+        nickname = event["nickname"]
+
+        if sender != user_id:
+            self.send(
+                text_data=json.dumps(
+                    {
+                        "message": message,
+                        "sender": sender,
+                        "nickname": nickname,
+                    }
+                )
+            )
+
+    def get_chatroom(self):
+        """
+        유저 ID와 채팅방 ID로 채팅방을 가져오는 함수
+        """
+        try:
+            user = self.scope["user"]
+            room_id = self.scope["url_route"]["kwargs"]["room_id"]
+
+            chat_room = DirectChat.objects.get(id=room_id)
+            is_member = chat_room.team.member.filter(pk=user.id).exists()
+            print(is_member)
+            if is_member is True:
+                return chat_room
+
+        except Exception as e:
+            return None
+
+    def add_user_to_group(self):
+        """
+        채팅방 그룹에 유저 추가
+        """
+        user = self.scope["user"]
+
+        async_to_sync(self.layer.group_add)(self.room_group_name, self.channel_name)
+
+        OnlineUserManager(self.room_group_name).add_user(user)
+        self.refresh_online_users()
+
+    def remove_user_to_group(self):
+        """
+        채팅방 그룹의 유저 제거
+        """
+        if self.room_group_name is None:
+            return
+
+        user = self.scope["user"]
+        async_to_sync(self.layer.group_discard)(self.room_group_name, self.channel_name)
+
+        OnlineUserManager(self.room_group_name).remove_user(user)
+        self.refresh_online_users()
+
+    def refresh_online_users(self):
+        """
+        현재 접속자 정보 제공
+        """
+        users = OnlineUserManager(self.room_group_name).get_online_users()
+        self.publish_current_users(users)
+
+    def fetch_previous_message(self):
+        """
+        이전 대화 조회
+        """
+        room_id = self.scope["url_route"]["kwargs"]["room_id"]
+
+        chat_room = DirectChat.objects.get(id=room_id)
+
+        messages = ChatMessage.objects.filter(chatroom=chat_room).order_by("-id")[:10]
+
+        for message in reversed(messages):
+            sender = User.objects.get(id=message.user.id)
+            self.send_json(
+                {
+                    "type": "chat_message",
+                    "message": message.content,
+                    "sender": message.user.id,
+                    "nickname": sender.nickname,
+                }
+            )
+
+    def publish_current_users(self, users):
+        """
+        현재 접속자 정보 퍼블리시
+        """
+        serialized_users = [
+            {"id": user.id, "nickname": user.nickname} for user in users
+        ]
+
+        async_to_sync(self.layer.group_send)(
+            self.room_group_name,
+            {
+                "type": "current_users",
+                "users": serialized_users,
+            },
+        )
+
+    def current_users(self, event):
+        """
+        current_users 타입 메시지 처리
+        """
+        users = event["users"]
+
+        self.send(
+            text_data=json.dumps(
+                {
+                    "type": "current_users",
+                    "users": users,
+                }
+            )
+        )
