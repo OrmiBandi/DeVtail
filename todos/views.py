@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.views import redirect_to_login
 from django.urls import reverse_lazy
+from django.shortcuts import redirect
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -160,8 +162,7 @@ class ToDoDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         todo = self.get_object()
         return todo.todo_assignees.filter(assignee=self.request.user).exists()
 
-
-class StudyToDoCreate(LoginRequiredMixin, CreateView):
+class StudyToDoCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     """
     스터디 할 일 생성
     """
@@ -187,3 +188,17 @@ class StudyToDoCreate(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return reverse_lazy("study_todo_list") + "?study=" + str(self.kwargs.get("pk"))
+
+    def test_func(self):
+        study_members = StudyMember.objects.filter(study=self.kwargs.get("pk"))
+        return study_members.filter(user=self.request.user).exists()
+
+    def handle_no_permission(self):
+        if self.request.user.is_authenticated:
+            return redirect("studies:study_detail", pk=self.kwargs.get("pk"))
+        else:
+            return redirect_to_login(
+                self.request.get_full_path(),
+                self.get_login_url(),
+                self.get_redirect_field_name(),
+            )

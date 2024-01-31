@@ -695,6 +695,15 @@ class StudyToDoCreateTest(TestCase):
 
         self.assertTemplateUsed(response, "todos/todo_form.html")
 
+    def test_logged_in_with_my_study_members(self):
+        """
+        해당 스터디의 멤버가 아닌 경우, study_detail로 리다이렉트 되는지 확인
+        """
+        login = self.client.login(email="testuser5@example.com", password="5HJ1vRV0Z&2iD")
+        response = self.client.get(reverse("study_todo_create", kwargs={"pk": 1}))
+
+        self.assertRedirects(response, "/study/1/")
+
     def test_create_todo(self):
         """
         할 일 생성 성공
