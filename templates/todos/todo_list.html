@@ -53,6 +53,16 @@
 
     <section>
       <h3>ToDo</h3>
+      {% if studies %}
+      {% if request.GET.study %}      
+      <a href="{% url 'study_todo_create' pk=request.GET.study %}">추가</a>
+      {% else %}
+      <a href="{% url 'study_todo_create' pk=1 %}">추가</a>
+      {% endif %}
+
+      {% else %}
+      <a href="{% url 'personal_todo_create' %}">추가</a>
+      {% endif %}
       <ul>
         <li>
           <h4>Todo</h4>

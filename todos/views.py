@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
@@ -6,7 +7,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import ToDo
 from studies.models import Study, StudyMember
-from .forms import PersonalToDoForm
+from .forms import PersonalToDoForm, StudyToDoForm
+
+User = get_user_model()
 
 
 class ToDoList(LoginRequiredMixin, ListView):
@@ -156,3 +159,31 @@ class ToDoDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         todo = self.get_object()
         return todo.todo_assignees.filter(assignee=self.request.user).exists()
+
+
+class StudyToDoCreate(LoginRequiredMixin, CreateView):
+    """
+    스터디 할 일 생성
+    """
+
+    model = ToDo
+    form_class = StudyToDoForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["pk"] = self.kwargs.get("pk")
+        return kwargs
+
+    def form_valid(self, form):
+        todo = form.save(commit=False)
+        todo.study = Study.objects.get(id=self.kwargs.get("pk"))
+        todo.save()
+
+        assignees = form.cleaned_data.get("assignees")
+        for assignee in assignees:
+            todo.todo_assignees.create(assignee=assignee.user)
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("study_todo_list") + "?study=" + str(self.kwargs.get("pk"))
