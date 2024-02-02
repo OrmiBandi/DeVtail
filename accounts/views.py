@@ -1,11 +1,16 @@
 import uuid
 from typing import Any
+from django.http.response import HttpResponse as HttpResponse
 from django.urls import reverse
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.core.mail import EmailMessage
 from django.contrib.auth import get_user_model
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import (
+    LoginView,
+    PasswordResetView,
+    PasswordResetConfirmView,
+)
 from django.db.models.base import Model as Model
 from django.views.generic.edit import UpdateView, DeleteView
 from django.utils.translation import gettext_lazy as _
@@ -14,6 +19,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseBadRequest
+from django.utils.http import urlsafe_base64_decode
 from allauth.account.views import LogoutView
 from allauth.socialaccount.views import SignupView as BaseSignupView
 
@@ -300,6 +306,52 @@ class PasswordChangeView(LoginRequiredMixin, UpdateView):
         return kwargs
 
 
+class PasswordResetCustomView(PasswordResetView):
+    template_name = "accounts/password_find.html"
+    email_template_name = "registration/password_reset_email.html"
+    subject_template_name = "accounts/password_reset_subject.txt"
+    success_url = reverse_lazy("login")
+
+    def form_valid(self, form):
+        email = form.cleaned_data["email"]
+        if not User.objects.filter(email=email).exists():
+            return HttpResponseBadRequest("존재하지 않는 이메일입니다.")
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        print(get_current_site(self.request).domain)
+        context.update({"domain": get_current_site(self.request).domain})
+        return context
+
+
+class PasswordResetConfirmCustomView(PasswordResetConfirmView):
+    template_name = "accounts/password_reset.html"
+    success_url = reverse_lazy("login")
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        uidb64 = kwargs["uidb64"]
+        token = kwargs["token"]
+
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+        if not self.token_generator.check_token(user, token):
+            raise ValueError("The password reset link is invalid")
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "비밀번호가 초기화되었습니다.")
+        return response
+
+
 signup = SignupView.as_view()
 social_signup = SocialSignupView.as_view()
 login = CustomLoginView.as_view()
@@ -308,3 +360,5 @@ profile = ProfileView.as_view()
 account_update = AccountUpdateView.as_view()
 account_delete = AccountDeleteView.as_view()
 password_change = PasswordChangeView.as_view()
+password_reset = PasswordResetCustomView.as_view()
+password_reset_confirm = PasswordResetConfirmCustomView.as_view()
