@@ -1,6 +1,6 @@
 import datetime
 from django.test import TestCase
-from studies.models import Study, StudyMember, Category, Tag
+from studies.models import Study, StudyMember, Category, Tag, Schedule
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
@@ -22,9 +22,9 @@ class TestStudy(TestCase):
         )
 
         # 테스트용 스터디 생성
-        self.category = Category.objects.create(name="test")
+        category = Category.objects.create(name="test")
         Study.objects.create(
-            category=self.category,
+            category=category,
             goal="test",
             title="test",
             introduce="test",
@@ -36,15 +36,21 @@ class TestStudy(TestCase):
 
         # 테스트용 스터디 생성 데이터
         self.study_object = Study.objects.get(pk=1)
-        tag = Tag.objects.create(name="tag_test")
-        self.study_object.tags.add(tag)
+        Schedule.objects.create(
+            study=self.study_object,
+            day=Schedule.day_choices[0][0],
+            start_time=datetime.time(10, 0),
+            end_time=datetime.time(12, 0),
+        )
+        tags = Tag.objects.create(name="tag_test")
+        self.study_object.tags.add(tags)
 
         # 테스트용 스터디 멤버 생성
         StudyMember.objects.create(
-            study=self.study_object, user=self.user1, is_manager=True
+            study=self.study_object, user=self.user1, is_manager=True, is_accepted=True
         )
         StudyMember.objects.create(
-            study=self.study_object, user=self.user2, is_manager=False
+            study=self.study_object, user=self.user2, is_manager=False, is_accepted=True
         )
         self.study_create_data = Study.objects.values()[0]
 
@@ -54,7 +60,6 @@ class TestStudy(TestCase):
         """
         response = self.client.get("/study/list/")
         self.assertEqual(response.status_code, 200)
-
         # 기존 스터디 1개 조회
         self.assertEqual(len(response.context["studies"]), 1)
 
@@ -78,6 +83,19 @@ class TestStudy(TestCase):
 
         # 기존 스터디 title이 test인지 확인
         self.assertEqual(response.context["study"].title, "test")
+
+    def test_study_detail_schedule(self):
+        """
+        스터디 상세 조회 시 스케줄 조회 테스트
+        """
+        response = self.client.get("/study/1/")
+        self.assertEqual(response.status_code, 200)
+
+        schedule = response.context["study"].schedules.get()
+        # 기존 스터디 스케줄에 저장되어있는 day와 start_time, end_time이 맞는지 확인
+        self.assertEqual(schedule.get_day_display(), "월요일")
+        self.assertEqual(schedule.start_time, datetime.time(10, 0))
+        self.assertEqual(schedule.end_time, datetime.time(12, 0))
 
     def test_study_create_without_login(self):
         """

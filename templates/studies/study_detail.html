@@ -20,6 +20,15 @@
         <p>{{ study.introduce }}</p>
         <p>{{ study.created_at }}</p>
         <p>{{ study.updated_at }}</p>
+        <div style="display:flex;">
+            {% for schedule in schedules %}
+            <div style="border:1px solid black; margin-right:10px; padding: 0 10px;">
+                <p>{{ schedule.day_display }}</p>
+                <p>{{ schedule.start_time }}</p>
+                <p>{{ schedule.end_time }}</p>
+            </div>
+            {% endfor %}
+        </div>
         
         {% for studymember in study_members %}
         <!-- 스터디 그룹 리더일 경우에만 표시 -->

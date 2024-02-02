@@ -1,5 +1,14 @@
 from django import forms
-from .models import Study, Comment, Recomment, Tag, Category, Blacklist, Favorite
+from .models import (
+    Study,
+    Comment,
+    Recomment,
+    Tag,
+    Category,
+    Blacklist,
+    Favorite,
+    Schedule,
+)
 import datetime
 
 
@@ -39,6 +48,19 @@ class StudyForm(forms.ModelForm):
         required=True,
         error_messages={"required": "최대 인원을 입력해주세요."},
     )
+    days = forms.MultipleChoiceField(
+        choices=Schedule.day_choices,
+        required=True,
+        error_messages={"required": "요일을 선택해주세요."},
+    )
+    start_time = forms.TimeField(
+        required=True,
+        error_messages={"required": "시작 시간을 입력해주세요."},
+    )
+    end_time = forms.TimeField(
+        required=True,
+        error_messages={"required": "종료 시간을 입력해주세요."},
+    )
 
     class Meta:
         model = Study
@@ -54,6 +76,9 @@ class StudyForm(forms.ModelForm):
             "difficulty",
             "current_member",
             "max_member",
+            "days",
+            "start_time",
+            "end_time",
         ]
 
     def save(self, commit=True):
@@ -67,6 +92,15 @@ class StudyForm(forms.ModelForm):
             for tag in tags:
                 tag = Tag.objects.get_or_create(name=tag.strip())[0]
                 study.tags.add(tag)
+            days = self.cleaned_data["days"]
+            for day in days:
+                schedule = Schedule.objects.create(
+                    study=study,
+                    day=day,
+                    start_time=self.cleaned_data["start_time"],
+                    end_time=self.cleaned_data["end_time"],
+                )
+                schedule.save()
 
         return study
 
