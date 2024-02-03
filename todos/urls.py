@@ -21,5 +21,10 @@ urlpatterns = [
         views.PersonalToDoUpdate.as_view(),
         name="personal_todo_edit",
     ),
+    path(
+        "study/<int:study_id>/edit/<int:pk>/",
+        views.StudyToDoUpdate.as_view(),
+        name="study_todo_edit",
+    ),
     path("delete/<int:pk>/", views.ToDoDelete.as_view(), name="todo_delete"),
 ]

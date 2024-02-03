@@ -207,3 +207,50 @@ class StudyToDoCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                 self.get_login_url(),
                 self.get_redirect_field_name(),
             )
+
+
+class StudyToDoUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """
+    스터디 할 일 수정
+    """
+
+    model = ToDo
+    form_class = StudyToDoForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["study_id"] = self.kwargs.get("study_id")
+        return kwargs
+
+    def get_initial(self):
+        initial = super().get_initial()
+        assignees = list(
+            self.object.todo_assignees.filter(todo=self.object).values_list(
+                "assignee__id", flat=True
+            )
+        )
+        initial["assignees"] = assignees
+        return initial
+
+    def form_valid(self, form):
+        todo = form.save(commit=False)
+        todo.save()
+
+        assignees = form.cleaned_data.get("assignees")
+        todo.todo_assignees.filter(todo=todo).delete()
+
+        for assignee in assignees:
+            todo.todo_assignees.create(assignee=assignee.user)
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return (
+            reverse_lazy("study_todo_list")
+            + "?study="
+            + str(self.kwargs.get("study_id"))
+        )
+
+    def test_func(self):
+        study_members = StudyMember.objects.filter(study=self.kwargs.get("study_id"))
+        return study_members.filter(user=self.request.user).exists()
