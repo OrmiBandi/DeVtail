@@ -12,7 +12,7 @@ urlpatterns = [
         name="personal_todo_create",
     ),
     path(
-        "study/<int:pk>/create/",
+        "study/<int:study_id>/create/",
         views.StudyToDoCreate.as_view(),
         name="study_todo_create",
     ),

@@ -80,6 +80,7 @@ class StudyToDoForm(forms.ModelForm):
             "start_at",
             "end_at",
             "alert_set",
+            "assignees",
         )
 
     def clean(self):
@@ -98,6 +99,6 @@ class StudyToDoForm(forms.ModelForm):
         return cleaned_data
 
     def __init__(self, *args, **kwargs):
-        study_id = kwargs.pop("pk", None)
+        study_id = kwargs.pop("study_id", None)
         super().__init__(*args, **kwargs)
         self.fields["assignees"].queryset = StudyMember.objects.filter(study=study_id)

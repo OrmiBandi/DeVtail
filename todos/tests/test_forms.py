@@ -106,7 +106,7 @@ class StudyToDoFormTest(TestCase):
                 "status": "ToDo",
                 "alert_set": "없음",
             },
-            pk=self.study.id,
+            study_id=self.study.id,
         )
         print(form.errors)
         self.assertTrue(form.is_valid())
@@ -123,7 +123,7 @@ class StudyToDoFormTest(TestCase):
                 "alert_set": "없음",
             }
         )
-        
+
         self.assertFalse(form.is_valid())
 
     def test_start_at_is_before_end_at(self):
@@ -142,3 +142,13 @@ class StudyToDoFormTest(TestCase):
         )
 
         self.assertFalse(form.is_valid())
+
+    def test_assignees_field_should_be_loaded(self):
+        """
+        assignees필드 데이터가 불러와지는지 테스트
+        """
+        form = StudyToDoForm(study_id=self.study.id)
+        self.assertEqual(
+            list(form.fields["assignees"].queryset),
+            list(StudyMember.objects.filter(study=self.study)),
+        )

@@ -681,7 +681,7 @@ class StudyToDoCreateTest(TestCase):
         """
         로그인 안 했을 때 로그인 페이지로 리다이렉트 되는지 확인
         """
-        response = self.client.get(reverse("study_todo_create", kwargs={"pk": 1}))
+        response = self.client.get(reverse("study_todo_create", kwargs={"study_id": 1}))
         self.assertRedirects(response, "/accounts/login/?next=/todos/study/1/create/")
 
     def test_logged_in_uses_correct_template(self):
@@ -691,7 +691,7 @@ class StudyToDoCreateTest(TestCase):
         login = self.client.login(
             email="testuser1@example.com", password="1HJ1vRV0Z&2iD"
         )
-        response = self.client.get(reverse("study_todo_create", kwargs={"pk": 1}))
+        response = self.client.get(reverse("study_todo_create", kwargs={"study_id": 1}))
 
         self.assertTemplateUsed(response, "todos/todo_form.html")
 
@@ -699,8 +699,10 @@ class StudyToDoCreateTest(TestCase):
         """
         해당 스터디의 멤버가 아닌 경우, study_detail로 리다이렉트 되는지 확인
         """
-        login = self.client.login(email="testuser5@example.com", password="5HJ1vRV0Z&2iD")
-        response = self.client.get(reverse("study_todo_create", kwargs={"pk": 1}))
+        login = self.client.login(
+            email="testuser5@example.com", password="5HJ1vRV0Z&2iD"
+        )
+        response = self.client.get(reverse("study_todo_create", kwargs={"study_id": 1}))
 
         self.assertRedirects(response, "/study/1/")
 
@@ -713,7 +715,7 @@ class StudyToDoCreateTest(TestCase):
         )
 
         response = self.client.post(
-            reverse("study_todo_create", kwargs={"pk": 1}),
+            reverse("study_todo_create", kwargs={"study_id": 1}),
             {
                 "title": "test",
                 "content": "test",
@@ -737,7 +739,7 @@ class StudyToDoCreateTest(TestCase):
         )
 
         response = self.client.post(
-            reverse("study_todo_create", kwargs={"pk": 1}),
+            reverse("study_todo_create", kwargs={"study_id": 1}),
             {
                 "title": "test",
                 "status": "ToDo",
