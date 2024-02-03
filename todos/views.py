@@ -225,9 +225,7 @@ class StudyToDoUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def get_initial(self):
         initial = super().get_initial()
         assignees = list(
-            self.object.todo_assignees.filter(todo=self.object).values_list(
-                "assignee__id", flat=True
-            )
+            self.object.todo_assignees.values_list("assignee__id", flat=True)
         )
         initial["assignees"] = assignees
         return initial
