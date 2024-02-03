@@ -749,3 +749,113 @@ class StudyToDoCreateTest(TestCase):
         )
 
         self.assertRedirects(response, "/todos/study/?study=1")
+
+
+class StudyToDoUpdateTest(TestCase):
+    """
+    스터디 할 일 수정 테스트
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        number_of_users = 2
+        for user_id in range(1, number_of_users + 1):
+            User.objects.create_user(
+                nickname=f"testuser{user_id}",
+                email=f"testuser{user_id}@example.com",
+                password=f"{user_id}HJ1vRV0Z&2iD",
+            )
+
+        category = Category.objects.create(name="TestCategory")
+
+        study = Study.objects.create(
+            category=category,
+            goal="Test Goal",
+            start_at=timezone.now().date(),
+            end_at=timezone.now().date() + timezone.timedelta(days=14),
+            difficulty="상",
+            max_member=4,
+        )
+
+        for user_id in range(1, number_of_users + 1):
+            StudyMember.objects.create(
+                study=study,
+                user=User.objects.get(id=user_id),
+                is_accepted=True,
+            )
+
+        for id in range(1, number_of_users + 1):
+            todo = ToDo.objects.create(
+                title="Test ToDo",
+                content="Test Content",
+                status="ToDo",
+                alert_set="없음",
+                study=study,
+            )
+            assignee = User.objects.get(id=id)
+            ToDoAssignee.objects.create(todo=todo, assignee=assignee)
+
+    def test_redirect_if_not_logged_in(self):
+        response = self.client.get(
+            reverse("study_todo_edit", kwargs={"study_id": 1, "pk": 2})
+        )
+        self.assertRedirects(response, "/accounts/login/?next=/todos/study/1/edit/2/")
+
+    def test_logged_in_uses_correct_template(self):
+        login = self.client.login(
+            email="testuser1@example.com", password="1HJ1vRV0Z&2iD"
+        )
+
+        response = self.client.get(
+            reverse("study_todo_edit", kwargs={"study_id": 1, "pk": 2})
+        )
+
+        self.assertTemplateUsed(response, "todos/todo_form.html")
+
+    def test_edit_todo(self):
+        login = self.client.login(
+            email="testuser1@example.com", password="1HJ1vRV0Z&2iD"
+        )
+
+        response = self.client.post(
+            reverse("study_todo_edit", kwargs={"study_id": 1, "pk": 2}),
+            {
+                "title": "test todo",
+                "content": "test content",
+                "status": "ToDo",
+                "alert_set": "없음",
+                "assignees": [1, 2],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(ToDo.objects.get(pk=2).title, "test todo")
+        self.assertEqual(ToDoAssignee.objects.filter(todo_id=2).count(), 2)
+
+    def test_edit_todo_access_fail(self):
+        User.objects.create_user(
+            nickname="testuser", email="testuser@example.com", password="0HJ1vRV0Z&2iD"
+        )
+        login = self.client.login(
+            email="testuser@example.com", password="0HJ1vRV0Z&2iD"
+        )
+
+        response = self.client.get(
+            reverse("study_todo_edit", kwargs={"study_id": 1, "pk": 2})
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_edit_todo_assignees_get_initial(self):
+        """
+        기존에 선택된 assignees가 불러와지는지 확인
+        """
+        login = self.client.login(
+            email="testuser1@example.com", password="1HJ1vRV0Z&2iD"
+        )
+
+        response = self.client.get(
+            reverse("study_todo_edit", kwargs={"study_id": 1, "pk": 2})
+        )
+
+        self.assertEqual(response.context["form"].initial["assignees"], [2])
