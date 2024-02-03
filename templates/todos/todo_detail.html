@@ -22,6 +22,17 @@
       <li>
         스터디 이름 : {{ todo.study.title }}
       </li>
+      <li>
+        투두 메이트 :
+        <ul>
+          {% if not todo.todo_assignees.all %}
+          <li>없음</li>
+          {% endif %}
+          {% for member in todo.todo_assignees.all %}
+          <li>{{ member.assignee.nickname }}</li>
+          {% endfor %}
+        </ul>
+      </li>
       {% endif %}
       <li>투두 이름 : {{ todo.title }}</li>
       <li>상태 : {{ todo.status }}</li>

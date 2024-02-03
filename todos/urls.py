@@ -12,6 +12,11 @@ urlpatterns = [
         name="personal_todo_create",
     ),
     path(
+        "study/<int:pk>/create/",
+        views.StudyToDoCreate.as_view(),
+        name="study_todo_create",
+    ),
+    path(
         "personal/edit/<int:pk>/",
         views.PersonalToDoUpdate.as_view(),
         name="personal_todo_edit",
