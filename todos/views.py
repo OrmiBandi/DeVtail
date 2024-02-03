@@ -1,4 +1,7 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.views import redirect_to_login
 from django.urls import reverse_lazy
+from django.shortcuts import redirect
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -6,7 +9,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import ToDo
 from studies.models import Study, StudyMember
-from .forms import PersonalToDoForm
+from .forms import PersonalToDoForm, StudyToDoForm
+
+User = get_user_model()
 
 
 class ToDoList(LoginRequiredMixin, ListView):
@@ -156,3 +161,44 @@ class ToDoDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         todo = self.get_object()
         return todo.todo_assignees.filter(assignee=self.request.user).exists()
+
+class StudyToDoCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    """
+    스터디 할 일 생성
+    """
+
+    model = ToDo
+    form_class = StudyToDoForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["pk"] = self.kwargs.get("pk")
+        return kwargs
+
+    def form_valid(self, form):
+        todo = form.save(commit=False)
+        todo.study = Study.objects.get(id=self.kwargs.get("pk"))
+        todo.save()
+
+        assignees = form.cleaned_data.get("assignees")
+        for assignee in assignees:
+            todo.todo_assignees.create(assignee=assignee.user)
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("study_todo_list") + "?study=" + str(self.kwargs.get("pk"))
+
+    def test_func(self):
+        study_members = StudyMember.objects.filter(study=self.kwargs.get("pk"))
+        return study_members.filter(user=self.request.user).exists()
+
+    def handle_no_permission(self):
+        if self.request.user.is_authenticated:
+            return redirect("studies:study_detail", pk=self.kwargs.get("pk"))
+        else:
+            return redirect_to_login(
+                self.request.get_full_path(),
+                self.get_login_url(),
+                self.get_redirect_field_name(),
+            )
