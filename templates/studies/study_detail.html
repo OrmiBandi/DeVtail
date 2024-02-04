@@ -29,6 +29,12 @@
             </div>
             {% endfor %}
         </div>
+        <h2>참조 링크</h2>
+        {% for ref_link in study.ref_links.all %}
+        <div style="display:flex; flex-direction:column;">
+            <a href="{{ ref_link.url }}">- {{ ref_link.url }}</a>
+        </div>
+        {% endfor %}
         
         {% for studymember in study_members %}
         <!-- 스터디 그룹 리더일 경우에만 표시 -->
