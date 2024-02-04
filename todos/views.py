@@ -162,6 +162,7 @@ class ToDoDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         todo = self.get_object()
         return todo.todo_assignees.filter(assignee=self.request.user).exists()
 
+
 class StudyToDoCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     """
     스터디 할 일 생성
@@ -172,12 +173,12 @@ class StudyToDoCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs["pk"] = self.kwargs.get("pk")
+        kwargs["study_id"] = self.kwargs.get("study_id")
         return kwargs
 
     def form_valid(self, form):
         todo = form.save(commit=False)
-        todo.study = Study.objects.get(id=self.kwargs.get("pk"))
+        todo.study = Study.objects.get(id=self.kwargs.get("study_id"))
         todo.save()
 
         assignees = form.cleaned_data.get("assignees")
@@ -187,18 +188,67 @@ class StudyToDoCreate(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy("study_todo_list") + "?study=" + str(self.kwargs.get("pk"))
+        return (
+            reverse_lazy("study_todo_list")
+            + "?study="
+            + str(self.kwargs.get("study_id"))
+        )
 
     def test_func(self):
-        study_members = StudyMember.objects.filter(study=self.kwargs.get("pk"))
+        study_members = StudyMember.objects.filter(study=self.kwargs.get("study_id"))
         return study_members.filter(user=self.request.user).exists()
 
     def handle_no_permission(self):
         if self.request.user.is_authenticated:
-            return redirect("studies:study_detail", pk=self.kwargs.get("pk"))
+            return redirect("studies:study_detail", pk=self.kwargs.get("study_id"))
         else:
             return redirect_to_login(
                 self.request.get_full_path(),
                 self.get_login_url(),
                 self.get_redirect_field_name(),
             )
+
+
+class StudyToDoUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """
+    스터디 할 일 수정
+    """
+
+    model = ToDo
+    form_class = StudyToDoForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["study_id"] = self.kwargs.get("study_id")
+        return kwargs
+
+    def get_initial(self):
+        initial = super().get_initial()
+        assignees = list(
+            self.object.todo_assignees.values_list("assignee__id", flat=True)
+        )
+        initial["assignees"] = assignees
+        return initial
+
+    def form_valid(self, form):
+        todo = form.save(commit=False)
+        todo.save()
+
+        assignees = form.cleaned_data.get("assignees")
+        todo.todo_assignees.filter(todo=todo).delete()
+
+        for assignee in assignees:
+            todo.todo_assignees.create(assignee=assignee.user)
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return (
+            reverse_lazy("study_todo_list")
+            + "?study="
+            + str(self.kwargs.get("study_id"))
+        )
+
+    def test_func(self):
+        study_members = StudyMember.objects.filter(study=self.kwargs.get("study_id"))
+        return study_members.filter(user=self.request.user).exists()

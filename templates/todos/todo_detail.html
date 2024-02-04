@@ -13,6 +13,7 @@
 
     <a href="{% url 'todo_list' %}">목록</a>
     {% if todo.study %}
+    <a href="{% url 'study_todo_edit' study_id=todo.study.id pk=todo.id %}">수정</a>
     {% else %}
     <a href="{% url 'personal_todo_edit' todo.pk %}">수정</a>
     {% endif %}
