@@ -8,6 +8,7 @@ from .models import (
     Blacklist,
     Favorite,
     Schedule,
+    RefLink,
 )
 import datetime
 
@@ -20,6 +21,9 @@ class StudyForm(forms.ModelForm):
     )
     tags = forms.CharField(
         initial="(임시)태그를 ,로 구분하여 입력해주세요.",
+    )
+    ref_links = forms.URLField(
+        initial="(임시)참조링크를 ,로 구분하여 입력해주세요.",
     )
     goal = forms.CharField(
         required=True,
@@ -67,6 +71,7 @@ class StudyForm(forms.ModelForm):
         fields = [
             "category",
             "tags",
+            "ref_links",
             "goal",
             "thumbnail",
             "start_at",
@@ -81,6 +86,23 @@ class StudyForm(forms.ModelForm):
             "end_time",
         ]
 
+    def __init__(self, *args, **kwargs):
+        super(StudyForm, self).__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields["tags"].initial = ",".join(
+                [tag.name for tag in self.instance.tags.all()]
+            )
+            self.fields["ref_links"].initial = ",".join(
+                [ref_link.url for ref_link in self.instance.ref_links.all()]
+            )
+            self.fields["days"].initial = [
+                schedule.day for schedule in self.instance.schedules.all()
+            ]
+            self.fields["start_time"].initial = self.instance.schedules.all()[
+                0
+            ].start_time
+            self.fields["end_time"].initial = self.instance.schedules.all()[0].end_time
+
     def save(self, commit=True):
         study = super().save(commit=False)
         study.thumbnail = self.cleaned_data["thumbnail"]
@@ -88,19 +110,27 @@ class StudyForm(forms.ModelForm):
 
         if commit:
             study.save()
+
             tags = self.cleaned_data["tags"].split(",")
             for tag in tags:
                 tag = Tag.objects.get_or_create(name=tag.strip())[0]
                 study.tags.add(tag)
+
             days = self.cleaned_data["days"]
             for day in days:
-                schedule = Schedule.objects.create(
+                Schedule.objects.create(
                     study=study,
                     day=day,
                     start_time=self.cleaned_data["start_time"],
                     end_time=self.cleaned_data["end_time"],
                 )
-                schedule.save()
+
+            ref_links = self.cleaned_data["ref_links"].split(",")
+            for ref_link in ref_links:
+                RefLink.objects.create(
+                    study=study,
+                    url=ref_link.strip(),
+                )
 
         return study
 
