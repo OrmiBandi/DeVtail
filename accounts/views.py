@@ -119,7 +119,16 @@ class CustomLoginView(LoginView):
         if form.is_valid():
             return self.form_valid(form)
         else:
-            return self.form_invalid(form)
+            context = {}
+            for msg in form.errors.as_data():
+                context[f"error_{msg}"] = form.errors[msg][0]
+            print(context)
+            return render(
+                request,
+                self.template_name,
+                context,
+                status=HttpResponseBadRequest.status_code,
+            )
 
     def get_success_url(self) -> Any:
         """
@@ -128,19 +137,19 @@ class CustomLoginView(LoginView):
         url = self.get_redirect_url()
         return url or reverse_lazy("main:home")
 
-    def form_invalid(self, form: AuthenticationForm):
-        """
-        로그인 실패시 메서드
-        """
-        form_errors = form.errors.get("__all__", [])
-        if "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다." in form_errors:
-            return HttpResponseBadRequest(
-                _("존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다.")
-            )
-        elif "이메일을 입력해주세요." in form_errors:
-            return HttpResponseBadRequest(_("이메일을 입력해주세요."))
-        elif "비밀번호를 입력해주세요." in form_errors:
-            return HttpResponseBadRequest(_("비밀번호를 입력해주세요."))
+    # def form_invalid(self, form: AuthenticationForm):
+    #     """
+    #     로그인 실패시 메서드
+    #     """
+    #     form_errors = form.errors.get("__all__", [])
+    #     if "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다." in form_errors:
+    #         return HttpResponseBadRequest(
+    #             _("존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다.")
+    #         )
+    #     elif "이메일을 입력해주세요." in form_errors:
+    #         return HttpResponseBadRequest(_("이메일을 입력해주세요."))
+    #     elif "비밀번호를 입력해주세요." in form_errors:
+    #         return HttpResponseBadRequest(_("비밀번호를 입력해주세요."))
 
 
 class CustomLogoutView(LogoutView):
