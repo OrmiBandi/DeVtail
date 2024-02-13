@@ -25,6 +25,12 @@
 
     socket.addEventListener('open', (event) => {
       console.log('WebSocket 연결 성공:', event);
+      const type = "auth";
+      const user = '{{ user }}';
+      const user_id = '{{ user.id }}';
+      const data = { type, user, user_id };
+      socket.send(JSON.stringify(data));
+      console.log('Auth 메시지 전송:', data);
     });
 
     socket.addEventListener('message', (event) => {
@@ -45,9 +51,12 @@
     function sendMessage() {
       const message = messageInput.value;
       if (message.trim() !== '') {
-        const sender = 'Me';
-        const data = { message, sender };
+        const type = "chat_message";
+        const user = '{{ user }}';
+        const user_id = '{{ user.id }}';
+        const data = { type, message, user, user_id };
         socket.send(JSON.stringify(data));
+        console.log('메시지 전송:', data);
         messageInput.value = '';
       }
     }
