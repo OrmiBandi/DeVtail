@@ -4,7 +4,7 @@ from channels.generic.websocket import JsonWebsocketConsumer
 from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth import authenticate
+from django.contrib.sessions.models import Session
 
 from .models import DirectChat
 from .models import ChatMessage
@@ -46,31 +46,37 @@ class DirectChatConsumer(JsonWebsocketConsumer):
         """
         room_id = self.scope["url_route"]["kwargs"]["room_id"]
         self.chat_room = DirectChat.objects.get(id=room_id)
-
-        if not self.chat_room:
-            sent_user = self.scope["user"]
-            received_user_id = int(self.scope["request"].POST.get("received_user", 0))
-            if received_user_id == 0:
-                self.close()
-                return
-
-            received_user = User.objects.get(id=received_user_id)
-
-            self.chat_room = DirectChat.objects.create()
-            self.chat_room.users.add(sent_user, received_user)
+        user = self.get_user_from_session()
+        self.scope["user"] = user
+        print(self.scope)
 
         self.accept()
+        users = self.chat_room.users.all()
         self.send(
             text_data=json.dumps(
                 {
                     "type": "login",
                     "name": str(self.chat_room),
-                    "message": "required",
+                    "message": f"{users[0].nickname}, {users[1].nickname}의 채팅",
                 }
             )
         )
-
         return
+
+    def get_user_from_session(self):
+        session_key = self.get_session_key_from_headers()
+        session = Session.objects.get(session_key=session_key)
+        user_id = session.get_decoded().get("_auth_user_id")
+        return User.objects.get(id=user_id)
+
+    def get_session_key_from_headers(self):
+        for name, value in self.scope["headers"]:
+            if name == b"cookie":
+                cookies = value.decode("utf-8").split("; ")
+                for cookie in cookies:
+                    if cookie.startswith("sessionid="):
+                        return cookie.split("=")[1]
+        return None
 
     def disconnect(self, close_code):
         """
@@ -91,6 +97,7 @@ class DirectChatConsumer(JsonWebsocketConsumer):
 
         chat_room = self.get_chatroom()
         if chat_room is None:
+            print("채팅방 없음")
             self.close()
             return
 
@@ -105,7 +112,10 @@ class DirectChatConsumer(JsonWebsocketConsumer):
 
         if content_dict["type"] == "chat_message":
             room_id = self.scope["url_route"]["kwargs"]["room_id"]
-            user_id = self.scope["user"].id
+            user_id = content_dict["user_id"]
+            print("여기 receive_json")
+            print(content_dict)
+            print(self.scope)
 
             content_dict["sender"] = user_id
 
@@ -113,28 +123,27 @@ class DirectChatConsumer(JsonWebsocketConsumer):
             user = User.objects.get(id=user_id)
 
             _ = ChatMessage.objects.create(
-                content=content_dict["message"], chatroom=chat_room, user=user
+                message=content_dict["message"], direct_chat=chat_room, author=user
             )
 
-            nickname = self.scope["user"].nickname
+            nickname = user.nickname
             content_dict["nickname"] = nickname
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name, content_dict
             )
 
     def login(self, message):
-        user = self.scope["user"]
-        if user is None:
+        if self.scope["user"] is None:
+            print("로그인 안됨")
             self.close()
             return False
-        self.scope["user"] = user
         return True
 
     def chat_message(self, event):
         """
         그룹에서 채팅 메시지를 받았을 때 호출되는 함수
         """
-        user_id = self.scope["user"].id
+        user_id = self.scope["user_id"]
 
         message = event["message"]
         sender = event["sender"]
@@ -160,10 +169,10 @@ class DirectChatConsumer(JsonWebsocketConsumer):
             room_id = self.scope["url_route"]["kwargs"]["room_id"]
 
             chat_room = DirectChat.objects.get(id=room_id)
-            is_member = chat_room.team.member.filter(pk=user.id).exists()
-            print(is_member)
-            if is_member is True:
-                return chat_room
+            # is_member = chat_room.team.member.filter(pk=user.id).exists()
+            # if is_member is True:
+            #     return chat_room
+            return chat_room
 
         except Exception as e:
             return None

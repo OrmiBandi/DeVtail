@@ -152,7 +152,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "/static/"
+STATIC_URL = "static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
@@ -191,3 +191,10 @@ ACCOUNT_ADAPTER = "accounts.adapters.CustomAccountAdapter"
 LOGIN_REDIRECT_URL = "/"
 
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
+
+# Django Channels 설정
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
