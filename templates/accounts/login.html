@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} 로그인 {% endblock %}
+{% block content %}
+    <div class="flex flex-col justify-center items-center">
+        <a href="{% url 'main:home' %}"><div class="font-bold text-3xl">de<span class="text-primary font-black text-4xl">V</span>tail</div></a>
+        <p class="text-2xl">Sign in to your account</p>
+        <form method="post" class="flex flex-col items-center w-full">
+            {% csrf_token %}
+            <label class="form-control w-full max-w-xs mt-3">
+                <div class="label">
+                    <span class="label-text">Email</span>
+                </div>
+                <input type="email" name="username"
+                    {% if error_username %}
+                        class="input input-bordered w-full max-w-xs placeholder:text-red-500 email" style="border-color: #e53e3e;" placeholder="{{ error_username }}"/>
+                    {% else %}
+                        class="input input-bordered w-full max-w-xs email" placeholder="example@example.com"/>
+                    {% endif %}
+            </label>
+            <label class="form-control w-full max-w-xs mt-3">
+                <div class="label">
+                    <span class="label-text">Password</span>
+                </div>
+                <input type="password" name="password"
+                {% if error_password %}
+                    class="input input-bordered w-full max-w-xs placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_password }}"/>
+                {% else %}
+                    class="input input-bordered w-full max-w-xs" placeholder="Password"/>
+                {% endif %}
+            </label>
+            <div class="flex justify-between w-full max-w-xs mt-3">
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <input type="checkbox" class="checkbox mr-2 remember-checkbox"/>
+                        <!-- <input type="checkbox" checked="checked" class="checkbox mr-2 remember_checkbox"/> -->
+                        <span class="text-xs">Remember me</span> 
+                    </label>
+                </div>
+                <a class="link link-primary text-xs items-center flex justify-center" href="{% url 'accounts:password_reset'}">
+                    <p>Forgot your password?</p>
+                </a>
+            </div>
+            <button class="btn btn-primary btn-block my-3 max-w-xs">Sign In</button>
+        </form>
+    </div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'assets/js/login.js' %}"></script>
+{% endblock %}

@@ -386,7 +386,7 @@ class TestAccountLogin(TestCase):
         """
         print("-- 로그인 테스트 - 정상 로그인 테스트 BEGIN --")
         response = self.client.post(
-            reverse("login"),
+            reverse("accounts:login"),
             {
                 "username": self.singup_data["email"],
                 "password": self.singup_data["password1"],
@@ -403,13 +403,13 @@ class TestAccountLogin(TestCase):
         """
         print("-- 로그인 테스트 - 없는 사용자 테스트 BEGIN --")
         response = self.client.post(
-            reverse("login"),
+            reverse("accounts:login"),
             {"username": "test@test.com", "password": self.singup_data["password1"]},
             follow=True,
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"),
+            response.context["error_username"],
             "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다.",
         )
         print("-- 로그인 테스트 - 없는 사용자 테스트 END --")
@@ -420,13 +420,13 @@ class TestAccountLogin(TestCase):
         """
         print("-- 로그인 테스트 - 비밀번호 불일치 테스트 BEGIN --")
         response = self.client.post(
-            reverse("login"),
+            reverse("accounts:login"),
             {"username": self.singup_data["email"], "password": "testtest12!@#"},
             follow=True,
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"),
+            response.context["error_password"],
             "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다.",
         )
         print("-- 로그인 테스트 - 비밀번호 불일치 테스트 END --")
@@ -437,11 +437,11 @@ class TestAccountLogin(TestCase):
         """
         print("-- 로그인 테스트 - 이메일을 입력하지 않은 경우 테스트 BEGIN --")
         response = self.client.post(
-            reverse("login"),
+            reverse("accounts:login"),
             {"username": "", "password": self.singup_data["password1"]},
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content.decode("utf-8"), "이메일을 입력해주세요.")
+        self.assertEqual(response.context["error_username"], "이메일을 입력해주세요.")
         print("-- 로그인 테스트 - 이메일을 입력하지 않은 경우 테스트 END --")
 
     def test_no_password(self):
@@ -450,11 +450,11 @@ class TestAccountLogin(TestCase):
         """
         print("-- 로그인 테스트 - 비밀번호를 입력하지 않은 경우 테스트 BEGIN --")
         response = self.client.post(
-            reverse("login"),
+            reverse("accounts:login"),
             {"username": self.singup_data["email"], "password": ""},
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content.decode("utf-8"), "비밀번호를 입력해주세요.")
+        self.assertEqual(response.context["error_password"], "비밀번호를 입력해주세요.")
         print("-- 로그인 테스트 - 비밀번호를 입력하지 않은 경우 테스트 END --")
 
 
