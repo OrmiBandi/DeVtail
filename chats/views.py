@@ -12,7 +12,7 @@ User = get_user_model()
 @login_required
 def create_or_connect_direct_chat(request):
     # 대화 상대의 ID를 GET 매개변수로 가져옴
-    target_user_id = request.GET.get("target_user_id")
+    target_user_id = request.POST.get("target_user_id")
 
     # 대화 상대의 ID가 없으면 에러 응답
     if not target_user_id:

@@ -143,7 +143,7 @@ class DirectChatConsumer(JsonWebsocketConsumer):
         """
         그룹에서 채팅 메시지를 받았을 때 호출되는 함수
         """
-        user_id = self.scope["user_id"]
+        user_id = self.scope["user"]
 
         message = event["message"]
         sender = event["sender"]
@@ -216,15 +216,17 @@ class DirectChatConsumer(JsonWebsocketConsumer):
 
         chat_room = DirectChat.objects.get(id=room_id)
 
-        messages = ChatMessage.objects.filter(chatroom=chat_room).order_by("-id")[:10]
+        messages = ChatMessage.objects.filter(direct_chat=chat_room).order_by("-id")[
+            :10
+        ]
 
         for message in reversed(messages):
-            sender = User.objects.get(id=message.user.id)
+            sender = User.objects.get(id=message.author.id)
             self.send_json(
                 {
                     "type": "chat_message",
-                    "message": message.content,
-                    "sender": message.user.id,
+                    "message": message.message,
+                    "sender": message.author.id,
                     "nickname": sender.nickname,
                 }
             )
