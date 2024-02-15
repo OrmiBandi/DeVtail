@@ -190,30 +190,41 @@ class CustomLoginForm(AuthenticationForm):
         widget=forms.PasswordInput,
     )
 
-    def clean(self):
+    def clean_username(self):
         username = self.cleaned_data.get("username")
-        password = self.cleaned_data.get("password")
 
         if not username:
             raise forms.ValidationError("이메일을 입력해주세요.")
 
+        try:
+            self.user_cache = User.objects.get(email=username)
+        except User.DoesNotExist:
+            raise forms.ValidationError(
+                "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다."
+            )
+        return username
+
+    def clean_password(self):
+        username = self.cleaned_data.get("username")
+        password = self.cleaned_data.get("password")
+
         if not password:
             raise forms.ValidationError("비밀번호를 입력해주세요.")
 
-        if username is not None and password:
-            try:
-                self.user_cache = User.objects.get(email=username)
-                if not self.user_cache.check_password(password):
-                    raise forms.ValidationError(
-                        "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다."
-                    )
-                else:
-                    self.confirm_login_allowed(self.user_cache)
-            except User.DoesNotExist:
+        try:
+            self.user_cache = User.objects.get(email=username)
+            if not self.user_cache.check_password(password):
                 raise forms.ValidationError(
                     "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다."
                 )
-        return super().clean()
+            else:
+                self.confirm_login_allowed(self.user_cache)
+        except User.DoesNotExist:
+            raise forms.ValidationError(
+                "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다."
+            )
+
+        return password
 
 
 class AccountUpdateForm(forms.ModelForm):

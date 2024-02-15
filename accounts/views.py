@@ -122,7 +122,6 @@ class CustomLoginView(LoginView):
             context = {}
             for msg in form.errors.as_data():
                 context[f"error_{msg}"] = form.errors[msg][0]
-            print(context)
             return render(
                 request,
                 self.template_name,
