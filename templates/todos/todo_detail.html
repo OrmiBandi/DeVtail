@@ -1,49 +1,70 @@
-<!DOCTYPE html>
-<html lang="ko">
+{% extends "base.html" %}
+{% block content %}
+  {% if todo.status == 'ToDo' %}
+  <div class="badge badge-lg badge-primary">ToDo</div>
+  {% elif todo.status == 'In Progress' %}
+  <div class="badge badge-lg badge-secondary">In Progress</div>
+  {% elif todo.status == 'Done' %}
+  <div class="badge badge-lg badge-outline">Done</div>
+  {% endif %}
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>deVtail-데브테일</title>
-</head>
+  <h2 class="font-black text-2xl mt-2">{{ todo.title }}</h2>
 
-<body>
-  <main>
-    <h2>Detail</h2>
-
-    <a href="{% url 'todo_list' %}">목록</a>
+  <div class="text-end">
     {% if todo.study %}
-    <a href="{% url 'study_todo_edit' study_id=todo.study.id pk=todo.id %}">수정</a>
+    <button class="btn btn-sm btn-ghost" onclick="location.href = '{% url "study_todo_edit" study_id=todo.study.id pk=todo.id %}'">수정</button>
     {% else %}
-    <a href="{% url 'personal_todo_edit' todo.pk %}">수정</a>
+    <button class="btn btn-sm btn-ghost" onclick="location.href = '{% url "personal_todo_edit" todo.pk %}'">수정</button>
     {% endif %}
+    <button class="btn btn-sm btn-ghost" onclick="location.href = '{% url "todo_delete" pk=todo.id %}'">삭제</button>
+  </div>
 
-    <ul>
-      {% if todo.study %}
-      <li>
-        스터디 이름 : {{ todo.study.title }}
-      </li>
-      <li>
-        투두 메이트 :
-        <ul>
-          {% if not todo.todo_assignees.all %}
-          <li>없음</li>
-          {% endif %}
+  <ul>
+    {% if todo.study %}
+    <li>
+      <h3 class="font-bold text-xl my-4">스터디</h3>
+      <p>{{ todo.study.title }}</p>
+    </li>
+    <li>
+      <h3 class="font-bold text-xl my-4">투두 메이트</h3>
+      <ul>
+        {% if not todo.todo_assignees.all %}
+        <li>없음</li>
+        {% endif %}
+        <li>
           {% for member in todo.todo_assignees.all %}
-          <li>{{ member.assignee.nickname }}</li>
+          {% if not forloop.last %}
+          {{ member.assignee.nickname }},
+          {% else %}
+          {{ member.assignee.nickname }}
+          {% endif %}
           {% endfor %}
-        </ul>
-      </li>
+        </li>
+      </ul>
+    </li>
+    {% endif %}
+    <li>
+      <h3 class="font-bold text-xl my-4">내용</h3>
+      {% if not todo.content %}
+      <p>내용이 없습니다</p>
+      {% else %}
+      <p>{{ todo.content }}</p>
       {% endif %}
-      <li>투두 이름 : {{ todo.title }}</li>
-      <li>상태 : {{ todo.status }}</li>
-      <li>내용 : {{ todo.content }}</li>
+    </li>
+    <li>
+      <h3 class="font-bold text-xl my-4">기간</h3>
       {% if todo.start_at %}
-      <li>{{ todo.start_at }} ~ {{ todo.end_at }}</li>
+      <p>
+        <span>{{ todo.start_at }}</span> ~ 
+        <span>{{ todo.end_at }}</span>
+      </p>
+      {% else %}
+      <p>기간이 없습니다</p>
       {% endif %}
-      <li>알림 설정 : {{ todo.alert_set }}</li>
-    </ul>
-  </main>
-</body>
-
-</html>
+    </li>
+    <li>
+      <h3 class="font-black text-xl my-4">알림 설정</h3>
+      <p>{{ todo.alert_set }}</p>
+    </li>
+  </ul>
+{% endblock %}
