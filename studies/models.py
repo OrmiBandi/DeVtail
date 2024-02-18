@@ -38,6 +38,10 @@ class Study(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def study_leader(self):
+        return self.members.get(is_manager=True)
+
 
 class Schedule(models.Model):
     """
