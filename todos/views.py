@@ -22,12 +22,19 @@ class ToDoList(LoginRequiredMixin, ListView):
     model = ToDo
     context_object_name = "todos"
     ordering = "-id"
-    template_name = "todos/todo_calendar.html"
+    template_name = "todos/todo_board.html"
 
     def get_queryset(self):
         # ToDoAssignee에 연결된 ToDo 목록 가져오기
         todos = ToDo.objects.filter(todo_assignees__assignee=self.request.user)
         return todos
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        studies = Study.objects.filter(members__user=self.request.user)
+        context["studies"] = studies
+
+        return context
 
 
 class PersonalToDoList(LoginRequiredMixin, ListView):
