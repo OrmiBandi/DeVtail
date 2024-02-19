@@ -1,3 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}프로필{% endblock %}
 {% block content %}
-<h2>Profile</h2>
-{{ user_profile.email }} {{ user_profile.nickname }} {{ user_profile.development_field }} {{ user_profile.content }} {{ user_profile.profile_image }} {% endblock %}
+    <div class="flex justify-center items-center h-full">
+        <div class="avatar mr-16">
+            <div class="w-72 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                <img alt="프로필 이미지" src="{{ user_profile.profile_image.url }}" />
+            </div>
+        </div>
+        <div class="flex flex-col w-80">
+            <div class="flex mb-3">
+                <p class="w-24 text-lg">닉네임</p><p class="text-lg">{{ user_profile.nickname }}</p>
+            </div>
+            <div class="flex mb-3">
+                <p class="w-24 text-lg">이메일</p><p class="text-lg">{{ user_profile.email }}</p>
+            </div> 
+            <div class="flex mb-3">
+                <p class="w-24 text-lg">개발 분야</p><p class="text-lg">{{ user_profile.development_field }}</p>
+            </div> 
+            <div class="flex flex-col mb-3">
+                <p class="w-24 text-lg">소개글</p>
+                <p class="text-lg ml-2">{{ user_profile.content }} </p>
+            </div>
+            {% if user == user_profile %}
+                <div class="flex">
+                    <a class="btn btn-primary mr-3">Change Password</a>
+                    <a class="btn btn-error">회원 탈퇴</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+{% endblock %}
