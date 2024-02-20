@@ -112,9 +112,6 @@ class StudyDetail(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["study_leader"] = StudyMember.objects.get(
-            study=self.object, is_manager=True, is_accepted=True
-        )
         context["study_members"] = StudyMember.objects.filter(
             study=self.object, is_accepted=True
         )

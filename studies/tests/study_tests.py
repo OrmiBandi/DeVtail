@@ -1,6 +1,6 @@
 import datetime
 from django.test import TestCase
-from studies.models import Study, StudyMember, Category, Tag, Schedule
+from studies.models import Study, StudyMember, Category, Tag, Schedule, RefLink
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
@@ -44,6 +44,10 @@ class TestStudyList(TestCase):
         )
         tags = Tag.objects.create(name="tag_test")
         self.study_object.tags.add(tags)
+
+        RefLink.objects.create(
+            study=self.study_object, link_type="github", url="https://github.com/"
+        )
 
         # 테스트용 스터디 멤버 생성
         StudyMember.objects.create(
@@ -112,6 +116,10 @@ class TestStudyDetail(TestCase):
         )
         tags = Tag.objects.create(name="tag_test")
         self.study_object.tags.add(tags)
+
+        RefLink.objects.create(
+            study=self.study_object, link_type="github", url="https://github.com/"
+        )
 
         # 테스트용 스터디 멤버 생성
         StudyMember.objects.create(
@@ -184,6 +192,10 @@ class TestStudyCreate(TestCase):
         tags = Tag.objects.create(name="tag_test")
         self.study_object.tags.add(tags)
 
+        RefLink.objects.create(
+            study=self.study_object, link_type="github", url="https://github.com/"
+        )
+
         # 테스트용 스터디 멤버 생성
         StudyMember.objects.create(
             study=self.study_object, user=self.user1, is_manager=True, is_accepted=True
@@ -200,6 +212,8 @@ class TestStudyCreate(TestCase):
         response = self.client.post(
             reverse("studies:study_create"), self.study_create_data
         )
+
+        self.assertRedirects(response, "/accounts/login/?next=/study/create/")
 
         # 스터디 생성은 로그인이 필요하므로 302 리다이렉트
         self.assertEqual(response.status_code, 302)
@@ -221,6 +235,7 @@ class TestStudyCreate(TestCase):
         study_data["end_time"] = datetime.time(12, 0)
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -242,6 +257,7 @@ class TestStudyCreate(TestCase):
         study_data["end_time"] = datetime.time(12, 0)
         study_data["category"] = ""
         study_data["tags"] = "tag_test"
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -266,6 +282,7 @@ class TestStudyCreate(TestCase):
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
         study_data["goal"] = ""
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -292,6 +309,7 @@ class TestStudyCreate(TestCase):
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
         study_data["start_at"] = ""
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -318,6 +336,7 @@ class TestStudyCreate(TestCase):
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
         study_data["start_at"] = "2021-01-01"
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -343,6 +362,7 @@ class TestStudyCreate(TestCase):
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
         study_data["end_at"] = ""
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -367,6 +387,8 @@ class TestStudyCreate(TestCase):
         study_data["end_time"] = datetime.time(12, 0)
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
+
         response = self.client.post(reverse("studies:study_create"), study_data)
 
         # 종료일에 오늘 이전의 날짜가 들어올 경우 ValidationError 발생
@@ -391,6 +413,7 @@ class TestStudyCreate(TestCase):
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
         study_data["difficulty"] = ""
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -417,6 +440,7 @@ class TestStudyCreate(TestCase):
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
         study_data["max_member"] = ""
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -444,6 +468,7 @@ class TestStudyCreate(TestCase):
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
         study_data["max_member"] = 1
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -471,6 +496,7 @@ class TestStudyCreate(TestCase):
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
         study_data["max_member"] = 1
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -497,6 +523,7 @@ class TestStudyCreate(TestCase):
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
         study_data["max_member"] = 1
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -524,6 +551,7 @@ class TestStudyCreate(TestCase):
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = "tag_test"
         study_data["max_member"] = 1
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
 
         response = self.client.post(reverse("studies:study_create"), study_data)
 
@@ -571,6 +599,10 @@ class TestStudyUpdate(TestCase):
         tags = Tag.objects.create(name="tag_test")
         self.study_object.tags.add(tags)
 
+        RefLink.objects.create(
+            study=self.study_object, link_type="github", url="https://github.com/"
+        )
+
         # 테스트용 스터디 멤버 생성
         StudyMember.objects.create(
             study=self.study_object, user=self.user1, is_manager=True, is_accepted=True
@@ -610,6 +642,7 @@ class TestStudyUpdate(TestCase):
         study_data = Study.objects.values()[0]
         study_data["category"] = Category.objects.get(name="test").pk
         study_data["tags"] = Tag.objects.get(name="tag_test")
+        study_data["ref_links"] = RefLink.objects.get(pk=1).url
         study_data["days"] = [Schedule.day_choices[0][0]]
         study_data["start_time"] = [Schedule.objects.get(pk=1).start_time]
         study_data["end_time"] = [Schedule.objects.get(pk=1).end_time]
@@ -992,6 +1025,10 @@ class TestStudyDelete(TestCase):
         )
         tags = Tag.objects.create(name="tag_test")
         self.study_object.tags.add(tags)
+
+        RefLink.objects.create(
+            study=self.study_object, link_type="github", url="https://github.com/"
+        )
 
         # 테스트용 스터디 멤버 생성
         StudyMember.objects.create(

@@ -38,6 +38,10 @@ class Study(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def get_study_leader(self):
+        return self.members.get(is_manager=True)
+
 
 class Schedule(models.Model):
     """
@@ -111,7 +115,11 @@ class RefLink(models.Model):
     """
 
     study = models.ForeignKey(
-        "Study", on_delete=models.CASCADE, related_name="ref_links"
+        "Study",
+        on_delete=models.CASCADE,
+        related_name="ref_links",
+        blank=True,
+        null=True,
     )
     link_type = models.CharField(max_length=100)
     url = models.CharField(max_length=100)
