@@ -336,38 +336,38 @@ class PasswordResetCustomView(PasswordResetView):
     template_name = "accounts/password_find.html"
     email_template_name = "registration/password_reset_email.html"
     subject_template_name = "accounts/password_reset_subject.txt"
-    success_url = reverse_lazy("login")
+    success_url = reverse_lazy("accounts:login")
 
     def form_valid(self, form):
         email = form.cleaned_data["email"]
         if not User.objects.filter(email=email).exists():
             return HttpResponseBadRequest("존재하지 않는 이메일입니다.")
+        print(form)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        print(get_current_site(self.request).domain)
         context.update({"domain": get_current_site(self.request).domain})
         return context
 
 
 class PasswordResetConfirmCustomView(PasswordResetConfirmView):
     template_name = "accounts/password_reset.html"
-    success_url = reverse_lazy("login")
+    success_url = reverse_lazy("accounts:login")
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        uidb64 = kwargs["uidb64"]
-        token = kwargs["token"]
+    # def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    #     uidb64 = kwargs["uidb64"]
+    #     token = kwargs["token"]
 
-        uid = urlsafe_base64_decode(uidb64).decode()
-        user = User.objects.get(pk=uid)
-        if not self.token_generator.check_token(user, token):
-            raise ValueError("The password reset link is invalid")
+    #     uid = urlsafe_base64_decode(uidb64).decode()
+    #     user = User.objects.get(pk=uid)
+    #     if not self.token_generator.check_token(user, token):
+    #         raise ValueError("The password reset link is invalid")
 
-        return super().dispatch(request, *args, **kwargs)
+    #     return super().dispatch(request, *args, **kwargs)
 
     def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
         return super().post(request, *args, **kwargs)

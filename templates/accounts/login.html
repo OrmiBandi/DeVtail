@@ -24,7 +24,7 @@
                 </div>
                 <input type="password" name="password"
                 {% if error_password %}
-                    class="input input-bordered w-full max-w-xs placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_password }}"/>
+                    class="input input-bordered w-full max-w-xs placeholder:text-red-500 text-xs" style="border-color: #e53e3e;" placeholder="{{ error_password }}"/>
                 {% else %}
                     class="input input-bordered w-full max-w-xs" placeholder="Password"/>
                 {% endif %}
@@ -33,11 +33,10 @@
                 <div class="form-control">
                     <label class="label cursor-pointer">
                         <input type="checkbox" class="checkbox mr-2 remember-checkbox"/>
-                        <!-- <input type="checkbox" checked="checked" class="checkbox mr-2 remember_checkbox"/> -->
                         <span class="text-xs">Remember me</span> 
                     </label>
                 </div>
-                <a class="link link-primary text-xs items-center flex justify-center" href="{% url 'accounts:password_reset'}">
+                <a class="link link-primary text-xs items-center flex justify-center" href="{% url 'accounts:password_reset' %}">
                     <p>Forgot your password?</p>
                 </a>
             </div>
