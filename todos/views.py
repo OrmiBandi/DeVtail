@@ -67,18 +67,17 @@ class StudyToDoList(LoginRequiredMixin, UserPassesTestMixin, ListView):
         study_id = self.request.GET.get("study")
         user_id = self.request.GET.get("user")
 
+        # 사용자가 속한 스터디를 가져옴
+        user_studies = StudyMember.objects.filter(user=self.request.user)
+
         # 스터디가 선택되지 않은 경우, 사용자가 속한 첫번째 스터디의 할 일을 가져옴
-        if not study_id:
-            study_id = (
-                StudyMember.objects.filter(user=self.request.user).first().study.id
-            )
+        if not study_id and user_studies.exists():
+            study_id = user_studies.first().study.id
             todos = ToDo.objects.filter(study=study_id)
 
         # 스터디가 선택된 경우, 해당 스터디의 할 일을 가져옴
         else:
-            if not StudyMember.objects.filter(
-                study=study_id, user=self.request.user
-            ).exists():
+            if not user_studies.filter(study=study_id).exists():
                 return ToDo.objects.none()
 
             todos = ToDo.objects.filter(study=study_id)
@@ -113,9 +112,10 @@ class StudyToDoList(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
         # 스터디가 선택되지 않은 경우, 사용자가 속한 첫 번째 스터디를 가져옴
         if not study_id:
-            study_id = (
-                StudyMember.objects.filter(user=self.request.user).first().study.id
-            )
+            study_id = StudyMember.objects.filter(user=self.request.user).first()
+
+            if study_id is not None:
+                study_id = study_id.study.id
 
         # 현재 접근하려는 스터디에 대한 권한 확인
         return StudyMember.objects.filter(
