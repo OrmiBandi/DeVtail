@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% block title %}Todo Calendar{% endblock %}
+{% block content %}
+<h2 class="sr-only">ToDo Board</h2>
+
+<section class="mb-8">
+  <h3 class="font-black text-xl">스터디 일정</h3>
+  {% if studies %}
+  <ul class="flex flex-col gap-4">
+    {% for study in studies %}
+    <li>
+      <a href="{% url "study_todo_list" %}?study={{ study.id }}">
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title">{{ study.title }}</h2>
+            <p>{{ study.start_at|date:"Y년 m월 d일" }} ~ {{ study.end_at|date:"Y년 m월 d일" }}</p>
+            {% if study.schedules.all %}
+            <ul>
+              {% for schedule in study.schedules.all %}
+              <li>{{ schedule.get_day_display }} <span>{{ schedule.start_time }} ~ {{ schedule.end_time }}</span></li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <p>일정이 없습니다.</p>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>스터디가 없습니다.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h3 class="font-black text-xl mb-4">ToDo 보드</h3>
+  <div class="flex flex-col w-full lg:flex-row gap-4">
+    <div class="overflow-y-auto grid flex-grow h-96 card bg-base-300 rounded-box place-items-start">
+      <h4 class="sr-only">일정없는 ToDo</h4>
+      {% if todos %}
+      <ul class="card-body">
+      {% for todo in todos %}
+      {% if not todo.start_at and not todo.end_at and todo.status != "Done" %}
+        <li>
+          <a href="{% url 'todo_detail' pk=todo.id %}">
+            <span class="badge badge-primary
+            {% if todo.status == "In Progress" %}badge-outline{% endif %}">{{ todo.status }}</span>
+            {% if todo.study %}[{{ todo.study.title }}] {% endif %}
+            {{ todo.title }}
+          </a>
+        </li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>할 일이 없습니다.</p>
+      {% endif %}
+    </div>
+    <div class="overflow-y-auto grid flex-grow h-96 card bg-base-300 rounded-box place-items-start">
+      <h4 class="sr-only">일정있는 ToDo</h4>
+      {% if todos %}
+      <ul class="card-body">
+      {% for todo in todos %}
+      {% if todo.status != "Done" and todo.start_at and todo.end_at %}
+      {% for current_date in todo.start_at|date_range:todo.end_at %}
+      {{ current_date|date:"Y년 m월 d일" }}
+        <li>
+          <span class="badge badge-primary
+          {% if todo.status == "In Progress" %}badge-outline{% endif %}">{{ todo.status }}</span>
+          {% if todo.study %}[{{ todo.study.title }}] {% endif %}
+          {{ todo.title }}
+        </li>
+      {% endfor %}
+      {% endif %}
+      {% endfor %}
+      </ul>
+      {% else %}
+      <p>할 일이 없습니다.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

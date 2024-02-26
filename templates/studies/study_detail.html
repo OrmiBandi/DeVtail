@@ -9,7 +9,7 @@
     <body>
         <!-- 스터디 상세 페이지 -->
         <h1>Study Detail</h1>
-        <h2>스터디 그룹의 리더 : {{ study_leader.user }}</h2>
+        <h2>스터디 그룹의 리더 : {{ study.study_leader.user }}</h2>
         <h2>현재 로그인한 사용자 : {{ user }}</h2>
         <h2>{{ study.category }}</h2>
         {% for tag in study.tags.all %}

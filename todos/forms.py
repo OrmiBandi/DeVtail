@@ -51,6 +51,10 @@ class PersonalToDoForm(forms.ModelForm):
 
         return cleaned_data
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["content"].widget.attrs["data_widget_type"] = "textarea"
+
 
 class StudyToDoForm(forms.ModelForm):
     assignees = forms.ModelMultipleChoiceField(
@@ -102,3 +106,4 @@ class StudyToDoForm(forms.ModelForm):
         study_id = kwargs.pop("study_id", None)
         super().__init__(*args, **kwargs)
         self.fields["assignees"].queryset = StudyMember.objects.filter(study=study_id)
+        self.fields["content"].widget.attrs["data_widget_type"] = "textarea"

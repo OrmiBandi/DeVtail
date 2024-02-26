@@ -1,31 +1,45 @@
-<!DOCTYPE html>
-<html lang="ko-KR">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>DeVtail</title>
-    </head>
-    <body>
-        <h1><a href="{% url 'studies:study_list' %}">Study List</a></h1>
-        {% for tag in tags %}
-            <a href="{% url 'studies:study_list' %}?tq={{ tag }}">#{{ tag }} </a>
-        {% endfor %}
-        <ul>
-            {% for study in studies %}
-            <li>
-                <div style="display:flex;">
-                    <a href="{% url 'studies:study_detail' study.id %}">{{ study.title }}</a>
-                    <form action="{% url 'studies:favorite_study_create' study.id %}" method="POST">
-                        {% csrf_token %}
-                        <input type="submit" value="즐겨찾기 추가">
-                    </form>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-        <a href="{% url 'studies:study_create' %}">New Study</a>
-        <a href="{% url 'studies:my_study_list' %}">My Study List</a>
+{% extends "base.html" %}
 
+{% block title %}
+스터디 리스트
+{% endblock %}
+{% block content %}
+    <!-- <h1><a href="{% url 'studies:study_list' %}">Study List</a></h1>
+    {% for tag in tags %}
+        <a href="{% url 'studies:study_list' %}?tq={{ tag }}">#{{ tag }} </a>
+    {% endfor %} -->
+    <ul class="grid grid-cols-4 gap-4 mx-auto w-11/12 px-2 sm:px-6 lg:px-8">
+        {% for study in studies %}
+        <li class="mt-4">
+            <a href="{% url 'studies:study_detail' study.id %}">
+            <div class="card card-side border bg-base-100 shadow-xl">
+                    <div class="card-body">
+                    <div class="grid grid-cols-3 gap-4">
+                        <span class="btn btn-sky200">{{ study.category }}</span>
+                        <span class="btn btn-sky200">{{ study.difficulty }}</span>
+                        <span class="flex justify-end">
+                            <form action="{% url 'studies:favorite_study_create' study.id %}" method="POST">
+                                {% csrf_token %}
+                                <input type="image" src="/static/assets/images/favorite_img.png" alt="favorite" width="30" height="30">
+                            </form>
+                        </span>
+                    </div>
+                    <h2 class="card-title mt-4">{{ study.title }}</h2>
+                    <div class="avatar">
+                        <div class="w-24 rounded-full">
+                            <img src=""/>
+                        </div>
+                    </div>
+                    <p>{{ study.study_leader.user }}</p>
+                    <p>{{ study.start_at }}</p>
+                </div>
+            </div>
+        </a>
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'studies:study_create' %}">New Study</a>
+    <a href="{% url 'studies:my_study_list' %}">My Study List</a>
+{% endblock %}
     </body>
 </html>

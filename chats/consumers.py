@@ -64,12 +64,18 @@ class DirectChatConsumer(JsonWebsocketConsumer):
         return
 
     def get_user_from_session(self):
+        """
+        세션 키를 통해 유저 정보를 가져오는 함수
+        """
         session_key = self.get_session_key_from_headers()
         session = Session.objects.get(session_key=session_key)
         user_id = session.get_decoded().get("_auth_user_id")
         return User.objects.get(id=user_id)
 
     def get_session_key_from_headers(self):
+        """
+        채팅방 접속 시 헤더에서 세션 키를 가져오는 함수
+        """
         for name, value in self.scope["headers"]:
             if name == b"cookie":
                 cookies = value.decode("utf-8").split("; ")
@@ -82,10 +88,13 @@ class DirectChatConsumer(JsonWebsocketConsumer):
         """
         사용자의 연결이 끊겼을 때 호출되는 함수
         """
-
-        self.remove_user_to_group()
+        self.remove_user_from_group()
 
     def authorize(self, message):
+        """
+        채팅방에 입장 시,
+        채팅방에 등록된 유저와 현재 로그인한 유저가 일치하는지 확인
+        """
         is_login = self.login(message)
         if is_login is False:
             return
@@ -106,6 +115,9 @@ class DirectChatConsumer(JsonWebsocketConsumer):
         self.fetch_previous_message()
 
     def receive_json(self, content_dict, **kwargs):
+        """
+        채팅 메시지를 받았을 때 호출되는 함수
+        """
         if content_dict["type"] == "auth":
             self.authorize(message=content_dict)
             return
@@ -133,8 +145,10 @@ class DirectChatConsumer(JsonWebsocketConsumer):
             )
 
     def login(self, message):
+        """
+        로그인 여부 확인
+        """
         if self.scope["user"] is None:
-            print("로그인 안됨")
             self.close()
             return False
         return True
@@ -143,7 +157,7 @@ class DirectChatConsumer(JsonWebsocketConsumer):
         """
         그룹에서 채팅 메시지를 받았을 때 호출되는 함수
         """
-        user_id = self.scope["user_id"]
+        user_id = self.scope["user"]
 
         message = event["message"]
         sender = event["sender"]
@@ -188,7 +202,7 @@ class DirectChatConsumer(JsonWebsocketConsumer):
         OnlineUserManager(self.room_group_name).add_user(user)
         self.refresh_online_users()
 
-    def remove_user_to_group(self):
+    def remove_user_from_group(self):
         """
         채팅방 그룹의 유저 제거
         """
@@ -216,15 +230,18 @@ class DirectChatConsumer(JsonWebsocketConsumer):
 
         chat_room = DirectChat.objects.get(id=room_id)
 
-        messages = ChatMessage.objects.filter(chatroom=chat_room).order_by("-id")[:10]
+        # 최근 10개의 메시지 조회
+        messages = ChatMessage.objects.filter(direct_chat=chat_room).order_by("-id")[
+            :10
+        ]
 
         for message in reversed(messages):
-            sender = User.objects.get(id=message.user.id)
+            sender = User.objects.get(id=message.author.id)
             self.send_json(
                 {
                     "type": "chat_message",
-                    "message": message.content,
-                    "sender": message.user.id,
+                    "message": message.message,
+                    "sender": message.author.id,
                     "nickname": sender.nickname,
                 }
             )
