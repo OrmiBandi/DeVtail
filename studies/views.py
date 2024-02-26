@@ -110,8 +110,6 @@ class StudyCreate(LoginRequiredMixin, CreateView):
             study=study, user=self.request.user, is_manager=True, is_accepted=True
         )
 
-        study.current_member += 1
-
         return super().form_valid(form)
 
 
@@ -608,8 +606,6 @@ def approve_study_join(request, studymember_id):
     studymember.is_accepted = True
     studymember.is_manager = False
     studymember.save()
-
-    studymember.study.current_member += 1
 
     return redirect("studies:study_detail", pk=studymember.study.pk)
 

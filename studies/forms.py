@@ -79,7 +79,6 @@ class StudyForm(forms.ModelForm):
             "introduce",
             "title",
             "difficulty",
-            "current_member",
             "max_member",
             "days",
             "start_time",

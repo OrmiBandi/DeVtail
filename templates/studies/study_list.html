@@ -14,37 +14,37 @@
             <div class="card card-side border bg-base-100 shadow-xl">
                 <div class="card-body">
                     <div class="flex justify-between">
-                            <div>
-                                <button class="btn btn-sky200 min-w-0" onClick="event.preventDefault(); location.href='{% url 'studies:study_list' %}?category={{ study.category }}'">{{ study.category }}</button>
-                                <button class="btn btn-sky200 min-w-0" onClick="event.preventDefault(); location.href='{% url 'studies:study_list' %}?difficulty={{ study.difficulty }}'">{{ study.difficulty }}</button>
-                            </div>
-                            <div>
-                                <form action="{% url 'studies:favorite_study_create' study.id %}" method="POST">
-                                    {% csrf_token %}
-                                    <!-- 체크 사항 1번. 즐겨찾기에 없을 경우 unchecked 이미지로, 있을 경우 checked 이미지로 변경되도록 해야함. -->
-                                    <input type="image" src="/static/assets/images/favorite_img_unchecked.png" alt="favorite" width="30" height="30">
-                                </form>
+                        <div>
+                            <button class="btn btn-sky200 min-w-0" onClick="event.preventDefault(); location.href='{% url 'studies:study_list' %}?category={{ study.category }}'">{{ study.category }}</button>
+                            <button class="btn btn-sky200 min-w-0" onClick="event.preventDefault(); location.href='{% url 'studies:study_list' %}?difficulty={{ study.difficulty }}'">{{ study.difficulty }}</button>
+                        </div>
+                        <div>
+                            <form action="{% url 'studies:favorite_study_create' study.id %}" method="POST">
+                                {% csrf_token %}
+                                <!-- 체크 사항 1번. 즐겨찾기에 없을 경우 unchecked 이미지로, 있을 경우 checked 이미지로 변경되도록 해야함. -->
+                                <input type="image" src="/static/assets/images/favorite_img_unchecked.png" alt="favorite" width="30" height="30">
+                            </form>
+                        </div>
+                    </div>
+                    <h2 class="card-title mt-4">{{ study.title }}</h2>
+                    <div class="flex gap-4">
+                        <div class="avatar">
+                            <div class="w-16 rounded-full">
+                                <img src="{{ study.get_study_leader.user.profile_image.url }}"/>
                             </div>
                         </div>
-                        <h2 class="card-title mt-4">{{ study.title }}</h2>
-                        <div class="flex gap-4">
-                            <div class="avatar">
-                                <div class="w-16 rounded-full">
-                                    <img src="{{ study.get_study_leader.user.profile_image.url }}"/>
-                                </div>
-                            </div>
-                            <div class="flex flex-col justify-center">
-                                <div>{{ study.get_study_leader.user.nickname }}</div>
-                                <div>{{ study.start_at }}</div>
-                            </div>
-                            <div class="flex gap-4 self-center">
-                                <img src="/static/assets/images/members_count_img.png" alt="members_count" width="30px" height="20px">
-                                <span>{{ study.current_member }}/{{ study.max_member }}</span>
-                            </div>
+                        <div class="flex flex-col justify-center">
+                            <div>{{ study.get_study_leader.user.nickname }}</div>
+                            <div>{{ study.start_at }}</div>
+                        </div>
+                        <div class="flex gap-4 self-center">
+                            <img src="/static/assets/images/members_count_img.png" alt="members_count" width="30px" height="20px">
+                            <span>{{ study.get_current_member }}/{{ study.max_member }}</span>
                         </div>
                     </div>
                 </div>
-            </a>
+            </div>
+        </a>
         {% endfor %}
     </div>
     <a href="{% url 'studies:study_create' %}">New Study</a>
