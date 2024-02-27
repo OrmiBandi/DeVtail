@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import redirect_to_login
+from django.core.exceptions import PermissionDenied
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
 from django.views.generic import ListView
@@ -72,13 +73,14 @@ class StudyToDoList(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
         # 스터디가 선택되지 않은 경우, 사용자가 속한 첫번째 스터디의 할 일을 가져옴
         if not study_id and user_studies.exists():
-            study_id = user_studies.first().study.id
-            todos = ToDo.objects.filter(study=study_id)
+            study = user_studies.first().study.id
+            todos = ToDo.objects.filter(study=study)
 
         # 스터디가 선택된 경우, 해당 스터디의 할 일을 가져옴
         else:
             if not user_studies.filter(study=study_id).exists():
-                return ToDo.objects.none()
+                # 스터디에 가입되어있지 않은 경우 403 Forbidden 오류 발생
+                raise PermissionDenied("스터디에 가입하거나 만들어야 사용 가능합니다.")
 
             todos = ToDo.objects.filter(study=study_id)
 
