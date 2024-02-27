@@ -7,14 +7,7 @@
         <strong>{{ todo.title }}</strong>
         <p>정말로 삭제하시겠습니까?</p>
       </div>
-      <button class="btn btn-wide btn-outline btn-primary" id="cancelBtn">취소하기</button>
+      <button class="btn btn-wide btn-outline btn-primary" id="backBtn">취소하기</button>
       <button class="btn btn-wide btn-error">삭제하기</button>
     </form>
-
-    <script>
-      document.getElementById("cancelBtn").addEventListener("click", function (event) {
-        event.preventDefault();
-        history.back();
-      });
-    </script>
 {% endblock %}
