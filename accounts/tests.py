@@ -213,7 +213,7 @@ class TestAccountSignupEmail(TestCase):
         response = self.client.post(
             reverse("accounts:signup"), self.signup_data, format="multipart"
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(
             str(list(get_messages(response.wsgi_request))[0]),
             "인증 URL이 전송되었습니다. 메일을 확인해주세요.",
@@ -488,7 +488,7 @@ class TestAccountLogout(TestCase):
         self.client.force_login(
             User.objects.get(email=self.singup_data["email"]), backend=None
         )
-        response = self.client.post(reverse("logout"), follow=True)
+        response = self.client.post(reverse("accounts:logout"), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context["user"].is_authenticated)
         print("-- 로그아웃 테스트 - 정상 로그아웃 테스트 END --")
@@ -498,7 +498,7 @@ class TestAccountLogout(TestCase):
         로그인하지 않은 사용자 테스트
         """
         print("-- 로그아웃 테스트 - 로그인하지 않은 사용자 테스트 BEGIN --")
-        response = self.client.post(reverse("logout"), follow=True)
+        response = self.client.post(reverse("accounts:logout"), follow=True)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.content.decode("utf-8"), "로그인되지 않은 사용자입니다."
@@ -513,12 +513,12 @@ class TestAccountLogout(TestCase):
         self.client.force_login(
             User.objects.get(email=self.singup_data["email"]), backend=None
         )
-        response = self.client.post(reverse("logout"), follow=True)
+        response = self.client.post(reverse("accounts:logout"), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context["user"].is_authenticated)
 
         response = self.client.post(
-            reverse("login"),
+            reverse("accounts:login"),
             {
                 "username": self.singup_data["email"],
                 "password": self.singup_data["password1"],
@@ -562,7 +562,7 @@ class TestAccountProfile(TestCase):
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
-        response = self.client.get(reverse("profile", kwargs={"pk": 1}))
+        response = self.client.get(reverse("accounts:profile", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.context["user_profile"].email, self.signup_data["email"]
@@ -584,7 +584,9 @@ class TestAccountProfile(TestCase):
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
-        response = self.client.get(reverse("profile", kwargs={"pk": 2}), follow=True)
+        response = self.client.get(
+            reverse("accounts:profile", kwargs={"pk": 2}), follow=True
+        )
         self.assertEqual(response.status_code, 404)
         self.assertEqual(
             response.content.decode("utf-8"), "존재하지 않는 사용자입니다."
@@ -596,7 +598,7 @@ class TestAccountProfile(TestCase):
         프로필 테스트 - 로그인하지 않은 사용자의 프로필 요청 테스트
         """
         print("-- 프로필 테스트 - 로그인하지 않은 사용자의 프로필 요청 테스트 BEGIN --")
-        response = self.client.get(reverse("profile", kwargs={"pk": 1}))
+        response = self.client.get(reverse("accounts:profile", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, 401)
         self.assertEqual(
             response.content.decode("utf-8"), "로그인되지 않은 사용자입니다."
@@ -648,7 +650,7 @@ class TestAccountUpdate(TestCase):
         print(
             "-- 사용자 정보 수정 테스트 - 로그인하지 않은 사용자의 사용자 정보 수정 테스트 BEGIN --"
         )
-        response = self.client.post(reverse("account_update"))
+        response = self.client.post(reverse("accounts:account_update"))
         self.assertEqual(response.status_code, 401)
         self.assertEqual(
             response.content.decode("utf-8"), "로그인되지 않은 사용자입니다."
@@ -667,7 +669,7 @@ class TestAccountUpdate(TestCase):
         )
 
         response = self.client.post(
-            reverse("account_update"), self.update_data, follow=True
+            reverse("accounts:account_update"), self.update_data, follow=True
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -692,7 +694,7 @@ class TestAccountUpdate(TestCase):
         )
         self.update_data["nickname"] = "t"
         response = self.client.post(
-            reverse("account_update"), self.update_data, follow=True
+            reverse("accounts:account_update"), self.update_data, follow=True
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
@@ -715,7 +717,7 @@ class TestAccountUpdate(TestCase):
         )
         self.update_data["nickname"] = "testtesttesttest"
         response = self.client.post(
-            reverse("account_update"), self.update_data, follow=True
+            reverse("accounts:account_update"), self.update_data, follow=True
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
@@ -738,7 +740,7 @@ class TestAccountUpdate(TestCase):
         )
         self.update_data["nickname"] = "test!@"
         response = self.client.post(
-            reverse("account_update"), self.update_data, follow=True
+            reverse("accounts:account_update"), self.update_data, follow=True
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
@@ -760,7 +762,7 @@ class TestAccountUpdate(TestCase):
         )
         self.update_data["nickname"] = ""
         response = self.client.post(
-            reverse("account_update"), self.update_data, follow=True
+            reverse("accounts:account_update"), self.update_data, follow=True
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content.decode("utf-8"), "닉네임을 입력해주세요.")
@@ -784,7 +786,7 @@ class TestAccountUpdate(TestCase):
             nickname="test1",
         )
         response = self.client.post(
-            reverse("account_update"), self.update_data, follow=True
+            reverse("accounts:account_update"), self.update_data, follow=True
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content.decode("utf-8"), "중복된 닉네임입니다.")
@@ -804,7 +806,7 @@ class TestAccountUpdate(TestCase):
         )
         self.update_data["development_field"] = ""
         response = self.client.post(
-            reverse("account_update"), self.update_data, follow=True
+            reverse("accounts:account_update"), self.update_data, follow=True
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content.decode("utf-8"), "개발 분야를 선택해주세요.")
@@ -824,7 +826,7 @@ class TestAccountUpdate(TestCase):
         )
         self.update_data["development_field"] = "test"
         response = self.client.post(
-            reverse("account_update"), self.update_data, follow=True
+            reverse("accounts:account_update"), self.update_data, follow=True
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
@@ -869,7 +871,9 @@ class TestAccountSecession(TestCase):
         print(
             "-- 회원 탈퇴 테스트 - 로그인하지 않은 사용자의 회원 탈퇴 테스트 BEGIN --"
         )
-        response = self.client.post(reverse("account_delete"), data=self.delete_data)
+        response = self.client.post(
+            reverse("accounts:account_delete"), data=self.delete_data
+        )
         self.assertEqual(response.status_code, 401)
         self.assertEqual(
             response.content.decode("utf-8"), "로그인되지 않은 사용자입니다."
@@ -884,9 +888,9 @@ class TestAccountSecession(TestCase):
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
-        response = self.client.post(reverse("account_delete"), data={})
+        response = self.client.post(reverse("accounts:account_delete"), data={})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content.decode("utf-8"), "비밀번호를 입력해주세요.")
+        self.assertEqual(response.context["error_password"], "비밀번호를 입력해주세요.")
         print("-- 회원 탈퇴 테스트 - 비밀번호를 입력하지 않은 경우 테스트 END --")
 
     def test_password_wrong(self):
@@ -898,10 +902,12 @@ class TestAccountSecession(TestCase):
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
         self.delete_data["password"] = "testtest12!@#"
-        response = self.client.post(reverse("account_delete"), data=self.delete_data)
+        response = self.client.post(
+            reverse("accounts:account_delete"), data=self.delete_data
+        )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"), "비밀번호가 일치하지 않습니다."
+            response.context["error_password"], "비밀번호가 일치하지 않습니다."
         )
         print("-- 회원 탈퇴 테스트 - 비밀번호가 일치하지 않는 경우 테스트 END --")
 
@@ -914,13 +920,9 @@ class TestAccountSecession(TestCase):
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
         response = self.client.post(
-            reverse("account_delete"), follow=True, data=self.delete_data
+            reverse("accounts:account_delete"), follow=True, data=self.delete_data
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            str(list(get_messages(response.wsgi_request))[0]),
-            "회원 탈퇴가 완료되었습니다.",
-        )
         self.assertFalse(response.context["user"].is_authenticated)
         self.assertEqual(User.objects.count(), 0)
         print("-- 회원 탈퇴 테스트 - 정상 회원 탈퇴 테스트 END --")
@@ -971,7 +973,7 @@ class TestPasswordChange(TestCase):
             "-- 비밀번호 변경 테스트 - 로그인하지 않은 사용자의 비밀번호 변경 테스트 BEGIN --"
         )
         response = self.client.post(
-            reverse("password_change"), self.password_change_data
+            reverse("accounts:password_change"), self.password_change_data
         )
         self.assertEqual(response.status_code, 401)
         self.assertEqual(
@@ -990,7 +992,7 @@ class TestPasswordChange(TestCase):
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
         response = self.client.post(
-            reverse("password_change"), self.password_change_data, follow=True
+            reverse("accounts:password_change"), self.password_change_data, follow=True
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -1011,11 +1013,11 @@ class TestPasswordChange(TestCase):
         )
         self.password_change_data["old_password"] = "testtest12!@#"
         response = self.client.post(
-            reverse("password_change"), self.password_change_data
+            reverse("accounts:password_change"), self.password_change_data
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"), "이전 비밀번호가 일치하지 않습니다."
+            response.context["error_old_password"], "이전 비밀번호가 일치하지 않습니다."
         )
         print(
             "-- 비밀번호 변경 테스트 - 이전 비밀번호가 일치하지 않는 경우 테스트 END --"
@@ -1034,11 +1036,11 @@ class TestPasswordChange(TestCase):
         self.password_change_data["new_password1"] = "te12!@"
         self.password_change_data["new_password2"] = "te12!@"
         response = self.client.post(
-            reverse("password_change"), self.password_change_data, follow=True
+            reverse("accounts:password_change"), self.password_change_data, follow=True
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"),
+            response.context["error_new_password1"],
             "비밀번호는 8자리 이상, 15자리 이하로 입력해주세요.",
         )
         print(
@@ -1058,11 +1060,11 @@ class TestPasswordChange(TestCase):
         self.password_change_data["new_password1"] = "testtesttest12!@"
         self.password_change_data["new_password2"] = "testtesttest12!@"
         response = self.client.post(
-            reverse("password_change"), self.password_change_data
+            reverse("accounts:password_change"), self.password_change_data
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"),
+            response.context["error_new_password1"],
             "비밀번호는 8자리 이상, 15자리 이하로 입력해주세요.",
         )
         print(
@@ -1082,11 +1084,12 @@ class TestPasswordChange(TestCase):
         self.password_change_data["new_password1"] = "testtest12"
         self.password_change_data["new_password2"] = "testtest12"
         response = self.client.post(
-            reverse("password_change"), self.password_change_data
+            reverse("accounts:password_change"), self.password_change_data
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"), "비밀번호에 특수문자를 포함해주세요."
+            response.context["error_new_password1"],
+            "비밀번호에 특수문자를 포함해주세요.",
         )
         print(
             "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우 END --"
@@ -1105,11 +1108,11 @@ class TestPasswordChange(TestCase):
         self.password_change_data["new_password1"] = "testtest!@"
         self.password_change_data["new_password2"] = "testtest!@"
         response = self.client.post(
-            reverse("password_change"), self.password_change_data
+            reverse("accounts:password_change"), self.password_change_data
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"), "비밀번호에 숫자를 포함해주세요."
+            response.context["error_new_password1"], "비밀번호에 숫자를 포함해주세요."
         )
         print(
             "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우 END --"
@@ -1128,11 +1131,11 @@ class TestPasswordChange(TestCase):
         self.password_change_data["new_password1"] = "12!@12!@12!@"
         self.password_change_data["new_password2"] = "12!@12!@12!@"
         response = self.client.post(
-            reverse("password_change"), self.password_change_data
+            reverse("accounts:password_change"), self.password_change_data
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"), "비밀번호에 영문을 포함해주세요."
+            response.context["error_new_password1"], "비밀번호에 영문을 포함해주세요."
         )
         print(
             "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 영문이 없을 경우 END --"
@@ -1150,11 +1153,11 @@ class TestPasswordChange(TestCase):
         )
         self.password_change_data["new_password1"] = ""
         response = self.client.post(
-            reverse("password_change"), self.password_change_data
+            reverse("accounts:password_change"), self.password_change_data
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"), "새 비밀번호를 입력해주세요."
+            response.context["error_new_password1"], "새 비밀번호를 입력해주세요."
         )
         print(
             "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우 END --"
@@ -1172,11 +1175,11 @@ class TestPasswordChange(TestCase):
         )
         self.password_change_data["new_password2"] = ""
         response = self.client.post(
-            reverse("password_change"), self.password_change_data
+            reverse("accounts:password_change"), self.password_change_data
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"), "새 비밀번호 확인을 입력해주세요."
+            response.context["error_new_password2"], "새 비밀번호 확인을 입력해주세요."
         )
         print(
             "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우 END --"
@@ -1194,11 +1197,11 @@ class TestPasswordChange(TestCase):
         )
         self.password_change_data["new_password2"] = "testtest12!@"
         response = self.client.post(
-            reverse("password_change"), self.password_change_data
+            reverse("accounts:password_change"), self.password_change_data
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"), "새 비밀번호가 일치하지 않습니다."
+            response.context["error_new_password2"], "새 비밀번호가 일치하지 않습니다."
         )
         print(
             "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우 END --"
@@ -1233,10 +1236,10 @@ class TestPasswordReset(TestCase):
         """
         print("-- 비밀번호 찾기 테스트 - 이메일 전송 테스트 - 정상 전송 BEGIN --")
         response = self.client.post(
-            reverse("password_reset"), {"email": self.signup_data["email"]}
+            reverse("accounts:password_reset"), {"email": self.signup_data["email"]}
         )
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse("login"))
+        self.assertRedirects(response, reverse("accounts:login"))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, "deVtail 비밀번호 변경 메일입니다.")
         self.assertEqual(mail.outbox[0].to, [self.signup_data["email"]])
@@ -1250,7 +1253,7 @@ class TestPasswordReset(TestCase):
             "-- 비밀번호 찾기 테스트 - 이메일 전송 테스트 - 존재하지 않는 이메일 BEGIN --"
         )
         response = self.client.post(
-            reverse("password_reset"), {"email": "test@gmail.com"}
+            reverse("accounts:password_reset"), {"email": "test@gmail.com"}
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
@@ -1259,25 +1262,3 @@ class TestPasswordReset(TestCase):
         print(
             "-- 비밀번호 찾기 테스트 - 이메일 전송 테스트 - 존재하지 않는 이메일 END --"
         )
-
-    # def test_reset_success(self):
-    #     """
-    #     비밀번호 초기화 테스트 - 정상 초기화
-    #     """
-    #     print("-- 비밀번호 찾기 테스트 - 비밀번호 초기화 테스트 - 정상 초기화 BEGIN --")
-    #     user = User.objects.get(pk=1)
-    #     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    #     token = default_token_generator.make_token(user)
-    #     url = f"/accounts/password/reset_confirm/{uid}/{token}/"
-    #     print(url)
-    #     response = self.client.post(
-    #         url,
-    #         {
-    #             "new_password1": "testtest12!@#",
-    #             "new_password2": "testtest12!@#",
-    #         },
-    #     )
-    #     # self.assertRedirects(response, reverse("login"))
-    #     user.refresh_from_db()
-    #     self.assertTrue(user.check_password("testtest12!@#"))
-    #     print("-- 비밀번호 찾기 테스트 - 비밀번호 초기화 테스트 - 정상 초기화 END --")

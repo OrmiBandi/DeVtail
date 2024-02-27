@@ -287,6 +287,20 @@ class AccountDeleteForm(forms.ModelForm):
         model = User
         fields = ["password"]
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.user = kwargs.pop("user")
+        super().__init__(*args, **kwargs)
+
+    def clean_password(self):
+        """
+        비밀번호 유효성 검사 메서드
+            - 비밀번호가 일치하는지 검사
+        """
+        password = self.cleaned_data.get("password")
+        if not self.user.check_password(password):
+            raise forms.ValidationError("비밀번호가 일치하지 않습니다.")
+        return password
+
 
 class PasswordChangeForm(forms.ModelForm):
     old_password = forms.CharField(
@@ -313,21 +327,17 @@ class PasswordChangeForm(forms.ModelForm):
         self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
 
-    def clean(self):
+    def clean_old_password(self):
         """
-        유효성 검사 메서드
+        이전 비밀번호 유효성 검사 메서드
             - 이전 비밀번호가 일치하는지 검사
-            - 새 비밀번호와 새 비밀번호 확인이 일치하는지 검사
+
         """
         old_password = self.cleaned_data.get("old_password")
-        new_password1 = self.cleaned_data.get("new_password1")
-        new_password2 = self.cleaned_data.get("new_password2")
 
         if not self.user.check_password(old_password):
             raise forms.ValidationError("이전 비밀번호가 일치하지 않습니다.")
-
-        if new_password1 != new_password2:
-            raise forms.ValidationError("새 비밀번호가 일치하지 않습니다.")
+        return old_password
 
     def clean_new_password1(self):
         """
@@ -336,6 +346,7 @@ class PasswordChangeForm(forms.ModelForm):
             - 특수문자가 포함되어 있는지 검사
             - 새 비밀번호에 숫자가 포함되어 있는지 검사
             - 새 비밀번호에 영문자가 포함되어 있는지 검사
+            - 새 비밀번호와 새 비밀번호 확인이 일치하는지 검사
         """
         new_password1 = self.cleaned_data.get("new_password1")
         # 새 비밀번호 길이가 8자리 이상, 15자리 이하인지 검사
@@ -353,3 +364,15 @@ class PasswordChangeForm(forms.ModelForm):
         if not any(char.isalpha() for char in new_password1):
             raise forms.ValidationError("비밀번호에 영문을 포함해주세요.")
         return new_password1
+
+    def clean_new_password2(self):
+        """
+        새 비밀번호 확인 유효성 검사 메서드
+            - 새 비밀번호와 새 비밀번호 확인이 일치하는지 검사
+        """
+        new_password1 = self.cleaned_data.get("new_password1")
+        new_password2 = self.cleaned_data.get("new_password2")
+        # 새 비밀번호와 새 비밀번호 확인이 일치하는지 검사
+        if new_password1 != new_password2:
+            raise forms.ValidationError("새 비밀번호가 일치하지 않습니다.")
+        return new_password2

@@ -70,9 +70,10 @@ class SignupView(CreateView):
             email = EmailMessage(title, message, "elwl5515@gmail.com", [user.email])
             email.send()
             messages.success(request, "인증 URL이 전송되었습니다. 메일을 확인해주세요.")
-            return redirect("accounts:login")
+            return render(request, "accounts/signup_success.html", {"form": form})
         else:
             context = {}
+            context["form"] = form
             for msg in form.errors.as_data():
                 context[f"error_{msg}"] = form.errors[msg][0]
             return render(
@@ -121,7 +122,10 @@ class CustomLoginView(LoginView):
         else:
             context = {}
             for msg in form.errors.as_data():
-                context[f"error_{msg}"] = form.errors[msg][0]
+                if "이 계정은 유효하지 않습니다." in form.errors[msg][0]:
+                    context[f"error_username"] = form.errors[msg][0]
+                else:
+                    context[f"error_{msg}"] = form.errors[msg][0]
             return render(
                 request,
                 self.template_name,
@@ -135,20 +139,6 @@ class CustomLoginView(LoginView):
         """
         url = self.get_redirect_url()
         return url or reverse_lazy("main:home")
-
-    # def form_invalid(self, form: AuthenticationForm):
-    #     """
-    #     로그인 실패시 메서드
-    #     """
-    #     form_errors = form.errors.get("__all__", [])
-    #     if "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다." in form_errors:
-    #         return HttpResponseBadRequest(
-    #             _("존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다.")
-    #         )
-    #     elif "이메일을 입력해주세요." in form_errors:
-    #         return HttpResponseBadRequest(_("이메일을 입력해주세요."))
-    #     elif "비밀번호를 입력해주세요." in form_errors:
-    #         return HttpResponseBadRequest(_("비밀번호를 입력해주세요."))
 
 
 class CustomLogoutView(LogoutView):
@@ -208,7 +198,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         """
         수정 성공 시 프로필 페이지로 이동시키는 메서드
         """
-        return reverse_lazy("profile", kwargs={"pk": self.object.pk})
+        return reverse_lazy("accounts:profile", kwargs={"pk": self.object.pk})
 
     def handle_no_permission(self):
         """
@@ -248,19 +238,7 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
     form_class = AccountDeleteForm
     template_name = "accounts/account_delete.html"
     context_object_name = "account"
-    success_url = reverse_lazy("home")
-
-    def form_valid(self, form):
-        password = form.cleaned_data["password"]
-        user = self.request.user
-        if user.check_password(password):
-            messages.success(self.request, "회원 탈퇴가 완료되었습니다.")
-            return super(AccountDeleteView, self).delete(
-                self.request, *self.args, **self.kwargs
-            )
-        else:
-            error_message = "비밀번호가 일치하지 않습니다."
-            return HttpResponseBadRequest(error_message)
+    success_url = reverse_lazy("main:home")
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -277,9 +255,21 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
         response = super().post(request, *args, **kwargs)
         form = self.get_form()
         if not form.is_valid():
-            error_message = str(list(form.errors.as_data().values())[0][0].messages[0])
-            return HttpResponseBadRequest(error_message)
+            context = {}
+            for msg in form.errors.as_data():
+                context[f"error_{msg}"] = form.errors[msg][0]
+            return render(
+                request,
+                self.template_name,
+                context,
+                status=HttpResponseBadRequest.status_code,
+            )
         return response
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
 
 class PasswordChangeView(LoginRequiredMixin, UpdateView):
@@ -292,7 +282,7 @@ class PasswordChangeView(LoginRequiredMixin, UpdateView):
         """
         수정 성공 시 프로필 페이지로 이동시키는 메서드
         """
-        return reverse_lazy("profile", kwargs={"pk": self.object.pk})
+        return reverse_lazy("accounts:profile", kwargs={"pk": self.object.pk})
 
     def handle_no_permission(self):
         """
@@ -322,8 +312,15 @@ class PasswordChangeView(LoginRequiredMixin, UpdateView):
         response = super().post(request, *args, **kwargs)
         form = self.get_form()
         if not form.is_valid():
-            error_message = str(list(form.errors.as_data().values())[0][0].messages[0])
-            return HttpResponseBadRequest(error_message)
+            context = {}
+            for msg in form.errors.as_data():
+                context[f"error_{msg}"] = form.errors[msg][0]
+            return render(
+                request,
+                self.template_name,
+                context,
+                status=HttpResponseBadRequest.status_code,
+            )
         return response
 
     def get_form_kwargs(self):
@@ -342,7 +339,6 @@ class PasswordResetCustomView(PasswordResetView):
         email = form.cleaned_data["email"]
         if not User.objects.filter(email=email).exists():
             return HttpResponseBadRequest("존재하지 않는 이메일입니다.")
-        print(form)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):

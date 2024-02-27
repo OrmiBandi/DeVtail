@@ -14,6 +14,8 @@
                 <input type="email" name="email"
                     {% if error_email %}
                         class="input input-bordered w-full max-w-xs placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_email }}"/>
+                    {% elif form.email.value %}
+                        class="input input-bordered w-full max-w-xs" value="{{ form.email.value }}" placeholder="example@example.com"/>
                     {% else %}
                         class="input input-bordered w-full max-w-xs" placeholder="example@example.com"/>
                     {% endif %}
@@ -52,25 +54,26 @@
                 {% endif %}
             </label>
             <label class="form-control w-full max-w-xs">
-                <div class="label">
-                    <span class="label-text">Development Field*</span>
-                </div>
-                <select name="development_field" class="select select-bordered w-full max-w-xs"
-                    {% if error_development_field %}
-                        style="border-color: #e53e3e;"
-                    {% endif %}
-                    >
+                {% if error_development_field %}
+                    <div class="label">
+                        <span class="label-text-alt text-red-500">{{ error_development_field }}</span>
+                    </div>
+                {% else %}
+                    <div class="label">
+                        <span class="label-text">Development Field*</span>
+                    </div>
+                {% endif %}
+            </label>
+                {% if error_development_field %}
+                    <select name="development_field" class="select select-bordered w-full max-w-xs" style="border-color: #e53e3e;">
+                {% else %}
+                    <select name="development_field" class="select select-bordered w-full max-w-xs">
+                {% endif %}
                     <option disabled selected>Development Field</option>
                     {% for field in form.development_field %}
                         {{ field }}
                     {% endfor %}
                 </select>
-                {% if error_development_field %}
-                    <div class="label">
-                        <span class="label-text-alt text-red-500">{{ error_development_field }}</span>
-                    </div>
-                {% endif %}
-            </label>
             <label class="form-control w-full max-w-xs">
                 <div class="label">
                     <span class="label-text">Content</span>
