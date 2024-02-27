@@ -27,7 +27,6 @@ class Study(models.Model):
     introduce = models.TextField(null=True, blank=True)
     title = models.CharField(max_length=100)
     difficulty = models.CharField(max_length=2, choices=difficulty_choices)
-    current_member = models.IntegerField(default=0)
     max_member = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -41,6 +40,10 @@ class Study(models.Model):
     @property
     def get_study_leader(self):
         return self.members.get(is_manager=True)
+
+    @property
+    def get_current_member(self):
+        return self.members.filter(is_accepted=True).count()
 
 
 class Schedule(models.Model):
