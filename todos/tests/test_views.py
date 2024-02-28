@@ -375,6 +375,23 @@ class StudyToDoList(TestCase):
 
         self.assertEqual(response.status_code, 403)
 
+    # 사용자가 속해있는 스터디가 없을 경우 403 접근 못함
+    def test_logged_in_with_no_study(self):
+        """
+        사용자가 속해있는 스터디가 없을 때 아무것도 없는 상태인지 확인
+        """
+        test_user = User.objects.create_user(
+            nickname="testuser", email="testuser@example.com", password = "3HJ1vRV0Z&2iD"
+        )
+
+        login = self.client.login(
+            email="testuser@example.com", password="3HJ1vRV0Z&2iD"
+        )
+
+        response = self.client.get(reverse("study_todo_list"))
+
+        self.assertEqual(response.status_code, 403)
+
 
 class PersonalToDoCreateTest(TestCase):
     """
@@ -704,7 +721,7 @@ class StudyToDoCreateTest(TestCase):
         )
         response = self.client.get(reverse("study_todo_create", kwargs={"study_id": 1}))
 
-        # self.assertRedirects(response, "/study/1/")
+        self.assertRedirects(response, "/study/1/")
 
     def test_create_todo(self):
         """

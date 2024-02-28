@@ -60,7 +60,7 @@
   </div>
   {% endfor %}
   <div class="text-end">
-    <button class="btn btn-outline" id="cancelBtn">취소</button>
+    <button class="btn btn-outline" id="backBtn">취소</button>
     <button class="btn btn-primary">ToDo
       {% if "create" in request.path %}
       추가
@@ -70,11 +70,4 @@
     </button>
   </div>
 </form>
-
-<script>
-  document.getElementById("cancelBtn").addEventListener("click", function (event) {
-    event.preventDefault();
-    history.back();
-  });
-</script>
 {% endblock %}
