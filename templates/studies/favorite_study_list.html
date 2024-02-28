@@ -1,28 +1,94 @@
-<!DOCTYPE html>
-<html lang="ko-KR">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>DeVtail</title>
-    </head>
-    <body>
-        <h1><a href="{% url 'studies:study_list' %}">Study List</a></h1>
-        <ul>
-            {% for favorite in favorite_studies %}
-            <li>
-                <div style="display:flex;">
-                    <a href="{% url 'studies:study_detail' favorite.id %}">{{ favorite.study.title }}</a>
-                    <form action="{% url 'studies:favorite_study_delete' favorite.id %}" method="POST">
-                        {% csrf_token %}
-                        <input type="submit" value="즐겨찾기 삭제">
-                    </form>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-        <a href="{% url 'studies:study_create' %}">New Study</a>
-        <a href="{% url 'studies:study_list' %}">Study List</a>
+{% extends "base.html" %}
 
+{% block title %}
+스터디 리스트
+{% endblock %}
+{% block content %}
+    <!-- <h1><a href="{% url 'studies:study_list' %}">Study List</a></h1>
+    {% for tag in tags %}
+        <a href="{% url 'studies:study_list' %}?tag={{ tag }}">#{{ tag }} </a>
+    {% endfor %} -->
+    <div class="flex justify-between mx-auto w-11/12 px-2 py-2 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+        <a class="font-bold text-2xl" href="{% url 'studies:study_list' %}">스터디 목록</a>
+        <div class="form-control">
+            <form action="{% url 'studies:favorite_study_list' %}" method="GET">
+                <input name="q" type="text" placeholder="🔍스터디 검색" class="input input-bordered w-auto border-2 focus:outline-none focus:border-4"/>
+                <!--  필터 기능 추가 카테고리와 난이도 선택할 수 있도록 -->
+                <select name="category" class="select select-bordered w-auto border-2 focus:outline-none focus:border-4">
+                    <option value="">카테고리</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+                <select name="difficulty" class="select select-bordered w-auto border-2 focus:outline-none focus:border-4">
+                    <option value="">난이도</option>
+                    {% for difficulty in difficulty_choices %}
+                    <!-- difficulty_choices = [
+                        ("상", "상"),
+                        ("중", "중"),
+                        ("하", "하"),
+                    ] -->
+                    <option value="{{ difficulty.0 }}">{{ difficulty.1 }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 mx-auto w-11/12 px-2 sm:px-6 lg:px-8">
+        {% for favorite in favorite_studies %}
+        <a href="{% url 'studies:study_detail' favorite.id %}">
+            <div class="card card-side border bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <div class="flex justify-between">
+                        <div>
+                            <button class="btn btn-sky200 min-w-0" onClick="event.preventDefault(); location.href='{% url 'studies:favorite_study_list' %}?category={{ favorite.study.category }}'">{{ favorite.study.category }}</button>
+                            <button class="btn btn-sky200 min-w-0" onClick="event.preventDefault(); location.href='{% url 'studies:favorite_study_list' %}?difficulty={{ favorite.study.difficulty }}'">{{ favorite.study.difficulty }}</button>
+                        </div>
+                        <div>
+                            <form action="{% url 'studies:favorite_study_delete' favorite.id %}" method="POST">
+                                {% csrf_token %}
+                                <!-- 체크 사항 1번. 즐겨찾기에 없을 경우 unchecked 이미지로, 있을 경우 checked 이미지로 변경되도록 해야함. -->
+                                <input type="image" src="/static/assets/images/favorite_img_unchecked.png" alt="favorite" width="30" height="30">
+                            </form>
+                        </div>
+                    </div>
+                    <h2 class="card-title mt-4">{{ favorite.study.title }}</h2>
+                    <div class="flex gap-4">
+                        <div class="avatar">
+                            <div class="w-16 rounded-full">
+                                <img src="{{ favorite.study.get_study_leader.user.profile_image.url }}"/>
+                            </div>
+                        </div>
+                        <div class="flex flex-col justify-center">
+                            <div>{{ favorite.study.get_study_leader.user.nickname }}</div>
+                            <div>{{ favorite.study.start_at }}</div>
+                        </div>
+                        <div class="flex gap-4 self-center">
+                            <img src="/static/assets/images/members_count_img.png" alt="members_count" width="30px" height="20px">
+                            <span>{{ favorite.study.get_current_member }}/{{ favorite.study.max_member }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="mx-auto w-11/12 px-2 py-2 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+        <div class="flex justify-center">
+            <div class="pagination">
+                <span class="pagination-item">
+                    <a href="?page=1" class="pagination-link">1</a>
+                </span>
+                <span class="pagination-item">
+                    <a href="?page=2" class="pagination-link">2</a>
+                </span>
+            </div>
+        </div>
+        <div class="flex justify-end">
+            <button class="btn" onClick="location.href='{% url 'studies:study_create' %}'">스터디 생성</button>
+        </div>
+    </div>
+{% endblock %}
     </body>
 </html>
