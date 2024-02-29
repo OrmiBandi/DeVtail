@@ -20,7 +20,7 @@ class StudyForm(forms.ModelForm):
         error_messages={"required": "카테고리를 선택해주세요."},
     )
     tags = forms.CharField(
-        initial="(임시)태그를 ,로 구분하여 입력해주세요.",
+        max_length=100,
     )
     ref_links = forms.URLField(
         initial="(임시)참조링크를 ,로 구분하여 입력해주세요.",

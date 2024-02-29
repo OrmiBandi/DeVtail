@@ -131,7 +131,7 @@ class StudyCreate(LoginRequiredMixin, CreateView):
     model = Study
     form_class = StudyForm
     success_url = reverse_lazy("studies:study_list")
-    template_name = "studies/form.html"
+    template_name = "studies/study_create_form.html"
 
     def form_valid(self, form):
         study = form.save(commit=False)
@@ -178,7 +178,7 @@ class StudyUpdate(UserPassesTestMixin, UpdateView):
 
     model = Study
     form_class = StudyForm
-    template_name = "studies/form.html"
+    template_name = "studies/study_update_form.html"
 
     def get_success_url(self):
         return reverse_lazy("studies:study_detail", kwargs={"pk": self.object.pk})
