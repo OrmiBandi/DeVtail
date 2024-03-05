@@ -5,7 +5,7 @@
         display: none;
     }
     
-    input[type="checkbox"] + label, input[type="radio"] + label {
+    label:has(input[type="checkbox"]), label:has(input[type="radio"]) {
         background: #ddd;
         border-radius: 5px;
         padding-top: 10px;
@@ -14,7 +14,7 @@
         padding-right: 20px;
     }
     
-    input[type="checkbox"]:checked + label, input[type="radio"]:checked + label{
+    label:has(input[type="checkbox"]:checked), label:has(input[type="radio"]:checked) {
         background: #0069ff;
         font-weight: bold;
         color: white;
@@ -85,25 +85,23 @@
     {% csrf_token %}        
     <div class="flex justify-center gap-36">
         <div class="flex flex-col gap-4 border-2 p-6">
-            <label for="thumbnail"><img src="/static/assets/images/study_default.jpg" class="h-72" id="thumbnail-add" onclick="activateFileInput()"></label>
-            <input type="file" id="thumbnail" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
+            <label for="thumbnail"><img src="/static/assets/images/study_default.jpg" class="h-72" id="thumbnail-add"></label>
+            <input type="file" id="thumbnail" name="thumbnail" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
             <label class="text-lg" for="title">스터디 주제 (50자)</label>
             {{ form.title }}
             <label class="text-lg" for="category">카테고리</label>
             {{ form.category }}
             <label class="text-lg" for="difficulty">난이도</label>
             <div class="flex justify-evenly gap-4">
-                <input type="radio" name="difficulty" value="상" id="advanced">
-                <label for="advanced">상</label>
-                <input type="radio" name="difficulty" value="중" id="intermediate">
-                <label for="intermediate">중</label>
-                <input type="radio" name="difficulty" value="하" id="beginner">
-                <label for="beginner">하</label>
+                {% for difficulty in form.difficulty %}
+                {{ difficulty }}
+                {% endfor %}
             </div>
             <label class="text-lg" for="max_member">스터디 인원 (4~20명)</label>
             {{ form.max_member }}
             <label class="text-lg" for="tags">스터디 검색 태그</label>
-            <input id="tags" type="text" placeholder="태그를 입력해주세요." class="border-2">
+            <input id="tags-input" type="text" placeholder="태그를 입력해주세요." class="border-2">
+            <input type="hidden" name="tags" id="tags">
             <div class="flex" id="container"></div>
             <button id="tags-add" onclick="addTag()"></button>
         </div>
@@ -120,35 +118,10 @@
                 {{ form.end_at }}
             </div>
             <label for="days">요일</label>
-            <div class="flex gap-4 my-4">
-                <div>
-                    <input type="checkbox" name="days" value="월" id="monday">
-                    <label for="monday">월</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="days" value="화" id="tuesday">
-                    <label for="tuesday">화</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="days" value="수" id="wednesday">
-                    <label for="wednesday">수</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="days" value="목" id="thursday">
-                    <label for="thursday">목</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="days" value="금" id="friday">
-                    <label for="friday">금</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="days" value="토" id="saturday">
-                    <label for="saturday">토</label>
-                </div>
-                <div>
-                    <input type="checkbox" name="days" value="일" id="sunday">
-                    <label for="sunday">일</label>
-                </div>
+            <div class="flex flex-wrap gap-4 my-4">
+                {% for day in form.days %}
+                {{ day }}
+                {% endfor %}
             </div>
             <p class="text-lg">스터디 시간</p>
             <div class="flex gap-4">
@@ -172,7 +145,7 @@
     const tags_add = document.getElementById('tags-add');
     tags_add.addEventListener('click', addTag);
 
-    const tag_input = document.getElementById('tags');
+    const tag_input = document.getElementById('tags-input');
     tag_input.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -186,18 +159,16 @@
 
     function addTag() {
         const div = document.createElement('div');
-        
+        const tags = document.getElementById('tags');
+
         div.textContent = tag_input.value;
+        tags.value += tag_input.value + ',';
         div.classList.add('tag');
     
         document.getElementById('container').appendChild(div);
     
         // Clear the input field
         tag_input.value = '';
-    }
-
-    function activateFileInput() {
-        document.getElementById('thumbnail').click();
     }
 
     function handleFileSelect(event) {

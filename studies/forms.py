@@ -14,6 +14,11 @@ import datetime
 
 
 class StudyForm(forms.ModelForm):
+    thumbnail = forms.ImageField(
+        required=True,
+        widget=forms.FileInput(attrs={"accept": "image/*"}),
+        error_messages={"required": "썸네일을 선택해주세요."},
+    )
     category = forms.ModelChoiceField(
         queryset=Category.objects.all(),
         required=True,
@@ -32,11 +37,13 @@ class StudyForm(forms.ModelForm):
     start_at = forms.DateField(
         initial=datetime.date.today,
         required=True,
+        widget=forms.DateInput(attrs={"type": "date"}),
         error_messages={"required": "시작일을 입력해주세요."},
     )
     end_at = forms.DateField(
         initial=datetime.date.today,
         required=True,
+        widget=forms.DateInput(attrs={"type": "date"}),
         error_messages={"required": "종료일을 입력해주세요."},
     )
     title = forms.CharField(
@@ -46,6 +53,7 @@ class StudyForm(forms.ModelForm):
     difficulty = forms.ChoiceField(
         choices=Study.difficulty_choices,
         required=True,
+        widget=forms.RadioSelect,
         error_messages={"required": "난이도를 선택해주세요."},
     )
     max_member = forms.IntegerField(
@@ -55,14 +63,19 @@ class StudyForm(forms.ModelForm):
     days = forms.MultipleChoiceField(
         choices=Schedule.day_choices,
         required=True,
+        widget=forms.CheckboxSelectMultiple,
         error_messages={"required": "요일을 선택해주세요."},
     )
     start_time = forms.TimeField(
         required=True,
+        widget=forms.TimeInput(attrs={"type": "time"}),
+        initial=datetime.time(0, 0),
         error_messages={"required": "시작 시간을 입력해주세요."},
     )
     end_time = forms.TimeField(
         required=True,
+        widget=forms.TimeInput(attrs={"type": "time"}),
+        initial=datetime.time(0, 0),
         error_messages={"required": "종료 시간을 입력해주세요."},
     )
 
