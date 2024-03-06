@@ -45,15 +45,24 @@ class StudyList(ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         q = self.request.GET.get("q", "")
-        tq = self.request.GET.get("tq", "")
+        tag = self.request.GET.get("tag", "")
+        category = self.request.GET.get("category", "")
+        difficulty = self.request.GET.get("difficulty", "")
 
         if q:
             queryset = queryset.filter(
                 Q(title__icontains=q) | Q(introduce__icontains=q)
             )
 
-        if tq:
-            queryset = queryset.filter(tags__name__in=[tq])
+        if tag:
+            queryset = queryset.filter(tags__name__in=[tag])
+
+        if category:
+            queryset = queryset.filter(category=category)
+
+        if difficulty:
+            queryset = queryset.filter(difficulty=difficulty)
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -86,6 +95,7 @@ class StudyCreate(LoginRequiredMixin, CreateView):
     스터디 생성
     로그인한 유저만이 스터디를 생성할 수 있습니다.
     스터디 생성시 studymember 모델의 user를 참조하여 지정하고, is_manager와 is_accepted를 True로 지정합니다.
+    current_member에 1이 추가됩니다.
     """
 
     model = Study
