@@ -7,7 +7,9 @@ app_name = "accounts"
 urlpatterns = [
     path("signup/", views.signup, name="signup"),
     path("email_confirm/<str:token>/", views.email_confirm, name="email_confirm"),
-    path("social/signup/", views.social_signup, name="social_signup"),
+    path("github/signup/", views.github_signup, name="github_signup"),
+    path("github/login/", views.github_login, name="github_login"),
+    path("github/login/callback/", views.github_callback, name="github_callback"),
     path("logout/", views.logout, name="logout"),
     path("login/", views.login, name="login"),
     path("profile/<int:pk>/", views.profile, name="profile"),
@@ -20,5 +22,4 @@ urlpatterns = [
         views.password_reset_confirm,
         name="password_reset_confirm",
     ),
-    path("", include("allauth.urls")),
 ]

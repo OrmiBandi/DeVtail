@@ -698,7 +698,7 @@ class TestAccountUpdate(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"),
+            response.context["error_nickname"],
             "닉네임은 2자리 이상, 15자리 이하로 입력해주세요.",
         )
         print(
@@ -721,7 +721,7 @@ class TestAccountUpdate(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"),
+            response.context["error_nickname"],
             "닉네임은 2자리 이상, 15자리 이하로 입력해주세요.",
         )
         print(
@@ -744,7 +744,8 @@ class TestAccountUpdate(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"), "닉네임에 특수문자를 포함할 수 없습니다."
+            response.context["error_nickname"],
+            "닉네임에 특수문자를 포함할 수 없습니다.",
         )
         print(
             "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우 END --"
@@ -765,7 +766,7 @@ class TestAccountUpdate(TestCase):
             reverse("accounts:account_update"), self.update_data, follow=True
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content.decode("utf-8"), "닉네임을 입력해주세요.")
+        self.assertEqual(response.context["error_nickname"], "닉네임을 입력해주세요.")
         print(
             "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 비어있을 경우 END --"
         )
@@ -789,7 +790,7 @@ class TestAccountUpdate(TestCase):
             reverse("accounts:account_update"), self.update_data, follow=True
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content.decode("utf-8"), "중복된 닉네임입니다.")
+        self.assertEqual(response.context["error_nickname"], "중복된 닉네임입니다.")
         print(
             "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 중복된 닉네임일 경우 END --"
         )
@@ -809,7 +810,9 @@ class TestAccountUpdate(TestCase):
             reverse("accounts:account_update"), self.update_data, follow=True
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content.decode("utf-8"), "개발 분야를 선택해주세요.")
+        self.assertEqual(
+            response.context["error_development_field"], "개발 분야를 선택해주세요."
+        )
         print(
             "-- 사용자 정보 수정 테스트 - 개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우 END --"
         )
@@ -830,7 +833,8 @@ class TestAccountUpdate(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.content.decode("utf-8"), "항목에 포함된 개발 분야를 선택해주세요."
+            response.context["error_development_field"],
+            "항목에 포함된 개발 분야를 선택해주세요.",
         )
         print(
             "-- 사용자 정보 수정 테스트 - 개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우 END --"
