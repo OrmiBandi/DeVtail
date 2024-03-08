@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from allauth.account.forms import SignupForm as BaseSignupForm
 from django.contrib.auth.forms import AuthenticationForm
+from .adapters import CustomAccountAdapter
 
 User = get_user_model()
 
@@ -155,11 +156,9 @@ class CustomSignupForm(BaseSignupForm):
         self.sociallogin = kwargs.pop("sociallogin", None)
         super().__init__(*args, **kwargs)
 
-        # Get the sociallogin from the form's signup request
         sociallogin = self.sociallogin
         user_data = sociallogin.account.extra_data
 
-        # Set the initial values of the form fields
         self.fields["email"].initial = user_data.get("email")
         self.fields["nickname"].initial = user_data.get("login")
 
@@ -171,6 +170,7 @@ class CustomSignupForm(BaseSignupForm):
         user.content = self.cleaned_data["content"]
         user.save()
         self.sociallogin.user = user
+        self.sociallogin.save(request)
         return user
 
 

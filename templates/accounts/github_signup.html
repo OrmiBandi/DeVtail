@@ -1,27 +1,38 @@
 {% extends 'base.html' %}
-{% block title %}사용자 정보 수정{% endblock %}
+{% block title %}회원가입{% endblock %}
 {% block content %}
     <div class="flex flex-col justify-center items-center">
         <a href="{% url 'main:home' %}"><div class="font-bold text-3xl">de<span class="text-primary font-black text-4xl">V</span>tail</div></a>
         <p class="text-xl">Join deVtail</p>
         <p>Start your study through deVtail</p>
-        <form method="post" enctype="multipart/form-data" class="flex flex-col items-center w-full">
+        <form method="post" enctype="multipart/form-data" class="flex flex-col items-center w-full" action="{% url 'accounts:github_signup' %}">
             {% csrf_token %}
             <label class="form-control w-full max-w-sm">
                 <div class="label">
                     <span class="label-text">Email</span>
                 </div>
-                <input type="email" name="email" class="input input-bordered w-full max-w-sm" value="{{ user.email }}" disabled/>
+                <input type="email" class="input input-bordered w-full max-w-sm" value="{{ form.email.value }}" disabled/>
             </label>
             <label class="form-control w-full max-w-sm">
                 <div class="label">
-                    <span class="label-text">Nickname*</span>
+                    <span class="label-text">Password*</span>
                 </div>
-                <input type="text" name="nickname" 
-                {% if error_nickname %}
-                    class="input input-bordered w-full max-w-sm placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_nickname }}"/>
+                <input type="password" name="password1"
+                {% if error_password1 %}
+                    class="input input-bordered w-full max-w-sm placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_password1 }}"/>
                 {% else %}
-                    class="input input-bordered w-full max-w-sm" placeholder="example" value="{{ user.nickname }}"/>
+                    class="input input-bordered w-full max-w-sm" placeholder="Password"/>
+                {% endif %}
+            </label>
+            <label class="form-control w-full max-w-sm">
+                <div class="label">
+                    <span class="label-text">Password Config*</span>
+                </div>
+                <input type="password" name="password2"
+                {% if error_password2 %}
+                    class="input input-bordered w-full max-w-sm placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_password2 }}"/>
+                {% else %}
+                    class="input input-bordered w-full max-w-sm" placeholder="Password Config"/>
                 {% endif %}
             </label>
             <label class="form-control w-full max-w-sm">
@@ -49,20 +60,13 @@
                 <div class="label">
                     <span class="label-text">Content</span>
                 </div>
-                <textarea class="textarea textarea-bordered textarea-lg w-full max-w-sm" name="content" placeholder="자기소개" style="resize: none;" >{{ user.content }}</textarea>
+                <textarea class="textarea textarea-bordered textarea-lg w-full max-w-sm" name="content" placeholder="자기소개" style="resize: none;"></textarea>
             </label>
-            <label class="form-control w-full max-w-sm">
-                <div class="label">
-                    <span class="label-text">Profile Image</span>
-                </div>
-                {% if user.profile_image %}
-                    <input type="file" name="profile_image" class="file-input file-input-primary w-full max-w-sm" value="{{ user.profile_image.url }}"/>
-                {% else %}
-                    <input type="file" name="profile_image" class="file-input file-input-primary w-full max-w-sm"/>
-                {% endif %}
-                
-            </label>
-            <button class="btn btn-primary btn-block my-4 max-w-sm">Edit Profile</button>
+            <input type="hidden" name="email" value="{{ form.email.value }}">
+            <input type="hidden" name="nickname" value="{{ form.nickname.value }}">
+            <input type="hidden" name="profile_image" value="{{ form.profile_image.value }}">
+            <button class="btn btn-primary btn-block my-4 max-w-sm">Sign Up</button>
+            <div class="flex"><p>Already have an account?&nbsp;&nbsp;</p><a href="{% url 'accounts:login' %}" class="link link-primary">Sign In</a></div>
         </form>
     </div>
 {% endblock %}

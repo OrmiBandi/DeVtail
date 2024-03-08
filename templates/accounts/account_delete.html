@@ -26,8 +26,4 @@
         <button class="btn btn-primary btn-block my-3 max-w-sm">Delete Account</button>
     </form>
 </div>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %} {{ form.as_p }}
-    <button type="submit">Sign up</button>
-</form>
 {% endblock %}

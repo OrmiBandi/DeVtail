@@ -1,5 +1,7 @@
-import uuid
+import requests
+import uuid, environ
 from typing import Any
+from pathlib import Path
 from django.http.response import HttpResponse
 from django.urls import reverse
 from django.contrib import messages
@@ -7,6 +9,7 @@ from django.urls import reverse_lazy
 from django.shortcuts import redirect, render
 from django.core.mail import EmailMessage
 from django.contrib.auth import get_user_model
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.views import (
     LoginView,
     PasswordResetView,
@@ -16,11 +19,10 @@ from django.db.models.base import Model as Model
 from django.views.generic.edit import UpdateView, DeleteView
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DetailView
-from django.contrib.auth.forms import AuthenticationForm
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpRequest, HttpResponseBadRequest
-from django.utils.http import urlsafe_base64_decode
 from allauth.account.views import LogoutView
 from allauth.socialaccount.views import SignupView as BaseSignupView
 
@@ -33,6 +35,9 @@ from .forms import (
 )
 
 User = get_user_model()
+BASE_DIR = Path(__file__).resolve().parent.parent
+env = environ.Env(DEBUG=(bool, True))
+environ.Env.read_env(env_file="../../.env")
 
 
 class SignupView(CreateView):
@@ -85,7 +90,9 @@ class SignupView(CreateView):
 
 
 class SocialSignupView(BaseSignupView):
-    template_name = "accounts/signup.html"
+
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
 
 def email_confirm(request, token):
@@ -228,8 +235,16 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         response = super().post(request, *args, **kwargs)
         form = self.get_form()
         if not form.is_valid():
-            error_message = str(list(form.errors.as_data().values())[0][0].messages[0])
-            return HttpResponseBadRequest(error_message)
+            context = {}
+            context["form"] = form
+            for msg in form.errors.as_data():
+                context[f"error_{msg}"] = form.errors[msg][0]
+            return render(
+                request,
+                self.template_name,
+                context,
+                status=HttpResponseBadRequest.status_code,
+            )
         return response
 
 
@@ -374,6 +389,135 @@ class PasswordResetConfirmCustomView(PasswordResetConfirmView):
         return response
 
 
+class GithubSignupView(CreateView):
+    """
+    회원가입 View
+    """
+
+    model = User
+    form_class = SignupForm
+    template_name = "accounts/github_signup.html"
+    success_url = reverse_lazy("accounts:login")
+
+    def post(self, request, *args, **kwargs):
+        """
+        GitHub 계정 기반 회원가입 메서드
+        """
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = True
+            user.login_method = User.LOGIN_GITHUB
+            if request.POST.get("profile_image"):
+                user.profile_image = request.POST.get("profile_image")
+            user.save()
+            return redirect("accounts:login")
+        else:
+            context = {}
+            context["form"] = form
+            for msg in form.errors.as_data():
+                context[f"error_{msg}"] = form.errors[msg][0]
+            return render(
+                request,
+                self.template_name,
+                context,
+                status=HttpResponseBadRequest.status_code,
+            )
+
+
+def github_login(request):
+    try:
+        if request.user.is_authenticated:
+            raise ValueError("이미 로그인되어 있습니다.")
+        client_id = env("GITHUB_CLIENT_ID")
+        redirect_uri = env("GITHUB_REDIRECT_URI")
+        scope = "user"
+        return redirect(
+            f"https://github.com/login/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}"
+        )
+    except Exception as error:
+        messages.error(request, error)
+        return redirect("accounts:login")
+
+
+def github_callback(request):
+    try:
+        if request.user.is_authenticated:
+            raise ValueError("이미 로그인되어 있습니다.")
+        code = request.GET.get("code", None)
+        client_id = env("GITHUB_CLIENT_ID")
+        client_secret = env("GITHUB_CLIENT_SECRET")
+
+        token_request = requests.post(
+            f"https://github.com/login/oauth/access_token?client_id={client_id}&client_secret={client_secret}&code={code}",
+            headers={"Accept": "application/json"},
+        )
+        token_json = token_request.json()
+        error = token_json.get("error", None)
+
+        if error:
+            raise Exception(error)
+
+        access_token = token_json.get("access_token")
+        profile_response = requests.get(
+            "https://api.github.com/user",
+            headers={
+                "Authorization": f"token {access_token}",
+                "Accept": "application/json",
+            },
+        )
+        email_response = requests.get(
+            "https://api.github.com/user/emails",
+            headers={
+                "Authorization": f"token {access_token}",
+                "Accept": "application/json",
+            },
+        )
+        profile_json = profile_response.json()
+        email_json = email_response.json()[0]
+        email = email_json.get("email", None)
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            if user.login_method != User.LOGIN_GITHUB:
+                context = {}
+                context["error"] = "GitHub으로 가입한 계정이 아닙니다."
+                return render(
+                    request,
+                    "accounts/login.html",
+                    context,
+                    status=HttpResponseBadRequest.status_code,
+                )
+            auth_login(
+                request, user, backend="django.contrib.auth.backends.ModelBackend"
+            )
+            return redirect("main:home")
+        else:
+            context = {}
+            signup_form = SignupForm(
+                initial={
+                    "email": email,
+                    "nickname": profile_json.get("login"),
+                    "profile_image": profile_json.get("avatar_url"),
+                }
+            )
+
+            context["form"] = signup_form
+
+            return render(request, "accounts/github_signup.html", context)
+    except Exception as error:
+        context = {}
+        if "bad_verification_code" in error:
+            context["error"] = "잘못된 GitHub코드입니다."
+        else:
+            context["error"] = error
+        return render(
+            request,
+            "accounts/login.html",
+            context,
+            status=HttpResponseBadRequest.status_code,
+        )
+
+
 signup = SignupView.as_view()
 social_signup = SocialSignupView.as_view()
 login = CustomLoginView.as_view()
@@ -384,3 +528,4 @@ account_delete = AccountDeleteView.as_view()
 password_change = PasswordChangeView.as_view()
 password_reset = PasswordResetCustomView.as_view()
 password_reset_confirm = PasswordResetConfirmCustomView.as_view()
+github_signup = GithubSignupView.as_view()

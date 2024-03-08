@@ -5,55 +5,55 @@
         <a href="{% url 'main:home' %}"><div class="font-bold text-3xl">de<span class="text-primary font-black text-4xl">V</span>tail</div></a>
         <p class="text-xl">Join deVtail</p>
         <p>Start your study through deVtail</p>
-        <form method="post" enctype="multipart/form-data" class="flex flex-col items-center">
+        <form method="post" enctype="multipart/form-data" class="flex flex-col items-center w-full">
             {% csrf_token %}
-            <label class="form-control w-full max-w-xs">
+            <label class="form-control w-full max-w-sm">
                 <div class="label">
                     <span class="label-text">Email*</span>
                 </div>
                 <input type="email" name="email"
                     {% if error_email %}
-                        class="input input-bordered w-full max-w-xs placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_email }}"/>
+                        class="input input-bordered w-full max-w-sm placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_email }}"/>
                     {% elif form.email.value %}
-                        class="input input-bordered w-full max-w-xs" value="{{ form.email.value }}" placeholder="example@example.com"/>
+                        class="input input-bordered w-full max-w-sm" value="{{ form.email.value }}" placeholder="example@example.com"/>
                     {% else %}
-                        class="input input-bordered w-full max-w-xs" placeholder="example@example.com"/>
+                        class="input input-bordered w-full max-w-sm" placeholder="example@example.com"/>
                     {% endif %}
             </label>
-            <label class="form-control w-full max-w-xs">
+            <label class="form-control w-full max-w-sm">
                 <div class="label">
                     <span class="label-text">Password*</span>
                 </div>
                 <input type="password" name="password1"
                 {% if error_password1 %}
-                    class="input input-bordered w-full max-w-xs placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_password1 }}"/>
+                    class="input input-bordered w-full max-w-sm placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_password1 }}"/>
                 {% else %}
-                    class="input input-bordered w-full max-w-xs" placeholder="Password"/>
+                    class="input input-bordered w-full max-w-sm" placeholder="Password"/>
                 {% endif %}
             </label>
-            <label class="form-control w-full max-w-xs">
+            <label class="form-control w-full max-w-sm">
                 <div class="label">
                     <span class="label-text">Password Config*</span>
                 </div>
                 <input type="password" name="password2"
                 {% if error_password2 %}
-                    class="input input-bordered w-full max-w-xs placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_password2 }}"/>
+                    class="input input-bordered w-full max-w-sm placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_password2 }}"/>
                 {% else %}
-                    class="input input-bordered w-full max-w-xs" placeholder="Password Config"/>
+                    class="input input-bordered w-full max-w-sm" placeholder="Password Config"/>
                 {% endif %}
             </label>
-            <label class="form-control w-full max-w-xs">
+            <label class="form-control w-full max-w-sm">
                 <div class="label">
                     <span class="label-text">Nickname*</span>
                 </div>
                 <input type="text" name="nickname" 
                 {% if error_nickname %}
-                    class="input input-bordered w-full max-w-xs placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_nickname }}"/>
+                    class="input input-bordered w-full max-w-sm placeholder:text-red-500" style="border-color: #e53e3e;" placeholder="{{ error_nickname }}"/>
                 {% else %}
-                    class="input input-bordered w-full max-w-xs" placeholder="example"/>
+                    class="input input-bordered w-full max-w-sm" placeholder="example"/>
                 {% endif %}
             </label>
-            <label class="form-control w-full max-w-xs">
+            <label class="form-control w-full max-w-sm">
                 {% if error_development_field %}
                     <div class="label">
                         <span class="label-text-alt text-red-500">{{ error_development_field }}</span>
@@ -63,30 +63,30 @@
                         <span class="label-text">Development Field*</span>
                     </div>
                 {% endif %}
-            </label>
                 {% if error_development_field %}
-                    <select name="development_field" class="select select-bordered w-full max-w-xs" style="border-color: #e53e3e;">
+                    <select name="development_field" class="select select-bordered w-full max-w-sm" style="border-color: #e53e3e;">
                 {% else %}
-                    <select name="development_field" class="select select-bordered w-full max-w-xs">
+                    <select name="development_field" class="select select-bordered w-full max-w-sm">
                 {% endif %}
                     <option disabled selected>Development Field</option>
                     {% for field in form.development_field %}
                         {{ field }}
                     {% endfor %}
                 </select>
-            <label class="form-control w-full max-w-xs">
+            </label>
+            <label class="form-control w-full max-w-sm">
                 <div class="label">
                     <span class="label-text">Content</span>
                 </div>
-                <textarea class="textarea textarea-bordered textarea-lg w-full max-w-xs" name="content" placeholder="자기소개" style="resize: none;"></textarea>
+                <textarea class="textarea textarea-bordered textarea-lg w-full max-w-sm" name="content" placeholder="자기소개" style="resize: none;"></textarea>
             </label>
-            <label class="form-control w-full max-w-xs">
+            <label class="form-control w-full max-w-sm">
                 <div class="label">
                     <span class="label-text">Profile Image</span>
                 </div>
-                <input type="file" name="profile_image" class="file-input file-input-primary w-full max-w-xs" />
+                <input type="file" name="profile_image" class="file-input file-input-primary w-full max-w-sm" />
             </label>
-            <button class="btn btn-primary btn-block my-4">Sign Up</button>
+            <button class="btn btn-primary btn-block my-4 max-w-sm">Sign Up</button>
             <div class="flex"><p>Already have an account?&nbsp;&nbsp;</p><a href="{% url 'accounts:login' %}" class="link link-primary">Sign In</a></div>
         </form>
     </div>
