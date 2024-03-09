@@ -23,12 +23,12 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt
         
-    # - name: Run Tests
-    #   run: |
-    #     python manage.py test
-    #   env :
-    #     SECRET_KEY: ${{ secrets.SECRET_KEY }}
-    #     DEBUG: ${{ secrets.DEBUG }}
+    - name: Run Tests
+      run: |
+        python manage.py test
+      env :
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        DEBUG: ${{ secrets.DEBUG }}
 
     - name: 서버 배포
       uses: appleboy/ssh-action@master
@@ -41,8 +41,11 @@ jobs:
           cd /home/ubuntu/DeVtail
           git pull origin main
 
-          echo "SECRET_KEY=\"${{ secrets.SECRET_KEY }}\"" >> .env
+          echo "SECRET_KEY=\"${{ secrets.SECRET_KEY }}\"" > .env
           echo "DEBUG='${{ secrets.DEBUG }}'" >> .env
+          echo "GITHUB_CLIENT_ID='${{ variables.CLIENT_GITHUB_ID }}'" >> .env
+          echo "GITHUB_CLIENT_SECRET='${{ variables.CLIENT_GITHUB_SECRET }}'" >> .env
+          echo "GITHUB_REDIRECT_URI='${{ variables.REDIRECT_GITHUB_URI }}'" >> .env
 
           source ../venv/bin/activate
           pip install -r requirements.txt
