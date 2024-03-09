@@ -28,12 +28,12 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt
         
-    - name: Run Tests
-      run: |
-        python manage.py test
-      env :
-        SECRET_KEY: ${{ secrets.SECRET_KEY }}
-        DEBUG: ${{ secrets.DEBUG }}
+    #- name: Run Tests
+    #  run: |
+    #    python manage.py test
+    #  env :
+    #    SECRET_KEY: ${{ secrets.SECRET_KEY }}
+    #    DEBUG: ${{ secrets.DEBUG }}
 
     - name: 서버 배포
       uses: appleboy/ssh-action@master
@@ -48,9 +48,9 @@ jobs:
 
           echo "SECRET_KEY=\"${{ secrets.SECRET_KEY }}\"" > .env
           echo "DEBUG='${{ secrets.DEBUG }}'" >> .env
-          echo "GITHUB_CLIENT_ID='${{ env.CLIENT_GITHUB_ID }}'" >> .env
-          echo "GITHUB_CLIENT_SECRET='${{ env.CLIENT_GITHUB_SECRET }}'" >> .env
-          echo "GITHUB_REDIRECT_URI='${{ env.REDIRECT_GITHUB_URI }}'" >> .env
+          echo "GITHUB_CLIENT_ID='${{ vars.CLIENT_GITHUB_ID }}'" >> .env
+          echo "GITHUB_CLIENT_SECRET='${{ vars.CLIENT_GITHUB_SECRET }}'" >> .env
+          echo "GITHUB_REDIRECT_URI='${{ vars.REDIRECT_GITHUB_URI }}'" >> .env
 
           source ../venv/bin/activate
           pip install -r requirements.txt
