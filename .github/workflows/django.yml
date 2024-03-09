@@ -43,9 +43,9 @@ jobs:
 
           echo "SECRET_KEY=\"${{ secrets.SECRET_KEY }}\"" > .env
           echo "DEBUG='${{ secrets.DEBUG }}'" >> .env
-          echo "GITHUB_CLIENT_ID='${{ variables.CLIENT_GITHUB_ID }}'" >> .env
-          echo "GITHUB_CLIENT_SECRET='${{ variables.CLIENT_GITHUB_SECRET }}'" >> .env
-          echo "GITHUB_REDIRECT_URI='${{ variables.REDIRECT_GITHUB_URI }}'" >> .env
+          echo "GITHUB_CLIENT_ID='${{ env.CLIENT_GITHUB_ID }}'" >> .env
+          echo "GITHUB_CLIENT_SECRET='${{ env.CLIENT_GITHUB_SECRET }}'" >> .env
+          echo "GITHUB_REDIRECT_URI='${{ env.REDIRECT_GITHUB_URI }}'" >> .env
 
           source ../venv/bin/activate
           pip install -r requirements.txt
