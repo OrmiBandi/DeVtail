@@ -14,8 +14,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      VAR_ENV: ${{ env }}
     steps:
     - name: 체크아웃 레포지토리
       uses: actions/checkout@v3
@@ -50,9 +48,9 @@ jobs:
 
           echo "SECRET_KEY=\"${{ secrets.SECRET_KEY }}\"" > .env
           echo "DEBUG='${{ secrets.DEBUG }}'" >> .env
-          echo "GITHUB_CLIENT_ID='${{ VAR_ENV.CLIENT_GITHUB_ID }}'" >> .env
-          echo "GITHUB_CLIENT_SECRET='${{ VAR_ENV.CLIENT_GITHUB_SECRET }}'" >> .env
-          echo "GITHUB_REDIRECT_URI='${{ VAR_ENV.REDIRECT_GITHUB_URI }}'" >> .env
+          echo "GITHUB_CLIENT_ID='${{ env.CLIENT_GITHUB_ID }}'" >> .env
+          echo "GITHUB_CLIENT_SECRET='${{ env.CLIENT_GITHUB_SECRET }}'" >> .env
+          echo "GITHUB_REDIRECT_URI='${{ env.REDIRECT_GITHUB_URI }}'" >> .env
 
           source ../venv/bin/activate
           pip install -r requirements.txt
