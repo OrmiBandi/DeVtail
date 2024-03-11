@@ -11,6 +11,8 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@700&family=Nanum+Myeongjo&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="{% static 'assets/css/base.css' %}">
+        {% block extra_css %}
+        {% endblock %}
     </head>
     <body class="max-w-full min-h-screen">
         <header>
@@ -53,8 +55,8 @@
                                     <details class="dropdown">
                                         <summary class="m-1 btn border-0 bg-transparent shadow-none">스터디</summary>
                                         <ul class="p-2 menu dropdown-content z-[1] rounded-box w-52 border-none" style="z-index: 100;">
-                                            <li><a>스터디 목록</a></li>
-                                            <li><a>내 스터디</a></li>
+                                            <li><a href="{% url 'studies:study_list' %}">스터디 목록</a></li>
+                                            <li><a href="{% url 'studies:my_study_list' %}">내 스터디</a></li>
                                         </ul>
                                     </details>
                                     <details class="dropdown">
@@ -69,9 +71,6 @@
                             </div>
                         </div>
                         <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                            <div class="form-control mr-4">
-                                <input type="text" placeholder="🔍스터디 검색" class="input input-bordered w-24 md:w-auto border-2 focus:outline-none focus:border-4"/>
-                            </div>
                             {% if user.is_authenticated %}
                                 <button class="btn btn-ghost btn-circle">
                                     <div class="indicator">

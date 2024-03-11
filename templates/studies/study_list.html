@@ -8,7 +8,33 @@
     {% for tag in tags %}
         <a href="{% url 'studies:study_list' %}?tag={{ tag }}">#{{ tag }} </a>
     {% endfor %} -->
-    <div class="flex flex-wrap gap-4 mx-auto w-11/12 px-2 sm:px-6 lg:px-8">
+    <div class="flex justify-between mx-auto w-11/12 px-2 py-2 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+        <a class="font-bold text-2xl" href="{% url 'studies:study_list' %}">스터디 목록</a>
+        <div class="form-control">
+            <form action="{% url 'studies:study_list' %}" method="GET">
+                <input name="q" type="text" placeholder="🔍스터디 검색" class="input input-bordered w-auto border-2 focus:outline-none focus:border-4"/>
+                <!--  필터 기능 추가 카테고리와 난이도 선택할 수 있도록 -->
+                <select name="category" class="select select-bordered w-auto border-2 focus:outline-none focus:border-4">
+                    <option value="">카테고리</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+                <select name="difficulty" class="select select-bordered w-auto border-2 focus:outline-none focus:border-4">
+                    <option value="">난이도</option>
+                    {% for difficulty in difficulty_choices %}
+                    <!-- difficulty_choices = [
+                        ("상", "상"),
+                        ("중", "중"),
+                        ("하", "하"),
+                    ] -->
+                    <option value="{{ difficulty.0 }}">{{ difficulty.1 }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 mx-auto w-11/12 px-2 sm:px-6 lg:px-8">
         {% for study in studies %}
         <a href="{% url 'studies:study_detail' study.id %}">
             <div class="card card-side border bg-base-100 shadow-xl">
@@ -47,8 +73,22 @@
         </a>
         {% endfor %}
     </div>
-    <a href="{% url 'studies:study_create' %}">New Study</a>
-    <a href="{% url 'studies:my_study_list' %}">My Study List</a>
+
+    <div class="mx-auto w-11/12 px-2 py-2 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+        <div class="flex justify-center">
+            <div class="pagination">
+                <span class="pagination-item">
+                    <a href="?page=1" class="pagination-link">1</a>
+                </span>
+                <span class="pagination-item">
+                    <a href="?page=2" class="pagination-link">2</a>
+                </span>
+            </div>
+        </div>
+        <div class="flex justify-end">
+            <button class="btn" onClick="location.href='{% url 'studies:study_create' %}'">스터디 생성</button>
+        </div>
+    </div>
 {% endblock %}
     </body>
 </html>

@@ -1,5 +1,6 @@
 from .models import (
     Study,
+    Category,
     Comment,
     Recomment,
     StudyMember,
@@ -40,7 +41,7 @@ class StudyList(ListView):
 
     template_name = "studies/study_list.html"
     context_object_name = "studies"
-    paginate_by = 10
+    paginate_by = 6
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -68,6 +69,8 @@ class StudyList(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tags"] = Tag.objects.all()
+        context["categories"] = Category.objects.all()
+        context["difficulty_choices"] = Study.difficulty_choices
         return context
 
 
@@ -86,8 +89,35 @@ class MyStudyList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.filter(user=self.request.user)
+        queryset = queryset.select_related("study").filter(user=self.request.user)
+
+        q = self.request.GET.get("q", "")
+        tag = self.request.GET.get("tag", "")
+        category = self.request.GET.get("category", "")
+        difficulty = self.request.GET.get("difficulty", "")
+
+        if q:
+            queryset = queryset.filter(
+                Q(study__title__icontains=q) | Q(study__introduce__icontains=q)
+            )
+
+        if tag:
+            queryset = queryset.filter(study__tags__name__in=[tag])
+
+        if category:
+            queryset = queryset.filter(study__category=category)
+
+        if difficulty:
+            queryset = queryset.filter(study__difficulty=difficulty)
+
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tags"] = Tag.objects.all()
+        context["categories"] = Category.objects.all()
+        context["difficulty_choices"] = Study.difficulty_choices
+        return context
 
 
 class StudyCreate(LoginRequiredMixin, CreateView):
@@ -101,7 +131,7 @@ class StudyCreate(LoginRequiredMixin, CreateView):
     model = Study
     form_class = StudyForm
     success_url = reverse_lazy("studies:study_list")
-    template_name = "studies/form.html"
+    template_name = "studies/study_create_form.html"
 
     def form_valid(self, form):
         study = form.save(commit=False)
@@ -148,7 +178,7 @@ class StudyUpdate(UserPassesTestMixin, UpdateView):
 
     model = Study
     form_class = StudyForm
-    template_name = "studies/form.html"
+    template_name = "studies/study_update_form.html"
 
     def get_success_url(self):
         return reverse_lazy("studies:study_detail", kwargs={"pk": self.object.pk})
@@ -548,8 +578,35 @@ class FaveriteStudyList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.filter(user=self.request.user)
+        queryset = queryset.select_related("study").filter(user=self.request.user)
+
+        q = self.request.GET.get("q", "")
+        tag = self.request.GET.get("tag", "")
+        category = self.request.GET.get("category", "")
+        difficulty = self.request.GET.get("difficulty", "")
+
+        if q:
+            queryset = queryset.filter(
+                Q(study__title__icontains=q) | Q(study__introduce__icontains=q)
+            )
+
+        if tag:
+            queryset = queryset.filter(study__tags__name__in=[tag])
+
+        if category:
+            queryset = queryset.filter(study__category=category)
+
+        if difficulty:
+            queryset = queryset.filter(study__difficulty=difficulty)
+
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tags"] = Tag.objects.all()
+        context["categories"] = Category.objects.all()
+        context["difficulty_choices"] = Study.difficulty_choices
+        return context
 
 
 class FavoriteStudyDelete(UserPassesTestMixin, DeleteView):
