@@ -56,7 +56,7 @@ class StudyList(ListView):
             )
 
         if tag:
-            queryset = queryset.filter(tags__name__in=[tag])
+            queryset = queryset.filter(tag__name__in=[tag])
 
         if category:
             queryset = queryset.filter(category=category)
@@ -102,7 +102,7 @@ class MyStudyList(LoginRequiredMixin, ListView):
             )
 
         if tag:
-            queryset = queryset.filter(study__tags__name__in=[tag])
+            queryset = queryset.filter(study__tag__name__in=[tag])
 
         if category:
             queryset = queryset.filter(study__category=category)
