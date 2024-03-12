@@ -27,7 +27,7 @@ class StudyForm(forms.ModelForm):
         required=False,
         max_length=100,
     )
-    ref_links = forms.URLField(
+    ref_links = forms.CharField(
         required=False,
     )
     goal = forms.CharField(
@@ -105,7 +105,10 @@ class StudyForm(forms.ModelForm):
                 [tag.name for tag in self.instance.tag.all()]
             )
             self.fields["ref_links"].initial = ",".join(
-                [ref_link.url for ref_link in self.instance.ref_links.all()]
+                [
+                    f"{ref_link.link_type}; {ref_link.url}"
+                    for ref_link in self.instance.ref_links.all()
+                ]
             )
             self.fields["days"].initial = [
                 schedule.day for schedule in self.instance.schedules.all()
@@ -137,11 +140,13 @@ class StudyForm(forms.ModelForm):
                     end_time=self.cleaned_data["end_time"],
                 )
 
-            ref_links = self.cleaned_data["ref_links"].split(",")
+            ref_links = self.cleaned_data["ref_links"].strip(",").split(",")
+            print(ref_links)
             for ref_link in ref_links:
                 RefLink.objects.create(
+                    link_type=ref_link.split(";")[0].strip(),
+                    url=ref_link.split(";")[1].strip(),
                     study=study,
-                    url=ref_link.strip(),
                 )
 
         return study

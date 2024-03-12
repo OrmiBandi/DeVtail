@@ -65,7 +65,7 @@
         border: 2px solid #ddd;
     }
 
-    input[name="ref_links"] {
+    input[id="ref_links"], input[id="ref_links_type"] {
         border: 2px solid #ddd;
     }
 
@@ -81,7 +81,7 @@
 스터디 생성
 {% endblock %}
 {% block content %}
-<form action="" method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data">
     {% csrf_token %}        
     <div class="flex justify-center gap-36">
         <div class="flex flex-col gap-4 border-2 p-6">
@@ -133,7 +133,19 @@
             <label class="text-lg" for="introduce">스터디 소개</label>
             {{ form.introduce }}
             <label class="text-lg" for="ref_links">참고 링크</label>
-            {{ form.ref_links }}
+
+            <div class="flex gap-4">
+                <select class="select select-bordered" id="ref_links_type">
+                    <option disabled selected>링크 타입</option>
+                    <option value="google form">구글 폼</option>
+                    <option value="book">서적</option>
+                    <option value="discord">디스코드</option>
+                    <option value="other">기타</option>
+                </select>
+                <input type="url" placeholder="링크" class="input input-bordered w-full max-w-xs" id="ref_links_url"/>
+            </div>
+            <input type="hidden" name="ref_links" id="ref_links">
+            <button id="links_add" onclick="handle_ref_links()"></button>
             <div class="flex justify-end">
                 <input type="submit" value="확인" class="border-2 rounded-md py-2 px-4">
             </div>
@@ -192,6 +204,34 @@
           // 파일을 읽어오기
             reader.readAsDataURL(selectedFile);
         }
+    }
+
+    const link_type = document.getElementById('ref_links_type');
+    const link_url = document.getElementById('ref_links_url');
+
+    const selected_link_type = "";
+    link_type.addEventListener('change', function(e) {
+        selected_link_type = e.target.value;
+    });
+
+    link_url.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (link_url.value === "") {
+                return;
+            } else {
+                handle_ref_links();
+            }   
+        }
+    });
+
+    function handle_ref_links() {
+        const ref_links = document.getElementById('ref_links');
+        ref_links.value += "," + selected_link_type + ";" + link_url.value;
+
+        // Clear the input field
+        link_type.value = '';
+        link_url.value = '';
     }
 </script>
 {% endblock %}
