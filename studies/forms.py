@@ -15,35 +15,35 @@ import datetime
 
 class StudyForm(forms.ModelForm):
     thumbnail = forms.ImageField(
-        required=True,
+        required=False,
         widget=forms.FileInput(attrs={"accept": "image/*"}),
-        error_messages={"required": "썸네일을 선택해주세요."},
     )
     category = forms.ModelChoiceField(
-        queryset=Category.objects.all(),
         required=True,
+        queryset=Category.objects.all(),
         error_messages={"required": "카테고리를 선택해주세요."},
     )
     tags = forms.CharField(
+        required=False,
         max_length=100,
     )
     ref_links = forms.URLField(
-        initial="(임시)참조링크를 ,로 구분하여 입력해주세요.",
+        required=False,
     )
     goal = forms.CharField(
         required=True,
         error_messages={"required": "목표를 입력해주세요."},
     )
     start_at = forms.DateField(
-        initial=datetime.date.today,
         required=True,
         widget=forms.DateInput(attrs={"type": "date"}),
+        initial=datetime.date.today,
         error_messages={"required": "시작일을 입력해주세요."},
     )
     end_at = forms.DateField(
-        initial=datetime.date.today,
         required=True,
         widget=forms.DateInput(attrs={"type": "date"}),
+        initial=datetime.date.today,
         error_messages={"required": "종료일을 입력해주세요."},
     )
     title = forms.CharField(
@@ -51,9 +51,9 @@ class StudyForm(forms.ModelForm):
         error_messages={"required": "스터디명을 입력해주세요."},
     )
     difficulty = forms.ChoiceField(
-        choices=Study.difficulty_choices,
         required=True,
         widget=forms.RadioSelect,
+        choices=Study.difficulty_choices,
         error_messages={"required": "난이도를 선택해주세요."},
     )
     max_member = forms.IntegerField(
@@ -61,9 +61,9 @@ class StudyForm(forms.ModelForm):
         error_messages={"required": "최대 인원을 입력해주세요."},
     )
     days = forms.MultipleChoiceField(
-        choices=Schedule.day_choices,
         required=True,
         widget=forms.CheckboxSelectMultiple,
+        choices=Schedule.day_choices,
         error_messages={"required": "요일을 선택해주세요."},
     )
     start_time = forms.TimeField(
@@ -102,7 +102,7 @@ class StudyForm(forms.ModelForm):
         super(StudyForm, self).__init__(*args, **kwargs)
         if self.instance.pk:
             self.fields["tags"].initial = ",".join(
-                [tag.name for tag in self.instance.tags.all()]
+                [tag.name for tag in self.instance.tag.all()]
             )
             self.fields["ref_links"].initial = ",".join(
                 [ref_link.url for ref_link in self.instance.ref_links.all()]
@@ -126,7 +126,7 @@ class StudyForm(forms.ModelForm):
             tags = self.cleaned_data["tags"].split(",")
             for tag in tags:
                 tag = Tag.objects.get_or_create(name=tag.strip())[0]
-                study.tags.add(tag)
+                study.tag.add(tag)
 
             days = self.cleaned_data["days"]
             for day in days:

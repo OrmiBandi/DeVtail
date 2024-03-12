@@ -43,7 +43,7 @@ class TestStudyList(TestCase):
             end_time=datetime.time(12, 0),
         )
         tags = Tag.objects.create(name="tag_test")
-        self.study_object.tags.add(tags)
+        self.study_object.tag.add(tags)
 
         RefLink.objects.create(
             study=self.study_object, link_type="github", url="https://github.com/"
@@ -115,7 +115,7 @@ class TestStudyDetail(TestCase):
             end_time=datetime.time(12, 0),
         )
         tags = Tag.objects.create(name="tag_test")
-        self.study_object.tags.add(tags)
+        self.study_object.tag.add(tags)
 
         RefLink.objects.create(
             study=self.study_object, link_type="github", url="https://github.com/"
@@ -190,7 +190,7 @@ class TestStudyCreate(TestCase):
             end_time=datetime.time(12, 0),
         )
         tags = Tag.objects.create(name="tag_test")
-        self.study_object.tags.add(tags)
+        self.study_object.tag.add(tags)
 
         RefLink.objects.create(
             study=self.study_object, link_type="github", url="https://github.com/"
@@ -597,7 +597,7 @@ class TestStudyUpdate(TestCase):
             end_time=datetime.time(12, 0),
         )
         tags = Tag.objects.create(name="tag_test")
-        self.study_object.tags.add(tags)
+        self.study_object.tag.add(tags)
 
         RefLink.objects.create(
             study=self.study_object, link_type="github", url="https://github.com/"
@@ -1024,7 +1024,7 @@ class TestStudyDelete(TestCase):
             end_time=datetime.time(12, 0),
         )
         tags = Tag.objects.create(name="tag_test")
-        self.study_object.tags.add(tags)
+        self.study_object.tag.add(tags)
 
         RefLink.objects.create(
             study=self.study_object, link_type="github", url="https://github.com/"
