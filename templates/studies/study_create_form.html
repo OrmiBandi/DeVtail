@@ -102,7 +102,7 @@
             <label class="text-lg" for="tags">스터디 검색 태그</label>
             <input id="tags-input" type="text" placeholder="태그를 입력해주세요." class="border-2">
             <input type="hidden" name="tags" id="tags">
-            <div class="flex" id="container"></div>
+            <div class="flex" id="tag-container"></div>
             <button id="tags-add" onclick="addTag()"></button>
         </div>
 
@@ -134,18 +134,24 @@
             {{ form.introduce }}
             <label class="text-lg" for="ref_links">참고 링크</label>
 
-            <div class="flex gap-4">
-                <select class="select select-bordered" id="ref_links_type">
-                    <option disabled selected>링크 타입</option>
-                    <option value="google form">구글 폼</option>
-                    <option value="book">서적</option>
-                    <option value="discord">디스코드</option>
-                    <option value="other">기타</option>
-                </select>
-                <input type="url" placeholder="링크" class="input input-bordered w-full max-w-xs" id="ref_links_url"/>
+            <div id="links-container" class="flex flex-col gap-4">
+                <div class="flex gap-4 ref-link-container">
+                    <select class="select select-bordered ref-links-type">
+                        <option value="none select">링크 타입</option>
+                        <option value="google form">구글 폼</option>
+                        <option value="book">서적</option>
+                        <option value="discord">디스코드</option>
+                        <option value="other">기타</option>
+                    </select>
+                    <input type="url" placeholder="링크" class="input input-bordered w-full ref_links_url"/>
+                    <button class="btn btn-square btn-outline del-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
             </div>
             <input type="hidden" name="ref_links" id="ref_links">
-            <button id="links_add" onclick="handle_ref_links()"></button>
+            <button onclick="handle_ref_links()"></button>
+            <button class="btn" id="links_add">링크 추가하기</button>
             <div class="flex justify-end">
                 <input type="submit" value="확인" class="border-2 rounded-md py-2 px-4">
             </div>
@@ -154,34 +160,55 @@
     
 </form>
 <script>
-    const tags_add = document.getElementById('tags-add');
-    tags_add.addEventListener('click', addTag);
-
-    const tag_input = document.getElementById('tags-input');
-    tag_input.addEventListener('keydown', function(e) {
+    // 태그 추가
+    document.getElementById('tags-add').addEventListener('click', addTag);
+    
+    document.getElementById('tags-input').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
-            if (tag_input.value === "") {
-                return;
-            } else {
-                addTag();
-            }   
+            addTag();
+            }
         }
-    });
+    );
 
     function addTag() {
-        const div = document.createElement('div');
+        const div_tag = document.createElement('div');
         const tags = document.getElementById('tags');
+        const tags_container = document.getElementById('tag-container')
+        const tag_input = document.getElementById('tags-input');
+        const tag_input_value = tag_input.value.trim(); // 입력된 값을 가져와서 공백 제거
 
-        div.textContent = tag_input.value;
-        tags.value += tag_input.value + ',';
-        div.classList.add('tag');
-    
-        document.getElementById('container').appendChild(div);
-    
+        if (!tag_input_value) {
+            return; // 입력값이 비어있으면 아무 기능하지 않음
+        }
+        
+        let has_duplicate = false;
+        tags_container.querySelectorAll('.tag').forEach(tag => {
+            if (tag.textContent === tag_input_value) {
+                has_duplicate = true; // 중복된 태그가 있을 경우 true
+            }
+        });
+
+        if (has_duplicate) {
+            return; // 중복된 태그가 있으면 아무 기능하지 않음
+        } 
+
+        div_tag.textContent = tag_input_value;
+        tags.value += tag_input_value + ',';
+        div_tag.className ='tag hover:cursor-pointer';
+
+        tags_container.appendChild(div_tag);
+
         // Clear the input field
         tag_input.value = '';
     }
+
+    // 태그 삭제
+    document.getElementById('tag-container').addEventListener('click', function(e) {
+        if (e.target && e.target.matches('.tag')) {
+            e.target.remove();
+        }
+    });
 
     function handleFileSelect(event) {
         const fileInput = event.target;
@@ -206,10 +233,66 @@
         }
     }
 
-    const link_type = document.getElementById('ref_links_type');
-    const link_url = document.getElementById('ref_links_url');
+    const link_container = document.querySelector('ref-link-container')
 
-    const selected_link_type = "";
+    document.getElementById('links_add').addEventListener('click', function(e) {
+        const linkContainers = document.querySelectorAll('.ref-link-container');
+        e.preventDefault();
+        if (linkContainers.length >= 5) {
+            document.getElementById('links_add').textContent = '최대 5개까지만 추가할 수 있습니다.'
+            document.getElementById('links_add').className = 'btn btn-block'
+            return; // 5개 도달시 추가하지 않고 함수 종료
+        } else {
+            addLinkContainer();
+        }
+    });
+
+    function addLinkContainer() {
+        const container = document.createElement('div');
+        container.className = 'flex gap-4 ref-link-container';
+        
+        const select = document.createElement('select');
+        select.className = 'select select-bordered ref-links-type';
+        select.innerHTML = `
+            <option value="none select">링크 타입</option>
+            <option value="google form">구글 폼</option>
+            <option value="book">서적</option>
+            <option value="discord">디스코드</option>
+            <option value="other">기타</option>
+        `;
+        
+        const input = document.createElement('input');
+        input.type = 'url';
+        input.placeholder = '링크';
+        input.className = 'input input-bordered w-full ref_links_url';
+
+        const del_btn = document.createElement('button');
+        del_btn.className = 'btn btn-square btn-outline del-btn'
+        del_btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        `;
+        
+        container.appendChild(select);
+        container.appendChild(input);
+        container.appendChild(del_btn);
+        
+        // 'link-containers'에 새로운 container 추가
+        document.getElementById('links-container').appendChild(container)
+    };
+
+    document.getElementById('links-container').addEventListener('click', function(e) {
+        if (e.target && e.target.closest('.del-btn')) {
+            const toBeRemoved = e.target.closest('.ref-link-container');
+            if (toBeRemoved) {
+                toBeRemoved.remove();
+            }
+        }
+    });
+
+    const link_type = document.querySelector('.ref-links-type');
+    const link_url = document.querySelector('ref-links-url');
+
+    let selected_link_type = "";
     link_type.addEventListener('change', function(e) {
         selected_link_type = e.target.value;
     });
@@ -228,10 +311,6 @@
     function handle_ref_links() {
         const ref_links = document.getElementById('ref_links');
         ref_links.value += "," + selected_link_type + ";" + link_url.value;
-
-        // Clear the input field
-        link_type.value = '';
-        link_url.value = '';
     }
 </script>
 {% endblock %}
