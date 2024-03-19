@@ -126,7 +126,7 @@ class StudyForm(forms.ModelForm):
         if commit:
             study.save()
 
-            tags = self.cleaned_data["tags"].split(",")
+            tags = self.cleaned_data["tags"].strip(",").split(",")
             for tag in tags:
                 tag = Tag.objects.get_or_create(name=tag.strip())[0]
                 study.tag.add(tag)
@@ -141,7 +141,6 @@ class StudyForm(forms.ModelForm):
                 )
 
             ref_links = self.cleaned_data["ref_links"].strip(",").split(",")
-            print(ref_links)
             for ref_link in ref_links:
                 RefLink.objects.create(
                     link_type=ref_link.split(";")[0].strip(),
