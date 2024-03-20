@@ -163,7 +163,6 @@
 
     function addTag() {
         const div_tag = document.createElement('div');
-        const tags = document.getElementById('tags');
         const tags_container = document.getElementById('tag-container')
         const tag_input = document.getElementById('tags-input');
         const tag_input_value = tag_input.value.trim(); // 입력된 값을 가져와서 공백 제거
@@ -184,7 +183,6 @@
         } 
 
         div_tag.textContent = tag_input_value;
-        tags.value += tag_input_value + ',';
         div_tag.className ='tag hover:cursor-pointer';
 
         tags_container.appendChild(div_tag);
@@ -298,6 +296,13 @@
 
         const request_links = document.getElementById('ref_links')
         request_links.value = collectLinks();
+
+        const tags = document.getElementById('tags');
+        const div_tags_all = document.querySelectorAll('#tag-container div')
+
+        div_tags_all.forEach((div_tag_element) => {
+            tags.value += div_tag_element.textContent + ',';
+        })
         
         this.submit();
     })

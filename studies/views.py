@@ -8,6 +8,7 @@ from .models import (
     Blacklist,
     Favorite,
     Schedule,
+    RefLink,
 )
 from django.views.generic import (
     ListView,
@@ -140,6 +141,33 @@ class StudyCreate(LoginRequiredMixin, CreateView):
             study=study, user=self.request.user, is_manager=True, is_accepted=True
         )
 
+        tags_input = form.cleaned_data["tags"]
+        tags_list = tags_input.strip(",").split(",")
+
+        for tag in tags_list:
+            tag = Tag.objects.get_or_create(name=tag.strip())[0]
+            study.tag.add(tag)
+
+        days = form.cleaned_data["days"]
+
+        for day in days:
+            Schedule.objects.create(
+                study=study,
+                day=day,
+                start_time=form.cleaned_data["start_time"],
+                end_time=form.cleaned_data["end_time"],
+            )
+
+        ref_links_input = form.cleaned_data["ref_links"]
+        ref_links_list = ref_links_input.strip(",").split(",")
+
+        for ref_link in ref_links_list:
+            RefLink.objects.create(
+                link_type=ref_link.split(";")[0].strip(),
+                url=ref_link.split(";")[1].strip(),
+                study=study,
+            )
+
         return super().form_valid(form)
 
 
@@ -187,6 +215,41 @@ class StudyUpdate(UserPassesTestMixin, UpdateView):
         study = self.get_object()
         studymember = StudyMember.objects.get(study=study, user=self.request.user)
         return studymember.user == self.request.user and studymember.is_manager
+
+    def form_valid(self, form):
+        study = form.save(commit=False)
+
+        tags_input = form.cleaned_data["tags"]
+        tags_list = tags_input.strip(",").split(",")
+
+        study.tag.clear()
+        for tag in tags_list:
+            tag = Tag.objects.get_or_create(name=tag.strip())[0]
+            study.tag.add(tag)
+
+        days = form.cleaned_data["days"]
+        start_time = form.cleaned_data["start_time"]
+        end_time = form.cleaned_data["end_time"]
+        Schedule.objects.filter(study=study).delete()
+
+        for day in days:
+            Schedule.objects.create(
+                study=study, day=day, start_time=start_time, end_time=end_time
+            )
+
+        ref_links_input = form.cleaned_data["ref_links"]
+        ref_links_list = ref_links_input.strip(",").split(",")
+
+        RefLink.objects.filter(study=study).delete()
+
+        for ref_link in ref_links_list:
+            RefLink.objects.create(
+                link_type=ref_link.split(";")[0].strip(),
+                url=ref_link.split(";")[1].strip(),
+                study=study,
+            )
+
+        return super().form_valid(form)
 
 
 class StudyDelete(UserPassesTestMixin, DeleteView):

@@ -123,31 +123,6 @@ class StudyForm(forms.ModelForm):
         study.thumbnail = self.cleaned_data["thumbnail"]
         study.introduce = self.cleaned_data["introduce"]
 
-        if commit:
-            study.save()
-
-            tags = self.cleaned_data["tags"].strip(",").split(",")
-            for tag in tags:
-                tag = Tag.objects.get_or_create(name=tag.strip())[0]
-                study.tag.add(tag)
-
-            days = self.cleaned_data["days"]
-            for day in days:
-                Schedule.objects.create(
-                    study=study,
-                    day=day,
-                    start_time=self.cleaned_data["start_time"],
-                    end_time=self.cleaned_data["end_time"],
-                )
-
-            ref_links = self.cleaned_data["ref_links"].strip(",").split(",")
-            for ref_link in ref_links:
-                RefLink.objects.create(
-                    link_type=ref_link.split(";")[0].strip(),
-                    url=ref_link.split(";")[1].strip(),
-                    study=study,
-                )
-
         return study
 
     def clean_start_at(self):
