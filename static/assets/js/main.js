@@ -46,38 +46,24 @@ const holiday_name1 = $holiday_p1.dataset.name;
 const holiday_name2 = $holiday_p2.dataset.name;
 const holiday_name3 = $holiday_p3.dataset.name;
 
-$holiday_btn1.addEventListener('click', function () {
-    $holiday_p1.classList.add('font-semibold');
-    $holiday_p2.classList.remove('font-semibold');
-    $holiday_p3.classList.remove('font-semibold');
-    const year = $holiday_p1.dataset.holiday.split(' ')[0].replace('년', '');
-    const month = $holiday_p1.dataset.holiday.split(' ')[1].replace('월', '');
-    const day = $holiday_p1.dataset.holiday.split(' ')[2].replace('일', '');
-    const countDownDate = new Date(year, month, day).getTime();
-    countdownFunction(countDownDate);
-    $holiday_title.textContent = holiday_name1;
-});
+const buttons = [$holiday_btn1, $holiday_btn2, $holiday_btn3];
+const paragraphs = [$holiday_p1, $holiday_p2, $holiday_p3];
+const holiday_names = [holiday_name1, holiday_name2, holiday_name3];
 
-$holiday_btn2.addEventListener('click', function () {
-    $holiday_p1.classList.remove('font-semibold');
-    $holiday_p2.classList.add('font-semibold');
-    $holiday_p3.classList.remove('font-semibold');
-    const year2 = $holiday_p2.dataset.holiday.split(' ')[0].replace('년', '');
-    const month2 = $holiday_p2.dataset.holiday.split(' ')[1].replace('월', '');
-    const day2 = $holiday_p2.dataset.holiday.split(' ')[2].replace('일', '');
-    const countDownDate2 = new Date(year2, month2, day2).getTime();
-    countdownFunction(countDownDate2);
-    $holiday_title.textContent = holiday_name2;
-});
-
-$holiday_btn3.addEventListener('click', function () {
-    $holiday_p1.classList.remove('font-semibold');
-    $holiday_p2.classList.remove('font-semibold');
-    $holiday_p3.classList.add('font-semibold');
-    const year3 = $holiday_p3.dataset.holiday.split(' ')[0].replace('년', '');
-    const month3 = $holiday_p3.dataset.holiday.split(' ')[1].replace('월', '');
-    const day3 = $holiday_p3.dataset.holiday.split(' ')[2].replace('일', '');
-    const countDownDate3 = new Date(year3, month3, day3).getTime();
-    countdownFunction(countDownDate3);
-    $holiday_title.textContent = holiday_name3;
+buttons.forEach((button, index) => {
+    button.addEventListener('click', () => {
+        paragraphs.forEach((paragraph, idx) => {
+            if (index === idx) {
+                paragraph.classList.add('font-semibold');
+                const year = paragraph.dataset.holiday.split(' ')[0].replace('년', '');
+                const month = paragraph.dataset.holiday.split(' ')[1].replace('월', '');
+                const day = paragraph.dataset.holiday.split(' ')[2].replace('일', '');
+                const countDownDate = new Date(year, month, day).getTime();
+                countdownFunction(countDownDate);
+                $holiday_title.textContent = holiday_names[index];
+            } else {
+                paragraph.classList.remove('font-semibold');
+            }
+        });
+    });
 });
