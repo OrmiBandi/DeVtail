@@ -20,7 +20,7 @@ class Study(models.Model):
         upload_to="study/imgs/%Y/%m/%d/",
         null=True,
         blank=True,
-        default="thumbnail_default/thumbnail_default.png",
+        default="default/study_thumbnail.png",
     )
     start_at = models.DateField()
     end_at = models.DateField()
