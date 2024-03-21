@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, UpdateView, DeleteView
 from .models import DevMate
@@ -21,6 +20,7 @@ class DevMateListView(LoginRequiredMixin, ListView):
     template_name = "devmate_list.html"
     model = DevMate
     context_object_name = "devmates"
+    paginate_by = 8
 
     def get_queryset(self):
         return DevMate.objects.filter(
@@ -33,6 +33,7 @@ class DevMateReceivedListView(LoginRequiredMixin, ListView):
     """
     DevMate 신청받은 목록 보기
     Detail:
+        received_user가 현재 로그인한 유저이고,
         is_accepted가 False인 경우의 목록
     """
 

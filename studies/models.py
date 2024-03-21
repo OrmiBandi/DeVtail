@@ -14,7 +14,7 @@ class Study(models.Model):
     category = models.ForeignKey(
         "Category", on_delete=models.PROTECT, related_name="studies"
     )
-    tag = models.ManyToManyField("Tag", related_name="studies")
+    tag = models.ManyToManyField("Tag", related_name="studies", blank=True)
     goal = models.CharField(max_length=100)
     thumbnail = models.ImageField(
         upload_to="study/imgs/%Y/%m/%d/",
@@ -27,7 +27,6 @@ class Study(models.Model):
     introduce = models.TextField(null=True, blank=True)
     title = models.CharField(max_length=100)
     difficulty = models.CharField(max_length=2, choices=difficulty_choices)
-    current_member = models.IntegerField(default=0)
     max_member = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -37,6 +36,14 @@ class Study(models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def get_study_leader(self):
+        return self.members.get(is_manager=True)
+
+    @property
+    def get_current_member(self):
+        return self.members.filter(is_accepted=True).count()
 
 
 class Schedule(models.Model):
@@ -92,7 +99,6 @@ class Tag(models.Model):
     - 스터디 생성 시 사용자가 입력한 태그를 저장
     """
 
-    study = models.ManyToManyField("Study", related_name="tags")
     name = models.CharField(max_length=100)
 
     class Meta:
@@ -111,7 +117,11 @@ class RefLink(models.Model):
     """
 
     study = models.ForeignKey(
-        "Study", on_delete=models.CASCADE, related_name="ref_links"
+        "Study",
+        on_delete=models.CASCADE,
+        related_name="ref_links",
+        blank=True,
+        null=True,
     )
     link_type = models.CharField(max_length=100)
     url = models.CharField(max_length=100)

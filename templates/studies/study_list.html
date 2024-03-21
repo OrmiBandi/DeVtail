@@ -1,31 +1,100 @@
-<!DOCTYPE html>
-<html lang="ko-KR">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>DeVtail</title>
-    </head>
-    <body>
-        <h1><a href="{% url 'studies:study_list' %}">Study List</a></h1>
-        {% for tag in tags %}
-            <a href="{% url 'studies:study_list' %}?tq={{ tag }}">#{{ tag }} </a>
-        {% endfor %}
-        <ul>
-            {% for study in studies %}
-            <li>
-                <div style="display:flex;">
-                    <a href="{% url 'studies:study_detail' study.id %}">{{ study.title }}</a>
-                    <form action="{% url 'studies:favorite_study_create' study.id %}" method="POST">
-                        {% csrf_token %}
-                        <input type="submit" value="즐겨찾기 추가">
-                    </form>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-        <a href="{% url 'studies:study_create' %}">New Study</a>
-        <a href="{% url 'studies:my_study_list' %}">My Study List</a>
+{% extends "base.html" %}
 
+{% block title %}
+스터디 리스트
+{% endblock %}
+{% block content %}
+    <!-- <h1><a href="{% url 'studies:study_list' %}">Study List</a></h1>
+    {% for tag in tags %}
+        <a href="{% url 'studies:study_list' %}?tag={{ tag }}">#{{ tag }} </a>
+    {% endfor %} -->
+    <div class="flex justify-between mx-auto w-11/12 px-2 py-2 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+        <a class="font-bold text-2xl" href="{% url 'studies:study_list' %}">스터디 목록</a>
+        <div class="form-control">
+            <form action="{% url 'studies:study_list' %}" method="GET">
+                <input name="q" type="text" placeholder="🔍스터디 검색" class="input input-bordered w-auto border-2 focus:outline-none focus:border-4"/>
+                <!--  필터 기능 추가 카테고리와 난이도 선택할 수 있도록 -->
+                <select name="category" class="select select-bordered w-auto border-2 focus:outline-none focus:border-4">
+                    <option value="">카테고리</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+                <select name="difficulty" class="select select-bordered w-auto border-2 focus:outline-none focus:border-4">
+                    <option value="">난이도</option>
+                    {% for difficulty in difficulty_choices %}
+                    <!-- difficulty_choices = [
+                        ("상", "상"),
+                        ("중", "중"),
+                        ("하", "하"),
+                    ] -->
+                    <option value="{{ difficulty.0 }}">{{ difficulty.1 }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 mx-auto w-11/12 px-2 sm:px-6 lg:px-8">
+        {% for study in studies %}
+        <a href="{% url 'studies:study_detail' study.id %}">
+            <div class="card card-side border bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <div class="flex justify-between">
+                        <div>
+                            <button class="btn btn-sky200 min-w-0" onClick="event.preventDefault(); location.href='{% url 'studies:study_list' %}?category={{ study.category }}'">{{ study.category }}</button>
+                            <button class="btn btn-sky200 min-w-0" onClick="event.preventDefault(); location.href='{% url 'studies:study_list' %}?difficulty={{ study.difficulty }}'">{{ study.difficulty }}</button>
+                        </div>
+                        <div>
+                            <form action="{% url 'studies:favorite_study_create' study.id %}" method="POST">
+                                {% csrf_token %}
+                                <!-- 체크 사항 1번. 즐겨찾기에 없을 경우 unchecked 이미지로, 있을 경우 checked 이미지로 변경되도록 해야함. -->
+                                <input type="image" src="/static/assets/images/favorite_img_unchecked.png" alt="favorite" width="30" height="30">
+                            </form>
+                        </div>
+                    </div>
+                    <h2 class="card-title mt-4">{{ study.title }}</h2>
+                    <div class="flex gap-4">
+                        <div class="avatar">
+                            <div class="w-16 rounded-full">
+                                {% if not study.get_study_leader.user.profile_image %}
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M304 128a80 80 0 1 0 -160 0 80 80 0 1 0 160 0zM96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM49.3 464H398.7c-8.9-63.3-63.3-112-129-112H178.3c-65.7 0-120.1 48.7-129 112zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3z"/></svg>
+                                {% elif 'http' in user.profile_image.url %}
+                                <img src="{{ study.get_study_leader.user.profile_image }}"/>
+                                {% else %}
+                                <img src="{{ study.get_study_leader.user.profile_image.url }}"/>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="flex flex-col justify-center">
+                            <div>{{ study.get_study_leader.user.nickname }}</div>
+                            <div>{{ study.start_at }}</div>
+                        </div>
+                        <div class="flex gap-4 self-center">
+                            <img src="/static/assets/images/members_count_img.png" alt="members_count" width="30px" height="20px">
+                            <span>{{ study.get_current_member }}/{{ study.max_member }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="mx-auto w-11/12 px-2 py-2 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+        <div class="flex justify-center">
+            <div class="pagination">
+                <span class="pagination-item">
+                    <a href="?page=1" class="pagination-link">1</a>
+                </span>
+                <span class="pagination-item">
+                    <a href="?page=2" class="pagination-link">2</a>
+                </span>
+            </div>
+        </div>
+        <div class="flex justify-end">
+            <button class="btn" onClick="location.href='{% url 'studies:study_create' %}'">스터디 생성</button>
+        </div>
+    </div>
+{% endblock %}
     </body>
 </html>

@@ -14,29 +14,36 @@ import datetime
 
 
 class StudyForm(forms.ModelForm):
+    thumbnail = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={"accept": "image/*"}),
+    )
     category = forms.ModelChoiceField(
-        queryset=Category.objects.all(),
         required=True,
+        queryset=Category.objects.all(),
         error_messages={"required": "카테고리를 선택해주세요."},
     )
     tags = forms.CharField(
-        initial="(임시)태그를 ,로 구분하여 입력해주세요.",
+        required=False,
+        max_length=100,
     )
-    ref_links = forms.URLField(
-        initial="(임시)참조링크를 ,로 구분하여 입력해주세요.",
+    ref_links = forms.CharField(
+        required=False,
     )
     goal = forms.CharField(
         required=True,
         error_messages={"required": "목표를 입력해주세요."},
     )
     start_at = forms.DateField(
-        initial=datetime.date.today,
         required=True,
+        widget=forms.DateInput(attrs={"type": "date"}),
+        initial=datetime.date.today,
         error_messages={"required": "시작일을 입력해주세요."},
     )
     end_at = forms.DateField(
-        initial=datetime.date.today,
         required=True,
+        widget=forms.DateInput(attrs={"type": "date"}),
+        initial=datetime.date.today,
         error_messages={"required": "종료일을 입력해주세요."},
     )
     title = forms.CharField(
@@ -44,8 +51,9 @@ class StudyForm(forms.ModelForm):
         error_messages={"required": "스터디명을 입력해주세요."},
     )
     difficulty = forms.ChoiceField(
-        choices=Study.difficulty_choices,
         required=True,
+        widget=forms.RadioSelect,
+        choices=Study.difficulty_choices,
         error_messages={"required": "난이도를 선택해주세요."},
     )
     max_member = forms.IntegerField(
@@ -53,16 +61,21 @@ class StudyForm(forms.ModelForm):
         error_messages={"required": "최대 인원을 입력해주세요."},
     )
     days = forms.MultipleChoiceField(
-        choices=Schedule.day_choices,
         required=True,
+        widget=forms.CheckboxSelectMultiple,
+        choices=Schedule.day_choices,
         error_messages={"required": "요일을 선택해주세요."},
     )
     start_time = forms.TimeField(
         required=True,
+        widget=forms.TimeInput(attrs={"type": "time"}),
+        initial=datetime.time(0, 0),
         error_messages={"required": "시작 시간을 입력해주세요."},
     )
     end_time = forms.TimeField(
         required=True,
+        widget=forms.TimeInput(attrs={"type": "time"}),
+        initial=datetime.time(0, 0),
         error_messages={"required": "종료 시간을 입력해주세요."},
     )
 
@@ -79,7 +92,6 @@ class StudyForm(forms.ModelForm):
             "introduce",
             "title",
             "difficulty",
-            "current_member",
             "max_member",
             "days",
             "start_time",
@@ -90,10 +102,13 @@ class StudyForm(forms.ModelForm):
         super(StudyForm, self).__init__(*args, **kwargs)
         if self.instance.pk:
             self.fields["tags"].initial = ",".join(
-                [tag.name for tag in self.instance.tags.all()]
+                [tag.name for tag in self.instance.tag.all()]
             )
             self.fields["ref_links"].initial = ",".join(
-                [ref_link.url for ref_link in self.instance.ref_links.all()]
+                [
+                    f"{ref_link.link_type}; {ref_link.url}"
+                    for ref_link in self.instance.ref_links.all()
+                ]
             )
             self.fields["days"].initial = [
                 schedule.day for schedule in self.instance.schedules.all()
@@ -114,7 +129,7 @@ class StudyForm(forms.ModelForm):
             tags = self.cleaned_data["tags"].split(",")
             for tag in tags:
                 tag = Tag.objects.get_or_create(name=tag.strip())[0]
-                study.tags.add(tag)
+                study.tag.add(tag)
 
             days = self.cleaned_data["days"]
             for day in days:
@@ -125,11 +140,13 @@ class StudyForm(forms.ModelForm):
                     end_time=self.cleaned_data["end_time"],
                 )
 
-            ref_links = self.cleaned_data["ref_links"].split(",")
+            ref_links = self.cleaned_data["ref_links"].strip(",").split(",")
+            print(ref_links)
             for ref_link in ref_links:
                 RefLink.objects.create(
+                    link_type=ref_link.split(";")[0].strip(),
+                    url=ref_link.split(";")[1].strip(),
                     study=study,
-                    url=ref_link.strip(),
                 )
 
         return study

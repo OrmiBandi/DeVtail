@@ -1,0 +1,59 @@
+name: DeVtail CI/CD
+
+env:
+  GITHUB_CLIENT_ID: CLIENT_GITHUB_ID
+  GITHUB_CLIENT_SECRET: CLIENT_GITHUB_SECRET
+  GITHUB_REDIRECT_URI: REDIRECT_GITHUB_URI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 체크아웃 레포지토리
+      uses: actions/checkout@v3
+      
+    - name: 파이썬 설정
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.11'
+        
+    - name: 의존성 설치
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run Tests
+      run: |
+        python manage.py test
+      env :
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        DEBUG: ${{ secrets.DEBUG }}
+
+    - name: 서버 배포
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        script: |
+          set -e
+          cd /home/ubuntu/DeVtail
+          git pull origin main
+
+          echo "SECRET_KEY=\"${{ secrets.SECRET_KEY }}\"" > .env
+          echo "DEBUG='${{ secrets.DEBUG }}'" >> .env
+          echo "GITHUB_CLIENT_ID='${{ vars.CLIENT_GITHUB_ID }}'" >> .env
+          echo "GITHUB_CLIENT_SECRET='${{ vars.CLIENT_GITHUB_SECRET }}'" >> .env
+          echo "GITHUB_REDIRECT_URI='${{ vars.REDIRECT_GITHUB_URI }}'" >> .env
+
+          source ../venv/bin/activate
+          pip install -r requirements.txt
+          python manage.py makemigrations
+          python manage.py migrate
+          sudo systemctl restart devtail.service

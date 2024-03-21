@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block extra_css %}
+<style>
+    input[type="checkbox"], input[type="radio"] {
+        display: none;
+    }
+    
+    label:has(input[type="checkbox"]), label:has(input[type="radio"]) {
+        background: #ddd;
+        border-radius: 5px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    label:has(input[type="checkbox"]:checked), label:has(input[type="radio"]:checked) {
+        background: #0069ff;
+        font-weight: bold;
+        color: white;
+    }
+
+    input[type="radio"] + label {
+        background: #ddd;
+        border-radius: 5px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+
+    input[name="title"] {
+        border: 2px solid #ddd;
+    }
+
+    select[name="category"] {
+        border: 2px solid #ddd;
+    }
+
+    input[name="max_member"] {
+        border: 2px solid #ddd;
+    }
+
+    input[name="goal"] {
+        border: 2px solid #ddd;
+    }
+
+    input[name="start_at"] {
+        border: 2px solid #ddd;
+    }
+
+    input[name="end_at"] {
+        border: 2px solid #ddd;
+    }
+
+    input[name="start_time"] {
+        border: 2px solid #ddd;
+    }
+
+    input[name="end_time"] {
+        border: 2px solid #ddd;
+    }
+
+    textarea[name="introduce"] {
+        border: 2px solid #ddd;
+    }
+
+    input[id="ref_links"], input[id="ref_links_type"] {
+        border: 2px solid #ddd;
+    }
+
+    .tag {
+        background: #ddd;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin: 5px;
+    }
+</style>
+{% endblock %}
+{% block title %}
+스터디 생성
+{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}        
+    <div class="flex justify-center gap-36">
+        <div class="flex flex-col gap-4 border-2 p-6">
+            <label for="thumbnail"><img src="/static/assets/images/study_default.jpg" class="h-72" id="thumbnail-add"></label>
+            <input type="file" id="thumbnail" name="thumbnail" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
+            <label class="text-lg" for="title">스터디 주제 (50자)</label>
+            {{ form.title }}
+            <label class="text-lg" for="category">카테고리</label>
+            {{ form.category }}
+            <label class="text-lg" for="difficulty">난이도</label>
+            <div class="flex justify-evenly gap-4">
+                {% for difficulty in form.difficulty %}
+                {{ difficulty }}
+                {% endfor %}
+            </div>
+            <label class="text-lg" for="max_member">스터디 인원 (4~20명)</label>
+            {{ form.max_member }}
+            <label class="text-lg" for="tags">스터디 검색 태그</label>
+            <input id="tags-input" type="text" placeholder="태그를 입력해주세요." class="border-2">
+            <input type="hidden" name="tags" id="tags">
+            <div class="flex" id="container"></div>
+            <button id="tags-add" onclick="addTag()"></button>
+        </div>
+
+        <div class="flex flex-col gap-4">
+            <p class="text-2xl">세부 항목</p>
+            <label class="text-lg" for="goal">스터디 목표</label>
+            {{ form.goal }}
+            <p class="text-lg">스터디 기간</p>
+            <div class="flex gap-4">
+                <label for="start_at">시작일</label>
+                {{ form.start_at }}
+                <label for="end_at">종료일</label>
+                {{ form.end_at }}
+            </div>
+            <label for="days">요일</label>
+            <div class="flex flex-wrap gap-4 my-4">
+                {% for day in form.days %}
+                {{ day }}
+                {% endfor %}
+            </div>
+            <p class="text-lg">스터디 시간</p>
+            <div class="flex gap-4">
+                <label for="start_time">시작 시간</label>
+                {{ form.start_time }}
+                <label for="end_time">종료 시간</label>
+                {{ form.end_time }}
+            </div>
+            <label class="text-lg" for="introduce">스터디 소개</label>
+            {{ form.introduce }}
+            <label class="text-lg" for="ref_links">참고 링크</label>
+
+            <div class="flex gap-4">
+                <select class="select select-bordered" id="ref_links_type">
+                    <option disabled selected>링크 타입</option>
+                    <option value="google form">구글 폼</option>
+                    <option value="book">서적</option>
+                    <option value="discord">디스코드</option>
+                    <option value="other">기타</option>
+                </select>
+                <input type="url" placeholder="링크" class="input input-bordered w-full max-w-xs" id="ref_links_url"/>
+            </div>
+            <input type="hidden" name="ref_links" id="ref_links">
+            <button id="links_add" onclick="handle_ref_links()"></button>
+            <div class="flex justify-end">
+                <input type="submit" value="확인" class="border-2 rounded-md py-2 px-4">
+            </div>
+        </div>
+    </div>
+    
+</form>
+<script>
+    const tags_add = document.getElementById('tags-add');
+    tags_add.addEventListener('click', addTag);
+
+    const tag_input = document.getElementById('tags-input');
+    tag_input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (tag_input.value === "") {
+                return;
+            } else {
+                addTag();
+            }   
+        }
+    });
+
+    function addTag() {
+        const div = document.createElement('div');
+        const tags = document.getElementById('tags');
+
+        div.textContent = tag_input.value;
+        tags.value += tag_input.value + ',';
+        div.classList.add('tag');
+    
+        document.getElementById('container').appendChild(div);
+    
+        // Clear the input field
+        tag_input.value = '';
+    }
+
+    function handleFileSelect(event) {
+        const fileInput = event.target;
+        const files = fileInput.files;
+    
+        // 선택된 파일들을 처리하거나 원하는 동작 수행
+        if (files.length > 0) {
+            const selectedFile = files[0];
+    
+          // FileReader 객체 생성
+            const reader = new FileReader();
+    
+          // 파일 읽기 완료 시 동작하는 이벤트 리스너
+            reader.onload = function (e) {
+                const imageData = e.target.result;
+        
+                // 선택된 이미지를 썸네일 영역에 표시
+                document.getElementById('thumbnail-add').src = imageData;
+                };
+          // 파일을 읽어오기
+            reader.readAsDataURL(selectedFile);
+        }
+    }
+
+    const link_type = document.getElementById('ref_links_type');
+    const link_url = document.getElementById('ref_links_url');
+
+    const selected_link_type = "";
+    link_type.addEventListener('change', function(e) {
+        selected_link_type = e.target.value;
+    });
+
+    link_url.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (link_url.value === "") {
+                return;
+            } else {
+                handle_ref_links();
+            }   
+        }
+    });
+
+    function handle_ref_links() {
+        const ref_links = document.getElementById('ref_links');
+        ref_links.value += "," + selected_link_type + ";" + link_url.value;
+
+        // Clear the input field
+        link_type.value = '';
+        link_url.value = '';
+    }
+</script>
+{% endblock %}
+    </body>
+</html>

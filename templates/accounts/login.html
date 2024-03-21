@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} 로그인 {% endblock %}
+{% block content %}
+    <div class="flex flex-col justify-center items-center">
+        <a href="{% url 'main:home' %}"><div class="font-bold text-3xl">de<span class="text-primary font-black text-4xl">V</span>tail</div></a>
+        <p class="text-2xl">Sign in to Your Account</p>
+        {% if error %}
+            <p class="" style="color: #e53e3e;">{{ error }}</p>
+        {% endif %}
+        <form method="post" class="flex flex-col items-center w-full" action="{% url 'accounts:login' %}">
+            {% csrf_token %}
+            <label class="form-control w-full max-w-sm mt-3">
+                <div class="label">
+                    <span class="label-text">Email</span>
+                </div>
+                <input type="email" name="username"
+                    {% if error_username %}
+                        class="input input-bordered w-full max-w-sm placeholder:text-red-500 email" style="border-color: #e53e3e;" placeholder="{{ error_username }}"/>
+                    {% else %}
+                        class="input input-bordered w-full max-w-sm email" placeholder="example@example.com"/>
+                    {% endif %}
+            </label>
+            <label class="form-control w-full max-w-sm mt-3">
+                <div class="label">
+                    <span class="label-text">Password</span>
+                </div>
+                <input type="password" name="password"
+                {% if error_password %}
+                    class="input input-bordered w-full max-w-sm placeholder:text-red-500 text-xs" style="border-color: #e53e3e;" placeholder="{{ error_password }}"/>
+                {% else %}
+                    class="input input-bordered w-full max-w-sm" placeholder="Password"/>
+                {% endif %}
+            </label>
+            <div class="flex justify-between w-full max-w-sm mt-3">
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <input type="checkbox" class="checkbox mr-2 remember-checkbox"/>
+                        <span class="text-xs">Remember me</span> 
+                    </label>
+                </div>
+                <a class="link link-primary text-xs items-center flex justify-center" href="{% url 'accounts:password_reset' %}">
+                    <p>Forgot your password?</p>
+                </a>
+            </div>
+            <button class="btn btn-primary btn-block max-w-sm">Sign In</button>
+            <a class="btn btn-neutral btn-block my-3 max-w-sm" href="{% url 'accounts:github_login' %}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 36 36" class="fill-current">
+                    <path
+                        d="M0 18.4567C0 26.6098 5.15706 33.5279 12.3098 35.9684C13.2103 36.1383 13.5385 35.5684 13.5385 35.079C13.5385 34.6405 13.5231 33.4803 13.5142 31.9405C8.50744 33.0554 7.45106 29.4661 7.45106 29.4661C6.63225 27.3337 5.4521 26.7661 5.4521 26.7661C3.8178 25.6206 5.57586 25.6444 5.57586 25.6444C7.38255 25.7747 8.33285 27.5468 8.33285 27.5468C9.93953 30.3668 12.5462 29.5522 13.5717 29.0797C13.7352 27.8867 14.2004 27.0743 14.7143 26.612C10.7175 26.1464 6.51512 24.5635 6.51512 17.4913C6.51512 15.4757 7.2168 13.8283 8.36821 12.5378C8.18368 12.071 7.56598 10.1948 8.54501 7.65458C8.54501 7.65458 10.0567 7.15719 13.4943 9.54557C14.9308 9.13655 16.4701 8.93148 18.0006 8.92468C19.5299 8.93148 21.0692 9.13655 22.5079 9.54557C25.9433 7.15719 27.4528 7.65458 27.4528 7.65458C28.434 10.1948 27.8163 12.071 27.6318 12.5378C28.7854 13.8283 29.4816 15.4757 29.4816 17.4913C29.4816 24.5805 25.2737 26.1407 21.2636 26.5984C21.9101 27.1683 22.4847 28.2945 22.4847 30.0156C22.4847 32.4833 22.4637 34.4739 22.4637 35.079C22.4637 35.573 22.7874 36.1463 23.7013 35.9661C30.8474 33.5211 36 26.6086 36 18.4567C36 8.26301 27.9401 0 17.9983 0C8.05992 0 0 8.26301 0 18.4567Z">
+                    </path>
+                </svg>
+                Sign In With GitHub
+            </a>
+            <div class="flex text-sm"><p>Don’t have an account?&nbsp;&nbsp;</p><a href="{% url 'accounts:signup' %}" class="link link-primary">Sign up</a></div>
+        </form>
+    </div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'assets/js/login.js' %}"></script>
+{% endblock %}

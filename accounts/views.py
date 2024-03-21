@@ -1,11 +1,15 @@
-import uuid
+import requests
+import uuid, environ
 from typing import Any
-from django.http.response import HttpResponse as HttpResponse
+from pathlib import Path
+from django.http.response import HttpResponse
 from django.urls import reverse
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django.shortcuts import redirect, render
 from django.core.mail import EmailMessage
 from django.contrib.auth import get_user_model
+from django.contrib.auth import login as auth_login
 from django.contrib.auth.views import (
     LoginView,
     PasswordResetView,
@@ -15,11 +19,10 @@ from django.db.models.base import Model as Model
 from django.views.generic.edit import UpdateView, DeleteView
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DetailView
-from django.contrib.auth.forms import AuthenticationForm
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
-from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseBadRequest
-from django.utils.http import urlsafe_base64_decode
+from django.http import HttpRequest, HttpResponseBadRequest
 from allauth.account.views import LogoutView
 from allauth.socialaccount.views import SignupView as BaseSignupView
 
@@ -32,6 +35,9 @@ from .forms import (
 )
 
 User = get_user_model()
+BASE_DIR = Path(__file__).resolve().parent.parent
+env = environ.Env(DEBUG=(bool, True))
+environ.Env.read_env(env_file="../../.env")
 
 
 class SignupView(CreateView):
@@ -42,6 +48,7 @@ class SignupView(CreateView):
     model = User
     form_class = SignupForm
     template_name = "accounts/signup.html"
+    success_url = reverse_lazy("accounts:login")
 
     def post(self, request, *args, **kwargs):
         """
@@ -57,20 +64,35 @@ class SignupView(CreateView):
             user.auth_code = token
             user.save()
             domain = get_current_site(request).domain
-            confirm_link = f'http://{domain}{reverse("email_confirm", args=[token])}'
+            confirm_link = (
+                f'http://{domain}{reverse("accounts:email_confirm", args=[token])}'
+            )
 
             title = "deVtail 인증 메일입니다."
-            message = "인증을 완료하시려면 링크를 클릭해주세요.\n인증 URL: " + confirm_link
+            message = (
+                "인증을 완료하시려면 링크를 클릭해주세요.\n인증 URL: " + confirm_link
+            )
             email = EmailMessage(title, message, "elwl5515@gmail.com", [user.email])
             email.send()
-
-            return JsonResponse({"message": "인증 URL이 전송되었습니다. 메일을 확인해주세요."}, status=201)
+            messages.success(request, "인증 URL이 전송되었습니다. 메일을 확인해주세요.")
+            return render(request, "accounts/signup_success.html", {"form": form})
         else:
-            return JsonResponse(form.errors, status=400)
+            context = {}
+            context["form"] = form
+            for msg in form.errors.as_data():
+                context[f"error_{msg}"] = form.errors[msg][0]
+            return render(
+                request,
+                self.template_name,
+                context,
+                status=HttpResponseBadRequest.status_code,
+            )
 
 
 class SocialSignupView(BaseSignupView):
-    template_name = "accounts/signup.html"
+
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
 
 def email_confirm(request, token):
@@ -82,8 +104,10 @@ def email_confirm(request, token):
     user.auth_code = None
     user.is_active = True
     user.save()
-
-    return JsonResponse({"message": "이메일 인증이 완료되었습니다. 회원가입이 완료되었습니다."}, status=200)
+    messages.success(
+        request, "이메일 인증이 완료되었습니다. 회원가입이 완료되었습니다."
+    )
+    return redirect("accounts:login")
 
 
 class CustomLoginView(LoginView):
@@ -103,26 +127,25 @@ class CustomLoginView(LoginView):
         if form.is_valid():
             return self.form_valid(form)
         else:
-            return self.form_invalid(form)
+            context = {}
+            for msg in form.errors.as_data():
+                if "이 계정은 유효하지 않습니다." in form.errors[msg][0]:
+                    context[f"error_username"] = form.errors[msg][0]
+                else:
+                    context[f"error_{msg}"] = form.errors[msg][0]
+            return render(
+                request,
+                self.template_name,
+                context,
+                status=HttpResponseBadRequest.status_code,
+            )
 
     def get_success_url(self) -> Any:
         """
         로그인 성공시 이동할 URL
         """
         url = self.get_redirect_url()
-        return url or reverse_lazy("home")
-
-    def form_invalid(self, form: AuthenticationForm):
-        """
-        로그인 실패시 메서드
-        """
-        form_errors = form.errors.get("__all__", [])
-        if "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다." in form_errors:
-            return HttpResponseBadRequest(_("존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다."))
-        elif "이메일을 입력해주세요." in form_errors:
-            return HttpResponseBadRequest(_("이메일을 입력해주세요."))
-        elif "비밀번호를 입력해주세요." in form_errors:
-            return HttpResponseBadRequest(_("비밀번호를 입력해주세요."))
+        return url or reverse_lazy("main:home")
 
 
 class CustomLogoutView(LogoutView):
@@ -182,7 +205,7 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         """
         수정 성공 시 프로필 페이지로 이동시키는 메서드
         """
-        return reverse_lazy("profile", kwargs={"pk": self.object.pk})
+        return reverse_lazy("accounts:profile", kwargs={"pk": self.object.pk})
 
     def handle_no_permission(self):
         """
@@ -212,8 +235,16 @@ class AccountUpdateView(LoginRequiredMixin, UpdateView):
         response = super().post(request, *args, **kwargs)
         form = self.get_form()
         if not form.is_valid():
-            error_message = str(list(form.errors.as_data().values())[0][0].messages[0])
-            return HttpResponseBadRequest(error_message)
+            context = {}
+            context["form"] = form
+            for msg in form.errors.as_data():
+                context[f"error_{msg}"] = form.errors[msg][0]
+            return render(
+                request,
+                self.template_name,
+                context,
+                status=HttpResponseBadRequest.status_code,
+            )
         return response
 
 
@@ -222,19 +253,7 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
     form_class = AccountDeleteForm
     template_name = "accounts/account_delete.html"
     context_object_name = "account"
-    success_url = reverse_lazy("home")
-
-    def form_valid(self, form):
-        password = form.cleaned_data["password"]
-        user = self.request.user
-        if user.check_password(password):
-            messages.success(self.request, "회원 탈퇴가 완료되었습니다.")
-            return super(AccountDeleteView, self).delete(
-                self.request, *self.args, **self.kwargs
-            )
-        else:
-            error_message = "비밀번호가 일치하지 않습니다."
-            return HttpResponseBadRequest(error_message)
+    success_url = reverse_lazy("main:home")
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -251,9 +270,21 @@ class AccountDeleteView(LoginRequiredMixin, DeleteView):
         response = super().post(request, *args, **kwargs)
         form = self.get_form()
         if not form.is_valid():
-            error_message = str(list(form.errors.as_data().values())[0][0].messages[0])
-            return HttpResponseBadRequest(error_message)
+            context = {}
+            for msg in form.errors.as_data():
+                context[f"error_{msg}"] = form.errors[msg][0]
+            return render(
+                request,
+                self.template_name,
+                context,
+                status=HttpResponseBadRequest.status_code,
+            )
         return response
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
 
 class PasswordChangeView(LoginRequiredMixin, UpdateView):
@@ -266,7 +297,7 @@ class PasswordChangeView(LoginRequiredMixin, UpdateView):
         """
         수정 성공 시 프로필 페이지로 이동시키는 메서드
         """
-        return reverse_lazy("profile", kwargs={"pk": self.object.pk})
+        return reverse_lazy("accounts:profile", kwargs={"pk": self.object.pk})
 
     def handle_no_permission(self):
         """
@@ -296,8 +327,15 @@ class PasswordChangeView(LoginRequiredMixin, UpdateView):
         response = super().post(request, *args, **kwargs)
         form = self.get_form()
         if not form.is_valid():
-            error_message = str(list(form.errors.as_data().values())[0][0].messages[0])
-            return HttpResponseBadRequest(error_message)
+            context = {}
+            for msg in form.errors.as_data():
+                context[f"error_{msg}"] = form.errors[msg][0]
+            return render(
+                request,
+                self.template_name,
+                context,
+                status=HttpResponseBadRequest.status_code,
+            )
         return response
 
     def get_form_kwargs(self):
@@ -310,7 +348,7 @@ class PasswordResetCustomView(PasswordResetView):
     template_name = "accounts/password_find.html"
     email_template_name = "registration/password_reset_email.html"
     subject_template_name = "accounts/password_reset_subject.txt"
-    success_url = reverse_lazy("login")
+    success_url = reverse_lazy("accounts:login")
 
     def form_valid(self, form):
         email = form.cleaned_data["email"]
@@ -320,28 +358,27 @@ class PasswordResetCustomView(PasswordResetView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        print(get_current_site(self.request).domain)
         context.update({"domain": get_current_site(self.request).domain})
         return context
 
 
 class PasswordResetConfirmCustomView(PasswordResetConfirmView):
     template_name = "accounts/password_reset.html"
-    success_url = reverse_lazy("login")
+    success_url = reverse_lazy("accounts:login")
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        uidb64 = kwargs["uidb64"]
-        token = kwargs["token"]
+    # def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    #     uidb64 = kwargs["uidb64"]
+    #     token = kwargs["token"]
 
-        uid = urlsafe_base64_decode(uidb64).decode()
-        user = User.objects.get(pk=uid)
-        if not self.token_generator.check_token(user, token):
-            raise ValueError("The password reset link is invalid")
+    #     uid = urlsafe_base64_decode(uidb64).decode()
+    #     user = User.objects.get(pk=uid)
+    #     if not self.token_generator.check_token(user, token):
+    #         raise ValueError("The password reset link is invalid")
 
-        return super().dispatch(request, *args, **kwargs)
+    #     return super().dispatch(request, *args, **kwargs)
 
     def post(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
         return super().post(request, *args, **kwargs)
@@ -350,6 +387,135 @@ class PasswordResetConfirmCustomView(PasswordResetConfirmView):
         response = super().form_valid(form)
         messages.success(self.request, "비밀번호가 초기화되었습니다.")
         return response
+
+
+class GithubSignupView(CreateView):
+    """
+    회원가입 View
+    """
+
+    model = User
+    form_class = SignupForm
+    template_name = "accounts/github_signup.html"
+    success_url = reverse_lazy("accounts:login")
+
+    def post(self, request, *args, **kwargs):
+        """
+        GitHub 계정 기반 회원가입 메서드
+        """
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = True
+            user.login_method = User.LOGIN_GITHUB
+            if request.POST.get("profile_image"):
+                user.profile_image = request.POST.get("profile_image")
+            user.save()
+            return redirect("accounts:login")
+        else:
+            context = {}
+            context["form"] = form
+            for msg in form.errors.as_data():
+                context[f"error_{msg}"] = form.errors[msg][0]
+            return render(
+                request,
+                self.template_name,
+                context,
+                status=HttpResponseBadRequest.status_code,
+            )
+
+
+def github_login(request):
+    try:
+        if request.user.is_authenticated:
+            raise ValueError("이미 로그인되어 있습니다.")
+        client_id = env("GITHUB_CLIENT_ID")
+        redirect_uri = env("GITHUB_REDIRECT_URI")
+        scope = "user"
+        return redirect(
+            f"https://github.com/login/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}"
+        )
+    except Exception as error:
+        messages.error(request, error)
+        return redirect("accounts:login")
+
+
+def github_callback(request):
+    try:
+        if request.user.is_authenticated:
+            raise ValueError("이미 로그인되어 있습니다.")
+        code = request.GET.get("code", None)
+        client_id = env("GITHUB_CLIENT_ID")
+        client_secret = env("GITHUB_CLIENT_SECRET")
+
+        token_request = requests.post(
+            f"https://github.com/login/oauth/access_token?client_id={client_id}&client_secret={client_secret}&code={code}",
+            headers={"Accept": "application/json"},
+        )
+        token_json = token_request.json()
+        error = token_json.get("error", None)
+
+        if error:
+            raise Exception(error)
+
+        access_token = token_json.get("access_token")
+        profile_response = requests.get(
+            "https://api.github.com/user",
+            headers={
+                "Authorization": f"token {access_token}",
+                "Accept": "application/json",
+            },
+        )
+        email_response = requests.get(
+            "https://api.github.com/user/emails",
+            headers={
+                "Authorization": f"token {access_token}",
+                "Accept": "application/json",
+            },
+        )
+        profile_json = profile_response.json()
+        email_json = email_response.json()[0]
+        email = email_json.get("email", None)
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            if user.login_method != User.LOGIN_GITHUB:
+                context = {}
+                context["error"] = "GitHub으로 가입한 계정이 아닙니다."
+                return render(
+                    request,
+                    "accounts/login.html",
+                    context,
+                    status=HttpResponseBadRequest.status_code,
+                )
+            auth_login(
+                request, user, backend="django.contrib.auth.backends.ModelBackend"
+            )
+            return redirect("main:home")
+        else:
+            context = {}
+            signup_form = SignupForm(
+                initial={
+                    "email": email,
+                    "nickname": profile_json.get("login"),
+                    "profile_image": profile_json.get("avatar_url"),
+                }
+            )
+
+            context["form"] = signup_form
+
+            return render(request, "accounts/github_signup.html", context)
+    except Exception as error:
+        context = {}
+        if "bad_verification_code" in error:
+            context["error"] = "잘못된 GitHub코드입니다."
+        else:
+            context["error"] = error
+        return render(
+            request,
+            "accounts/login.html",
+            context,
+            status=HttpResponseBadRequest.status_code,
+        )
 
 
 signup = SignupView.as_view()
@@ -362,3 +528,4 @@ account_delete = AccountDeleteView.as_view()
 password_change = PasswordChangeView.as_view()
 password_reset = PasswordResetCustomView.as_view()
 password_reset_confirm = PasswordResetConfirmCustomView.as_view()
+github_signup = GithubSignupView.as_view()

@@ -1,57 +1,163 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ko" data-theme="winter">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}페이지 제목{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.1/dist/full.min.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static 'assets/css/base.css' %}">
-    {% block head %}{% endblock %}
-</head>
-
-<body>
-    <header>
-        {% block nav_bar %}{% endblock %}
-        <label class="swap swap-rotate">
-            <!-- this hidden checkbox controls the state -->
-            <input type="checkbox" class="theme-controller" value="night" />
-
-            <!-- sun icon -->
-            <svg class="swap-on fill-current w-10 h-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path
-                    d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" />
-            </svg>
-
-            <!-- moon icon -->
-            <svg class="swap-off fill-current w-10 h-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path
-                    d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z" />
-            </svg>
-        </label>
-    </header>
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-    <footer class="footer items-center p-4 text-neutral-content">
-        {% block footer %}
-        <aside class="items-center grid-flow-col">
-            <div class="font-bold text-3xl">de<span class="text-primary font-black text-4xl">V</span>tail</div>
-            <p>Copyright © 2024 - All right reserved</p>
-        </aside>
-        <nav class="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
-            <a href="https://github.com/OrmiBandi/DeVtail">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" class="fill-current">
-                    <path
-                        d="M0 18.4567C0 26.6098 5.15706 33.5279 12.3098 35.9684C13.2103 36.1383 13.5385 35.5684 13.5385 35.079C13.5385 34.6405 13.5231 33.4803 13.5142 31.9405C8.50744 33.0554 7.45106 29.4661 7.45106 29.4661C6.63225 27.3337 5.4521 26.7661 5.4521 26.7661C3.8178 25.6206 5.57586 25.6444 5.57586 25.6444C7.38255 25.7747 8.33285 27.5468 8.33285 27.5468C9.93953 30.3668 12.5462 29.5522 13.5717 29.0797C13.7352 27.8867 14.2004 27.0743 14.7143 26.612C10.7175 26.1464 6.51512 24.5635 6.51512 17.4913C6.51512 15.4757 7.2168 13.8283 8.36821 12.5378C8.18368 12.071 7.56598 10.1948 8.54501 7.65458C8.54501 7.65458 10.0567 7.15719 13.4943 9.54557C14.9308 9.13655 16.4701 8.93148 18.0006 8.92468C19.5299 8.93148 21.0692 9.13655 22.5079 9.54557C25.9433 7.15719 27.4528 7.65458 27.4528 7.65458C28.434 10.1948 27.8163 12.071 27.6318 12.5378C28.7854 13.8283 29.4816 15.4757 29.4816 17.4913C29.4816 24.5805 25.2737 26.1407 21.2636 26.5984C21.9101 27.1683 22.4847 28.2945 22.4847 30.0156C22.4847 32.4833 22.4637 34.4739 22.4637 35.079C22.4637 35.573 22.7874 36.1463 23.7013 35.9661C30.8474 33.5211 36 26.6086 36 18.4567C36 8.26301 27.9401 0 17.9983 0C8.05992 0 0 8.26301 0 18.4567Z">
-                    </path>
-                </svg>
-            </a>
-        </nav>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}페이지 제목{% endblock %}</title>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.1/dist/full.min.css" rel="stylesheet" type="text/css" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@700&family=Nanum+Myeongjo&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'assets/css/base.css' %}">
+        {% block extra_css %}
         {% endblock %}
-    </footer>
-</body>
+    </head>
+    <body class="max-w-full min-h-screen">
+        <header>
+            {% block nav_bar %}
+            <nav class="bg-transparent pt-4 mb-20">
+                <div class="mx-auto w-11/12 px-2 sm:px-6 lg:px-8">
+                    <div class="relative flex h-16 items-center justify-between">
+                        <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
+                            <!-- Mobile menu button-->
+                            <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                                <span class="absolute -inset-0.5"></span>
+                                <span class="sr-only">Open main menu</span>
+                                <!--
+                                    Icon when menu is closed.
+                    
+                                    Menu open: "hidden", Menu closed: "block"
+                                -->
+                                
+                                <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                </svg>
+                                <!--
+                                    Icon when menu is open.
+                    
+                                    Menu open: "block", Menu closed: "hidden"
+                                -->
+                                <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+                            <div class="flex flex-shrink-0 items-center">
+                                <a href="{% url 'main:home' %}"><div class="font-bold text-3xl">de<span class="text-primary font-black text-4xl">V</span>tail</div></a>
+                            </div>
+                            <div class="hidden sm:ml-6 sm:block">
+                                <div class="flex space-x-4">
+                                    <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
+                                    <!-- <a href="#" class="bg-gray-900 text-white rounded-md px-3 py-2 text-sm font-medium" aria-current="page">Home</a> -->
+                                    <details class="dropdown">
+                                        <summary class="m-1 btn border-0 bg-transparent shadow-none">스터디</summary>
+                                        <ul class="p-2 menu dropdown-content z-[1] rounded-box w-52 border-none" style="z-index: 100;">
+                                            <li><a href="{% url 'studies:study_list' %}">스터디 목록</a></li>
+                                            <li><a href="{% url 'studies:my_study_list' %}">내 스터디</a></li>
+                                        </ul>
+                                    </details>
+                                    <details class="dropdown">
+                                        <summary class="m-1 btn border-0 bg-transparent shadow-none">일정</summary>
+                                        <ul class="p-2 menu dropdown-content z-[1] rounded-box w-52 border-none bg-transparent">
+                                            <li><a>캘린더</a></li>
+                                            <li><a>개인 일정</a></li>
+                                            <li><a>스터디 일정</a></li>
+                                        </ul>
+                                    </details>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                            {% if user.is_authenticated %}
+                                <button class="btn btn-ghost btn-circle">
+                                    <div class="indicator">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-current" viewBox="0 0 448 512" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M224 0c-17.7 0-32 14.3-32 32V51.2C119 66 64 130.6 64 208v25.4c0 45.4-15.5 89.5-43.8 124.9L5.3 377c-5.8 7.2-6.9 17.1-2.9 25.4S14.8 416 24 416H424c9.2 0 17.6-5.3 21.6-13.6s2.9-18.2-2.9-25.4l-14.9-18.6C399.5 322.9 384 278.8 384 233.4V208c0-77.4-55-142-128-156.8V32c0-17.7-14.3-32-32-32zm0 96c61.9 0 112 50.1 112 112v25.4c0 47.9 13.9 94.6 39.7 134.6H72.3C98.1 328 112 281.3 112 233.4V208c0-61.9 50.1-112 112-112zm64 352H224 160c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7s18.7-28.3 18.7-45.3z"/></svg>
+                                    </div>
+                                </button>
+                                <button class="btn btn-ghost btn-circle">
+                                    <div class="indicator">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-current" viewBox="0 0 512 512" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M160 368c26.5 0 48 21.5 48 48v16l72.5-54.4c8.3-6.2 18.4-9.6 28.8-9.6H448c8.8 0 16-7.2 16-16V64c0-8.8-7.2-16-16-16H64c-8.8 0-16 7.2-16 16V352c0 8.8 7.2 16 16 16h96zm48 124l-.2 .2-5.1 3.8-17.1 12.8c-4.8 3.6-11.3 4.2-16.8 1.5s-8.8-8.2-8.8-14.3V474.7v-6.4V468v-4V416H112 64c-35.3 0-64-28.7-64-64V64C0 28.7 28.7 0 64 0H448c35.3 0 64 28.7 64 64V352c0 35.3-28.7 64-64 64H309.3L208 492z"/></svg>
+                                    </div>
+                                </button>
+                                <div class="dropdown dropdown-end">
+                                    <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                                        {% if not user.profile_image %}
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-current" viewBox="0 0 448 512"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M304 128a80 80 0 1 0 -160 0 80 80 0 1 0 160 0zM96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM49.3 464H398.7c-8.9-63.3-63.3-112-129-112H178.3c-65.7 0-120.1 48.7-129 112zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3z"/></svg>
+                                        {% elif 'http' in user.profile_image.url %}
+                                            <div class="w-10 rounded-full">
+                                                <img alt="프로필 이미지" src="{{ user.profile_image }}" />
+                                            </div>
+                                        {% else %}
+                                            <div class="w-10 rounded-full">
+                                                <img alt="프로필 이미지" src="{{ user.profile_image.url }}" />
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-32">
+                                        <li>
+                                            <a class="justify-between" href="{% url 'accounts:profile' user.pk %}">
+                                            Profile
+                                            </a>
+                                        </li>
+                                        <form method="post" action="{% url 'accounts:logout' %}">
+                                            {% csrf_token %}
+                                            <li>
+                                                <button>
+                                                    Logout
+                                                </button>
+                                            </li>
+                                        </form>
+                                    </ul>
+                                </div>
+                            {% else %}
+                                <a class="btn btn-primary" href="{% url 'accounts:login' %}">로그인</a>
+                            {% endif %}
 
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            {% endblock %}
+            
+        </header>
+        <main style="min-height: 40rem;">
+            {% block content %}{% endblock %}
+        </main>
+        <footer class="footer items-center p-4 mt-20">
+            {% block footer %}
+            <aside class="items-center grid-flow-col">
+                <div class="font-bold text-3xl">de<span class="text-primary font-black text-4xl">V</span>tail</div>
+                <p>Copyright © 2024 - All right reserved</p>
+            </aside>
+            <nav class="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
+                <a href="https://github.com/OrmiBandi/DeVtail">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" class="fill-current">
+                        <path
+                            d="M0 18.4567C0 26.6098 5.15706 33.5279 12.3098 35.9684C13.2103 36.1383 13.5385 35.5684 13.5385 35.079C13.5385 34.6405 13.5231 33.4803 13.5142 31.9405C8.50744 33.0554 7.45106 29.4661 7.45106 29.4661C6.63225 27.3337 5.4521 26.7661 5.4521 26.7661C3.8178 25.6206 5.57586 25.6444 5.57586 25.6444C7.38255 25.7747 8.33285 27.5468 8.33285 27.5468C9.93953 30.3668 12.5462 29.5522 13.5717 29.0797C13.7352 27.8867 14.2004 27.0743 14.7143 26.612C10.7175 26.1464 6.51512 24.5635 6.51512 17.4913C6.51512 15.4757 7.2168 13.8283 8.36821 12.5378C8.18368 12.071 7.56598 10.1948 8.54501 7.65458C8.54501 7.65458 10.0567 7.15719 13.4943 9.54557C14.9308 9.13655 16.4701 8.93148 18.0006 8.92468C19.5299 8.93148 21.0692 9.13655 22.5079 9.54557C25.9433 7.15719 27.4528 7.65458 27.4528 7.65458C28.434 10.1948 27.8163 12.071 27.6318 12.5378C28.7854 13.8283 29.4816 15.4757 29.4816 17.4913C29.4816 24.5805 25.2737 26.1407 21.2636 26.5984C21.9101 27.1683 22.4847 28.2945 22.4847 30.0156C22.4847 32.4833 22.4637 34.4739 22.4637 35.079C22.4637 35.573 22.7874 36.1463 23.7013 35.9661C30.8474 33.5211 36 26.6086 36 18.4567C36 8.26301 27.9401 0 17.9983 0C8.05992 0 0 8.26301 0 18.4567Z">
+                        </path>
+                    </svg>
+                </a>
+                <label class="swap swap-rotate">
+                    <!-- this hidden checkbox controls the state -->
+                    <input type="checkbox" class="theme-controller" value="night" />
+                    <!-- sun icon -->
+                    <svg class="swap-on fill-current w-10 h-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path
+                            d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" />
+                    </svg>
+                    <!-- moon icon -->
+                    <svg class="swap-off fill-current w-10 h-10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path
+                            d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z" />
+                    </svg>
+                </label>
+            </nav>
+            {% endblock %}
+        </footer>
+        <script src="{% static 'assets/js/base.js' %}"></script>
+        {% block script %}{% endblock %}
+    </body>
 </html>

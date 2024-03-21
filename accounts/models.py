@@ -8,10 +8,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     사용자 모델
     """
 
+    LOGIN_EMAIL = "email"
+    LOGIN_GITHUB = "github"
+
     DEVELOPMENT_FIELD_CHOICES = (
         ("FE", "프론트엔드"),
         ("BE", "백엔드"),
         ("DBA", "데이터베이스"),
+    )
+    LOGIN_METHOD_CHOICES = (
+        (LOGIN_EMAIL, "이메일"),
+        (LOGIN_GITHUB, "GitHub"),
     )
 
     email = models.EmailField(unique=True)
@@ -23,6 +30,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         upload_to="user/imgs/%Y/%m/%d/", null=True, blank=True
     )
     content = models.TextField(null=True, blank=True)
+    login_method = models.CharField(
+        max_length=100, choices=LOGIN_METHOD_CHOICES, default=LOGIN_EMAIL
+    )
     auth_code = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
