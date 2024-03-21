@@ -1,7 +1,168 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block title %}
     메인 페이지
 {% endblock %}
 {% block content %}
+    <div class="flex justify-center">
+        <div class="w-11/12 mx-auto px-2 sm:px-6 lg:px-8">
+            <div class="stats stats-vertical lg:stats-horizontal shadow bg-primary-content w-full mb-16">
+                <div class="stat w-3">
+                    <button class="stat-title holiday_btn_1"><p class="font-semibold holiday_p_1" data-holiday="{{ holidays.0.date }}" data-name="{{ holidays.0.name }}">{{ holidays.0.name }}</p></button>
+                    <button class="stat-title holiday_btn_2"><p class="holiday_p_2" data-holiday="{{ holidays.1.date }}" data-name="{{ holidays.1.name }}">{{ holidays.1.name }}</p></button>
+                    <button class="stat-title holiday_btn_3"><p class="holiday_p_3" data-holiday="{{ holidays.2.date }}" data-name="{{ holidays.2.name }}">{{ holidays.2.name }}</p></button>
+                </div>
+                <div class="stat flex items-center">
+                    <div class="stat-title flex"><p class="font-semibold holiday_title">{{ holidays.0.name }}</p>까지</div>
+                    <div class="grid grid-flow-col gap-5 text-center auto-cols-max">
+                        <div class="flex flex-col p-2 bg-primary rounded-box text-primary-content">
+                            <span class="countdown font-mono text-5xl">
+                                <span class="day text-inherit"></span>
+                            </span>
+                            days
+                        </div> 
+                        <div class="flex flex-col p-2 bg-primary rounded-box text-primary-content">
+                            <span class="countdown font-mono text-5xl">
+                                <span class="hour"></span>
+                            </span>
+                            hours
+                        </div> 
+                        <div class="flex flex-col p-2 bg-primary rounded-box text-primary-content">
+                            <span class="countdown font-mono text-5xl">
+                                <span class="min"></span>
+                            </span>
+                            min
+                        </div> 
+                        <div class="flex flex-col p-2 bg-primary rounded-box text-primary-content">
+                            <span class="countdown font-mono text-5xl">
+                                <span class="sec"></span>
+                            </span>
+                            sec
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full mb-16">
+                <p class="text-xl font-bold mb-4">참여 중 스터디</p>
+                <div class="flex justify-between">
+                    {% if user.is_authenticated %}
+                        {% for study in my_studies %}
+                            <a href="{% url 'studies:study_detail' pk=study.pk %}">
+                                <div class="card w-80 bg-primary-content drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] flex justify-center">
+                                    <figure class="px-4 pt-4">
+                                        <img src="{{ study.thumbnail.url }}" alt="study_thumbnail" class="rounded-xl" />
+                                    </figure>
+                                    <div class="card-body px-4 pt-4">
+                                        <div>
+                                            <button class="btn btn-primary btn-sm">{{ study.category }}</button>
+                                            <button class="btn btn-primary btn-sm" style="display: inline;">{{ study.difficulty }}</button>
+                                        </div>
+                                        <h2 class="card-title font-semibold py-2">{{ study.title }}</h2>
+                                        <div class="card-actions items-center">
+                                            <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                                                {% if study.manager.profile_image %}
+                                                    <img src="{{ study.manager.profile_image.url }}" alt="profile_image" class="rounded-full w-8 h-8" />
+                                                {% else %}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-current" viewBox="0 0 448 512"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M304 128a80 80 0 1 0 -160 0 80 80 0 1 0 160 0zM96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM49.3 464H398.7c-8.9-63.3-63.3-112-129-112H178.3c-65.7 0-120.1 48.7-129 112zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3z"/></svg>
+                                                {% endif %}
+                                            </div>
+                                            <div class="justify-center grow">
+                                                <p class="text-base font-semibold">{{ study.manager.nickname }}</p>
+                                                <p class="text-sm">{{ study.manager.development_field }}</p>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" class="h-6 w-6 fill-current mr-2"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M72 88a56 56 0 1 1 112 0A56 56 0 1 1 72 88zM64 245.7C54 256.9 48 271.8 48 288s6 31.1 16 42.3V245.7zm144.4-49.3C178.7 222.7 160 261.2 160 304c0 34.3 12 65.8 32 90.5V416c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V389.2C26.2 371.2 0 332.7 0 288c0-61.9 50.1-112 112-112h32c24 0 46.2 7.5 64.4 20.3zM448 416V394.5c20-24.7 32-56.2 32-90.5c0-42.8-18.7-81.3-48.4-107.7C449.8 183.5 472 176 496 176h32c61.9 0 112 50.1 112 112c0 44.7-26.2 83.2-64 101.2V416c0 17.7-14.3 32-32 32H480c-17.7 0-32-14.3-32-32zm8-328a56 56 0 1 1 112 0A56 56 0 1 1 456 88zM576 245.7v84.7c10-11.3 16-26.1 16-42.3s-6-31.1-16-42.3zM320 32a64 64 0 1 1 0 128 64 64 0 1 1 0-128zM240 304c0 16.2 6 31 16 42.3V261.7c-10 11.3-16 26.1-16 42.3zm144-42.3v84.7c10-11.3 16-26.1 16-42.3s-6-31.1-16-42.3zM448 304c0 44.7-26.2 83.2-64 101.2V448c0 17.7-14.3 32-32 32H288c-17.7 0-32-14.3-32-32V405.2c-37.8-18-64-56.5-64-101.2c0-61.9 50.1-112 112-112h32c61.9 0 112 50.1 112 112z"/></svg>
+                                                <p class="text-sm">{{study.memeber_count}}/{{ study.max_member }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="card w-80 h-96 bg-primary-content drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] flex justify-center items-center font-bold">
+                            <p><a href="{% url 'accounts:login' %}" class="underline">로그인</a>해서</p>
+                            <p>스터디에 참여해보세요!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="w-full mb-16">
+                <p class="text-xl font-bold mb-4">스터디 둘러보기</p>
+                <div class="flex justify-between mb-16">
+                    {% for study in studies|slice:"0:4" %}
+                        <a href="{% url 'studies:study_detail' pk=study.pk %}">
+                            <div class="card w-80 bg-primary-content drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] flex justify-center">
+                                <figure class="px-4 pt-4">
+                                    <img src="{{ study.thumbnail.url }}" alt="study_thumbnail" class="rounded-xl" />
+                                </figure>
+                                <div class="card-body px-4 pt-4">
+                                    <div>
+                                        <button class="btn btn-primary btn-sm">{{ study.category }}</button>
+                                        <button class="btn btn-primary btn-sm" style="display: inline;">{{ study.difficulty }}</button>
+                                    </div>
+                                    <h2 class="card-title font-semibold py-2">{{ study.title }}</h2>
+                                    <div class="card-actions items-center">
+                                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                                            {% if study.manager.profile_image %}
+                                                <img src="{{ study.manager.profile_image.url }}" alt="profile_image" class="rounded-full w-8 h-8" />
+                                            {% else %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-current" viewBox="0 0 448 512"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M304 128a80 80 0 1 0 -160 0 80 80 0 1 0 160 0zM96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM49.3 464H398.7c-8.9-63.3-63.3-112-129-112H178.3c-65.7 0-120.1 48.7-129 112zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3z"/></svg>
+                                            {% endif %}
+                                        </div>
+                                        <div class="justify-center grow">
+                                            <p class="text-base font-semibold">{{ study.manager.nickname }}</p>
+                                            <p class="text-sm">{{ study.manager.development_field }}</p>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" class="h-6 w-6 fill-current mr-2"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M72 88a56 56 0 1 1 112 0A56 56 0 1 1 72 88zM64 245.7C54 256.9 48 271.8 48 288s6 31.1 16 42.3V245.7zm144.4-49.3C178.7 222.7 160 261.2 160 304c0 34.3 12 65.8 32 90.5V416c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V389.2C26.2 371.2 0 332.7 0 288c0-61.9 50.1-112 112-112h32c24 0 46.2 7.5 64.4 20.3zM448 416V394.5c20-24.7 32-56.2 32-90.5c0-42.8-18.7-81.3-48.4-107.7C449.8 183.5 472 176 496 176h32c61.9 0 112 50.1 112 112c0 44.7-26.2 83.2-64 101.2V416c0 17.7-14.3 32-32 32H480c-17.7 0-32-14.3-32-32zm8-328a56 56 0 1 1 112 0A56 56 0 1 1 456 88zM576 245.7v84.7c10-11.3 16-26.1 16-42.3s-6-31.1-16-42.3zM320 32a64 64 0 1 1 0 128 64 64 0 1 1 0-128zM240 304c0 16.2 6 31 16 42.3V261.7c-10 11.3-16 26.1-16 42.3zm144-42.3v84.7c10-11.3 16-26.1 16-42.3s-6-31.1-16-42.3zM448 304c0 44.7-26.2 83.2-64 101.2V448c0 17.7-14.3 32-32 32H288c-17.7 0-32-14.3-32-32V405.2c-37.8-18-64-56.5-64-101.2c0-61.9 50.1-112 112-112h32c61.9 0 112 50.1 112 112z"/></svg>
+                                            <p class="text-sm">{{study.memeber_count}}/{{ study.max_member }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+                <div class="flex justify-between">
+                    {% for study in studies|slice:"4:8" %}
+                        <a href="{% url 'studies:study_detail' pk=study.pk %}">
+                            <div class="card w-80 bg-primary-content drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] flex justify-center">
+                                <figure class="px-4 pt-4">
+                                    <img src="{{ study.thumbnail.url }}" alt="study_thumbnail" class="rounded-xl" />
+                                </figure>
+                                <div class="card-body px-4 pt-4">
+                                    <div>
+                                        <button class="btn btn-primary btn-sm">{{ study.category }}</button>
+                                        <button class="btn btn-primary btn-sm" style="display: inline;">{{ study.difficulty }}</button>
+                                    </div>
+                                    <h2 class="card-title font-semibold py-2">{{ study.title }}</h2>
+                                    <div class="card-actions items-center">
+                                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                                            {% if study.manager.profile_image %}
+                                                <img src="{{ study.manager.profile_image.url }}" alt="profile_image" class="rounded-full w-8 h-8" />
+                                            {% else %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 fill-current" viewBox="0 0 448 512"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M304 128a80 80 0 1 0 -160 0 80 80 0 1 0 160 0zM96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM49.3 464H398.7c-8.9-63.3-63.3-112-129-112H178.3c-65.7 0-120.1 48.7-129 112zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3z"/></svg>
+                                            {% endif %}
+                                        </div>
+                                        <div class="justify-center grow">
+                                            <p class="text-base font-semibold">{{ study.manager.nickname }}</p>
+                                            <p class="text-sm">{{ study.manager.development_field }}</p>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" class="h-6 w-6 fill-current mr-2"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M72 88a56 56 0 1 1 112 0A56 56 0 1 1 72 88zM64 245.7C54 256.9 48 271.8 48 288s6 31.1 16 42.3V245.7zm144.4-49.3C178.7 222.7 160 261.2 160 304c0 34.3 12 65.8 32 90.5V416c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V389.2C26.2 371.2 0 332.7 0 288c0-61.9 50.1-112 112-112h32c24 0 46.2 7.5 64.4 20.3zM448 416V394.5c20-24.7 32-56.2 32-90.5c0-42.8-18.7-81.3-48.4-107.7C449.8 183.5 472 176 496 176h32c61.9 0 112 50.1 112 112c0 44.7-26.2 83.2-64 101.2V416c0 17.7-14.3 32-32 32H480c-17.7 0-32-14.3-32-32zm8-328a56 56 0 1 1 112 0A56 56 0 1 1 456 88zM576 245.7v84.7c10-11.3 16-26.1 16-42.3s-6-31.1-16-42.3zM320 32a64 64 0 1 1 0 128 64 64 0 1 1 0-128zM240 304c0 16.2 6 31 16 42.3V261.7c-10 11.3-16 26.1-16 42.3zm144-42.3v84.7c10-11.3 16-26.1 16-42.3s-6-31.1-16-42.3zM448 304c0 44.7-26.2 83.2-64 101.2V448c0 17.7-14.3 32-32 32H288c-17.7 0-32-14.3-32-32V405.2c-37.8-18-64-56.5-64-101.2c0-61.9 50.1-112 112-112h32c61.9 0 112 50.1 112 112z"/></svg>
+                                            <p class="text-sm">{{study.memeber_count}}/{{ study.max_member }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'assets/js/main.js' %}"></script>
 {% endblock %}
