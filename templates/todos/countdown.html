@@ -1,0 +1,49 @@
+{% load i18n %}
+
+<div class="stats stats-vertical lg:stats-horizontal shadow bg-primary-content w-full mb-8">
+  <ul class="stat w-3" id="scheduledTodos">
+    {% if scheduled_todos %}
+    {% for scheduled_todo in scheduled_todos %}
+    <li class="stat-title"
+        data-todo-title="{{ scheduled_todo.title }}"
+        {% language 'en' %}
+        data-todo-date="{{ scheduled_todo.start_at|date:"M d, Y H:i:s" }}"
+        {% endlanguage %}
+    >
+      {{ scheduled_todo.title }} - {{ scheduled_todo.start_at }}
+    </li>    
+    {% endfor %}
+    {% endif %}
+  </ul>
+  <div class="stat flex items-center" id="todoCounting">
+    <p class="stat-title flex">
+      <span class="font-semibold" id="todoCountingName">-</span> 까지
+    </p>
+    <ul class="grid grid-flow-col gap-5 text-center auto-cols-max">
+      <li class="flex flex-col p-2 bg-primary rounded-box text-primary-content">
+        <span class="countdown font-mono text-5xl">
+          <span class="day text-inherit"></span>
+        </span>
+        days
+      </li>
+      <li class="flex flex-col p-2 bg-primary rounded-box text-primary-content">
+        <span class="countdown font-mono text-5xl">
+          <span class="hour"></span>
+        </span>
+        hours
+      </li>
+      <li class="flex flex-col p-2 bg-primary rounded-box text-primary-content">
+        <span class="countdown font-mono text-5xl">
+          <span class="min"></span>
+        </span>
+        min
+      </li>
+      <li class="flex flex-col p-2 bg-primary rounded-box text-primary-content">
+        <span class="countdown font-mono text-5xl">
+          <span class="sec"></span>
+        </span>
+        sec
+      </li>
+    </ul>
+  </div>
+</div>

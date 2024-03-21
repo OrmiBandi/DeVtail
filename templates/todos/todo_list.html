@@ -1,18 +1,22 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block content %}
-    
-    {% if studies %}
-    <form action="" method="GET">
-      <label for="study" class="block font-black text-3xl my-4">Study</label>
-      <select class="select select-sm" name="study" id="study">
-        {% for study in studies %}
-        <option value="{{ study.id }}" {% if request.GET.study == study.id|stringformat:"s" %}selected{% endif %}>
-          {{ study.title }}
-        </option>
-        {% endfor %}
-      </select>
-      <button class="btn btn-sm btn-primary">조회</button>
-    </form>
+
+{% include 'todos/countdown.html' %}
+
+  {% if studies %}
+  <form action="" method="GET">
+    <label for="study" class="block font-black text-3xl my-4">Study</label>
+    <select class="select select-sm" name="study" id="study">
+      {% for study in studies %}
+      <option value="{{ study.id }}" {% if request.GET.study == study.id|stringformat:"s" %}selected{% endif %}>
+        {{ study.title }}
+      </option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-sm btn-primary">조회</button>
+  </form>
 
     <section>
       <h3 class="font-black text-3xl my-4">Member</h3>
@@ -396,4 +400,8 @@
         </li>
       </ul>
     </section>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'assets/js/todo.js' %}"></script>
 {% endblock %}
