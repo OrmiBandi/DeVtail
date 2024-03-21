@@ -16,13 +16,7 @@
         <a href="{% url 'studies:study_list' %}?tq={{ tag_value }}">#{{ tag_value }} </a>
         {% endfor %}
         <h2>{{ study.title }}</h2>
-        {% if not study.thumbnail %}
-        <img src="/static/assets/images/study_default.jpg" alt="{{ study.title }}">
-        {% elif "http" in study.thumbnail.url %}
-        <img src="{{ study.thumbnail }}" alt="{{ study.title }}">
-        {% else %}
         <img src="{{ study.thumbnail.url }}" alt="{{ study.title }}">
-        {% endif %}
         <p>{{ study.introduce }}</p>
         <p>{{ study.created_at }}</p>
         <p>{{ study.updated_at }}</p>

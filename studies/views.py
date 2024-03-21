@@ -159,14 +159,15 @@ class StudyCreate(LoginRequiredMixin, CreateView):
             )
 
         ref_links_input = form.cleaned_data["ref_links"]
-        ref_links_list = ref_links_input.strip(",").split(",")
+        if ref_links_input != "":
+            ref_links_list = ref_links_input.strip(",").split(",")
 
-        for ref_link in ref_links_list:
-            RefLink.objects.create(
-                link_type=ref_link.split(";")[0].strip(),
-                url=ref_link.split(";")[1].strip(),
-                study=study,
-            )
+            for ref_link in ref_links_list:
+                RefLink.objects.create(
+                    link_type=ref_link.split(";")[0].strip(),
+                    url=ref_link.split(";")[1].strip(),
+                    study=study,
+                )
 
         return super().form_valid(form)
 
@@ -238,16 +239,16 @@ class StudyUpdate(UserPassesTestMixin, UpdateView):
             )
 
         ref_links_input = form.cleaned_data["ref_links"]
-        ref_links_list = ref_links_input.strip(",").split(",")
+        if ref_links_input != "":
+            RefLink.objects.filter(study=study).delete()
+            ref_links_list = ref_links_input.strip(",").split(",")
 
-        RefLink.objects.filter(study=study).delete()
-
-        for ref_link in ref_links_list:
-            RefLink.objects.create(
-                link_type=ref_link.split(";")[0].strip(),
-                url=ref_link.split(";")[1].strip(),
-                study=study,
-            )
+            for ref_link in ref_links_list:
+                RefLink.objects.create(
+                    link_type=ref_link.split(";")[0].strip(),
+                    url=ref_link.split(";")[1].strip(),
+                    study=study,
+                )
 
         return super().form_valid(form)
 

@@ -78,7 +78,7 @@
                 {% endfor %}
             </div>
             <label class="text-lg" for="max_member">스터디 인원 (4~20명)</label>
-            <input type="text" id="max_member" name="max_member" placeholder="스터디 최대 인원을 입력해주세요." class="input input-bordered w-full" value="{{ study.max_member }}"/>
+            <input type="number" id="max_member" name="max_member" placeholder="스터디 최대 인원을 입력해주세요." class="input input-bordered w-full" value="{{ study.max_member }}" min="4" max="20"/>
             <label class="text-lg" for="tags">스터디 검색 태그</label>
             <input type="text" id="tags-input" placeholder="태그를 입력해주세요." class="input input-bordered w-full"/>
             
@@ -280,22 +280,40 @@
     function collectLinks() {
         const links = document.querySelectorAll('#links-container .ref-link-container');
         let links_value = '';
+        
+        let hasError = false;
 
         links.forEach((link) => {
             const type = link.querySelector('.ref-links-type').value;
             const url = link.querySelector('.ref_links_url').value;
-
-            links_value += ',' + type + ';' + url;
+            if (type === 'none select' && url) {
+                hasError = true;
+                alert('링크 타입을 선택해주세요.');
+            } else if (type !== 'none select' && !url) {
+                hasError = true;
+                alert('url을 작성해주세요.');
+                return;
+            } else if (type !== 'none select' && url) {
+                links_value += links_value ? ',' + type + ';' + url : type + ';' + url;
+            }
         });
-        console.log(links_value)
-        return links_value;
+        if (hasError) {
+            return null;
+        } else {
+            return links_value;
+        }
     }
 
     document.getElementById('study_create_form').addEventListener('submit', function(e) {
         e.preventDefault();
 
         const request_links = document.getElementById('ref_links')
-        request_links.value = collectLinks();
+        const collected_links = collectLinks();
+
+        if (collected_links === null) {
+            return;
+        }
+        request_links.value = collected_links;
 
         const tags = document.getElementById('tags');
         const div_tags_all = document.querySelectorAll('#tag-container div')

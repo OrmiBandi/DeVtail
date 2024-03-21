@@ -60,7 +60,7 @@
     {% csrf_token %}        
     <div class="flex justify-center gap-36">
         <div class="flex flex-col gap-4 border-2 p-6">
-            <label for="thumbnail"><img src="/static/assets/images/study_default.jpg" class="h-72" id="thumbnail-add"></label>
+            <label for="thumbnail"><img src="/media/default/study_thumbnail.png" class="h-72" id="thumbnail-add"></label>
             <input type="file" id="thumbnail" name="thumbnail" style="display: none;" accept="image/*" onchange="handleFileSelect(event)">
             <label class="text-lg" for="title">스터디 주제 (50자)</label>
             <input type="text" placeholder="스터디 주제를 입력해주세요." class="input input-bordered w-full" name="title"/>
@@ -73,7 +73,7 @@
                 {% endfor %}
             </div>
             <label class="text-lg" for="max_member">스터디 인원 (4~20명)</label>
-            <input type="text" id="max_member" name="max_member" placeholder="스터디 최대 인원을 입력해주세요." class="input input-bordered w-full"/>
+            <input type="number" id="max_member" name="max_member" placeholder="스터디 최대 인원을 입력해주세요." class="input input-bordered w-full" min="4" max="20"/>
             <label class="text-lg" for="tags">스터디 검색 태그</label>
             <input type="text" id="tags-input" placeholder="태그를 입력해주세요." class="input input-bordered w-full"/>
             <input type="hidden" name="tags" id="tags">
@@ -269,8 +269,13 @@
         links.forEach((link) => {
             const type = link.querySelector('.ref-links-type').value;
             const url = link.querySelector('.ref_links_url').value;
-
-            links_value += ',' + type + ';' + url;
+            if (type === 'none select' && url) {
+                alert('링크 타입을 선택해주세요.')
+            } else if (type !== 'none select' && !url) {
+                alert('url을 작성해주세요.')
+            } else if (type !== 'none select' && url) {
+                links_value += links_value ? ',' + type + ';' + url : type + ';' + url;
+            }
         });
         return links_value;
     }
