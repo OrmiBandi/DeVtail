@@ -60,11 +60,11 @@
                                         </ul>
                                     </details>
                                     <details class="dropdown">
-                                        <summary class="m-1 btn border-0 bg-transparent shadow-none">일정</summary>
+                                        <summary class="m-1 btn border-0 bg-transparent shadow-none">ToDo</summary>
                                         <ul class="p-2 menu dropdown-content z-[1] rounded-box w-52 border-none bg-transparent">
-                                            <li><a>캘린더</a></li>
-                                            <li><a>개인 일정</a></li>
-                                            <li><a>스터디 일정</a></li>
+                                            <li><a href="{% url 'todo_list' %}">ToDo 보드</a></li>
+                                            <li><a href="{% url 'personal_todo_list' %}">개인 ToDo</a></li>
+                                            <li><a href="{% url 'study_todo_list' %}">스터디 ToDo</a></li>
                                         </ul>
                                     </details>
                                 </div>

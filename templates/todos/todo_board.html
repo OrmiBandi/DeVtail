@@ -65,15 +65,17 @@
       <ul class="card-body">
       {% for todo in todos %}
       {% if todo.status != "Done" and todo.start_at and todo.end_at %}
-      {% for current_date in todo.start_at|date_range:todo.end_at %}
-      {{ current_date|date:"Y년 m월 d일" }}
-        <li>
-          <span class="badge badge-primary
-          {% if todo.status == "In Progress" %}badge-outline{% endif %}">{{ todo.status }}</span>
-          {% if todo.study %}[{{ todo.study.title }}] {% endif %}
-          {{ todo.title }}
+      <li>
+        <a href="{{ todo.get_absolute_url }}" class="grid flex-grow">
+          <p>
+            <span class="badge badge-primary
+            {% if todo.status == "In Progress" %}badge-outline{% endif %}">{{ todo.status }}</span>
+            {% if todo.study %}[{{ todo.study.title }}] {% endif %}
+            {{ todo.title }}
+          </p>
+          <p>{{ todo.start_at|date:"Y년 m월 d일" }} ~ {{ todo.end_at|date:"Y년 m월 d일" }}</p>
+        </a>
         </li>
-      {% endfor %}
       {% endif %}
       {% endfor %}
       </ul>
