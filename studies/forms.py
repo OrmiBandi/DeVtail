@@ -3,12 +3,10 @@ from .models import (
     Study,
     Comment,
     Recomment,
-    Tag,
     Category,
     Blacklist,
     Favorite,
     Schedule,
-    RefLink,
 )
 import datetime
 
@@ -120,7 +118,8 @@ class StudyForm(forms.ModelForm):
 
     def save(self, commit=True):
         study = super().save(commit=False)
-        study.thumbnail = self.cleaned_data["thumbnail"]
+        if self.cleaned_data["thumbnail"]:
+            study.thumbnail = self.cleaned_data["thumbnail"]
         study.introduce = self.cleaned_data["introduce"]
 
         return study
