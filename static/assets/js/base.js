@@ -32,3 +32,9 @@ $theme_btn.addEventListener('click', () => {
         localStorage.setItem('theme', 'dark');
     }
 });
+
+// 뒤로가기 버튼
+document.getElementById("backBtn").addEventListener("click", (event) => {
+    event.preventDefault();
+    history.back();
+});
