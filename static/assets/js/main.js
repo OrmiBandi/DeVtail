@@ -1,14 +1,13 @@
 const $holiday_p1 = document.querySelector('.holiday_p_1');
 const $holiday_p2 = document.querySelector('.holiday_p_2');
 const $holiday_p3 = document.querySelector('.holiday_p_3');
-// 목표 날짜 설정
-// const countDownDate = new Date("Mar 31, 2024 23:59:59").getTime();
+
 const year = $holiday_p1.dataset.holiday.split(' ')[0].replace('년', '');
 const month = $holiday_p1.dataset.holiday.split(' ')[1].replace('월', '');
 const day = $holiday_p1.dataset.holiday.split(' ')[2].replace('일', '');
 const countDownDate = new Date(year, month, day).getTime();
 let interval;
-// 1초마다 업데이트되는 함수
+
 function countdownFunction(dest_date) {
     const updateCountdown = () => {
         const now = new Date().getTime();
@@ -18,7 +17,6 @@ function countdownFunction(dest_date) {
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        // Update the DOM elements with the countdown values
         const $day_span = document.querySelector('.day');
         $day_span.style.setProperty('--value', days);
 
@@ -31,7 +29,7 @@ function countdownFunction(dest_date) {
         const $sec_span = document.querySelector('.sec');
         $sec_span.style.setProperty('--value', seconds);
     };
-    // Call the updateCountdown function every second
+
     clearInterval(interval);
     interval = setInterval(updateCountdown, 1000);
 }
