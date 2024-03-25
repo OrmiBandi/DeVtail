@@ -45,7 +45,7 @@ class StudyList(ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().prefetch_related("favorites")
         q = self.request.GET.get("q", "")
         tag = self.request.GET.get("tag", "")
         category = self.request.GET.get("category", "")
@@ -90,7 +90,11 @@ class MyStudyList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.select_related("study").filter(user=self.request.user)
+        queryset = (
+            queryset.select_related("study")
+            .filter(user=self.request.user)
+            .order_by("-study__created_at")
+        )
 
         q = self.request.GET.get("q", "")
         tag = self.request.GET.get("tag", "")
@@ -627,7 +631,7 @@ class FavoriteStudyCreate(LoginRequiredMixin, CreateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse_lazy("studies:study_list")
+        return self.request.META.get("HTTP_REFERER", reverse_lazy("studies:study_list"))
 
 
 class FaveriteStudyList(LoginRequiredMixin, ListView):
@@ -689,7 +693,7 @@ class FavoriteStudyDelete(UserPassesTestMixin, DeleteView):
         return favorite.user == self.request.user
 
     def get_success_url(self):
-        return reverse_lazy("studies:favorite_study_list")
+        return self.request.META.get("HTTP_REFERER", reverse_lazy("studies:study_list"))
 
 
 @login_required
