@@ -12,17 +12,11 @@
         <h2>스터디 그룹의 리더 : {{ study.get_study_leader.user }}</h2>
         <h2>현재 로그인한 사용자 : {{ user }}</h2>
         <h2>{{ study.category }}</h2>
-        {% for tag in study.tags.all %}
-        <a href="{% url 'studies:study_list' %}?tq={{ tag }}">#{{ tag }} </a>
+        {% for tag_value in study.tag.all %}
+        <a href="{% url 'studies:study_list' %}?tq={{ tag_value }}">#{{ tag_value }} </a>
         {% endfor %}
         <h2>{{ study.title }}</h2>
-        {% if not study.thumbnail %}
-        <img src="/static/assets/images/study_default.jpg" alt="{{ study.title }}">
-        {% elif "http" in study.thumbnail.url %}
-        <img src="{{ study.thumbnail }}" alt="{{ study.title }}">
-        {% else %}
         <img src="{{ study.thumbnail.url }}" alt="{{ study.title }}">
-        {% endif %}
         <p>{{ study.introduce }}</p>
         <p>{{ study.created_at }}</p>
         <p>{{ study.updated_at }}</p>
@@ -37,7 +31,8 @@
         </div>
         <h2>참조 링크</h2>
         {% for ref_link in study.ref_links.all %}
-        <div style="display:flex; flex-direction:column;">
+        <div class="flex">
+            <span>{{ ref_link.link_type }}</span>
             <a href="{{ ref_link.url }}">- {{ ref_link.url }}</a>
         </div>
         {% endfor %}
