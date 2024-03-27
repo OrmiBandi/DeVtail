@@ -50,7 +50,11 @@
                             <a href="{% url 'studies:study_detail' pk=study.pk %}">
                                 <div class="card w-80 bg-primary-content drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] flex justify-center">
                                     <figure class="px-4 pt-4">
-                                        <img src="{{ study.thumbnail.url }}" alt="study_thumbnail" class="rounded-xl" />
+                                        {% if study.thumbnail %}
+                                            <img src="{{ study.thumbnail.url }}" alt="study_thumbnail" class="rounded-xl w-72 h-72" />
+                                        {% else %}
+                                            <img src="{% static 'assets/images/study_thumbnail.png' %}" alt="study_thumbnail" class="rounded-xl w-72 h-72" />
+                                        {% endif %}
                                     </figure>
                                     <div class="card-body px-4 pt-4">
                                         <div>
@@ -94,7 +98,11 @@
                         <a href="{% url 'studies:study_detail' pk=study.pk %}">
                             <div class="card w-80 bg-primary-content drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] flex justify-center">
                                 <figure class="px-4 pt-4">
-                                    <img src="{{ study.thumbnail.url }}" alt="study_thumbnail" class="rounded-xl" />
+                                    {% if study.thumbnail %}
+                                        <img src="{{ study.thumbnail.url }}" alt="study_thumbnail" class="rounded-xl w-72 h-72" />
+                                    {% else %}
+                                        <img src="{% static 'assets/images/study_thumbnail.png' %}" alt="study_thumbnail" class="rounded-xl w-72 h-72" />
+                                    {% endif %}
                                 </figure>
                                 <div class="card-body px-4 pt-4">
                                     <div>
@@ -129,7 +137,11 @@
                         <a href="{% url 'studies:study_detail' pk=study.pk %}">
                             <div class="card w-80 bg-primary-content drop-shadow-[0_35px_35px_rgba(0,0,0,0.25)] flex justify-center">
                                 <figure class="px-4 pt-4">
-                                    <img src="{{ study.thumbnail.url }}" alt="study_thumbnail" class="rounded-xl" />
+                                    {% if study.thumbnail %}
+                                        <img src="{{ study.thumbnail.url }}" alt="study_thumbnail" class="rounded-xl w-72 h-72" />
+                                    {% else %}
+                                        <img src="{% static 'assets/images/study_thumbnail.png' %}" alt="study_thumbnail" class="rounded-xl w-72 h-72" />
+                                    {% endif %}
                                 </figure>
                                 <div class="card-body px-4 pt-4">
                                     <div>

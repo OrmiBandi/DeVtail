@@ -18,7 +18,7 @@ def index(request):
     """
     context = {"holidays": []}
     today = datetime.date.today()
-    kr_holidays = dict(holidays.KR(years=today.year))
+    kr_holidays = dict(holidays.KR(years=today.year, language="ko"))
     filtered_holidays = list(filter(lambda x: x > today, kr_holidays))
     filtered_holidays.sort()
     for i in range(len(filtered_holidays)):
