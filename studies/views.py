@@ -148,9 +148,10 @@ class StudyCreate(LoginRequiredMixin, CreateView):
         tags_input = form.cleaned_data["tags"]
         tags_list = tags_input.strip(",").split(",")
 
-        for tag in tags_list:
-            tag = Tag.objects.get_or_create(name=tag.strip())[0]
-            study.tag.add(tag)
+        if len(tags_list) > 1:
+            for tag in tags_list:
+                tag = Tag.objects.get_or_create(name=tag.strip())[0]
+                study.tag.add(tag)
 
         days = form.cleaned_data["days"]
 
@@ -223,14 +224,14 @@ class StudyUpdate(UserPassesTestMixin, UpdateView):
 
     def form_valid(self, form):
         study = form.save(commit=False)
+        study.tag.clear()
 
         tags_input = form.cleaned_data["tags"]
         tags_list = tags_input.strip(",").split(",")
-
-        study.tag.clear()
-        for tag in tags_list:
-            tag = Tag.objects.get_or_create(name=tag.strip())[0]
-            study.tag.add(tag)
+        if len(tags_list) > 1:
+            for tag in tags_list:
+                tag = Tag.objects.get_or_create(name=tag.strip())[0]
+                study.tag.add(tag)
 
         days = form.cleaned_data["days"]
         start_time = form.cleaned_data["start_time"]

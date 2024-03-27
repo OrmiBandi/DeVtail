@@ -288,10 +288,11 @@
         
         const tags = document.getElementById('tags');
         const div_tags_all = document.querySelectorAll('#tag-container div')
-
-        div_tags_all.forEach((div_tag_element) => {
-            tags.value += div_tag_element.textContent + ',';
-        })
+        if (div_tags_all.length > 0) {
+            div_tags_all.forEach((div_tag_element) => {
+                tags.value += div_tag_element.textContent + ',';
+            })
+        }
 
         this.submit();
     })
