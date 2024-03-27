@@ -21,8 +21,6 @@ for (i = 0; i < dropdowns.length; i++) {
             }
         }
     });
-}
-
 
 $theme_btn.addEventListener('click', () => {
     const current_theme = localStorage.getItem('theme');
@@ -31,10 +29,4 @@ $theme_btn.addEventListener('click', () => {
     } else {
         localStorage.setItem('theme', 'dark');
     }
-});
-
-// 뒤로가기 버튼
-document.getElementById("backBtn").addEventListener("click", (event) => {
-    event.preventDefault();
-    history.back();
 });

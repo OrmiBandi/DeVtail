@@ -2,9 +2,7 @@
 {% load static %}
 
 {% block content %}
-
-{% include 'todos/countdown.html' %}
-
+<div class="mx-auto w-11/12 px-2 sm:px-6 lg:px-8">
   {% if studies %}
   <form action="" method="GET">
     <label for="study" class="block font-black text-3xl my-4">Study</label>
@@ -17,7 +15,11 @@
     </select>
     <button class="btn btn-sm btn-primary">조회</button>
   </form>
+  {% endif %}
 
+  {% include 'todos/countdown.html' %}
+
+  {% if studies %}
     <section>
       <h3 class="font-black text-3xl my-4">Member</h3>
       {% if members %}
@@ -131,11 +133,11 @@
         <button onclick="location.href='{% url "personal_todo_create" %}'" class="btn btn-sm btn-outline btn-primary">+ 추가</button>
         {% endif %}
       </div>
-      <ul class="flex">
-        <li class="w-1/3">
-          <h4 class="text-center font-black text-primary bg-base-200 text-xl p-2">Todo</h4>
+      <ul class="flex flex-col w-full lg:flex-row ">
+        <li class="lg:w-1/3 bg-base-200 p-4">
+          <h4 class="text-center font-black text-primary text-xl p-2">Todo</h4>
           {% if todos %}
-          <ul class="overflow-y-auto bg-base-200 h-96 p-1 pt-8">
+          <ul class="overflow-y-auto h-96 p-1 pt-8">
             {% for todo in todos %}
             {% if todo.status == 'ToDo' %}
             <li class="card bg-base-100 shadow hover:shadow-lg mb-4">
@@ -222,10 +224,10 @@
           </ul>
           {% endif %}
         </li>
-        <li class="w-1/3">
-          <h4 class="text-center font-black text-primary bg-base-200 text-xl p-2">In Progress</h4>
+        <li class="lg:w-1/3 bg-base-200 p-4">
+          <h4 class="text-center font-black text-primary text-xl p-2">In Progress</h4>
           {% if todos %}
-          <ul class="overflow-y-auto bg-base-200 h-96 p-1 pt-8">
+          <ul class="overflow-y-auto h-96 p-1 pt-8">
             {% for todo in todos %}
             {% if todo.status == 'In Progress' %}
             <li class="card bg-base-100 shadow hover:shadow-lg mb-4">
@@ -308,10 +310,10 @@
           </ul>
           {% endif %}
         </li>
-        <li class="w-1/3"> 
-          <h4 class="text-center font-black text-primary bg-base-200 text-xl p-2">Done</h4>
+        <li class="lg:w-1/3 bg-base-200 p-4"> 
+          <h4 class="text-center font-black text-primary text-xl p-2">Done</h4>
           {% if todos %}
-          <ul class="overflow-y-auto bg-base-200 h-96 p-1 pt-8">
+          <ul class="overflow-y-auto h-96 p-1 pt-8">
             {% for todo in todos %}
             {% if todo.status == 'Done' %}
             <li class="card bg-base-100 shadow hover:shadow-lg mb-4">
@@ -400,6 +402,7 @@
         </li>
       </ul>
     </section>
+</div>
 {% endblock %}
 
 {% block script %}
