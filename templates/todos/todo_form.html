@@ -1,73 +1,85 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="text-2xl mb-4">
-  ToDo
-  {% if "create" in request.path %}
-  생성
-  {% else %}
-  수정
-  {% endif %}
-</h2>
-
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  {% for field in form %}
-  <div class="mb-4">
-    <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ field.id_for_label }}">{{ field.label }}</label>
-    {% if field.name == 'start_at' or field.name == 'end_at' %}
-    <div class="flex gap-4">
-      <label for="" class="form-control grow">
-        <div class="label">Date</div>
-        <input class="input input-bordered" type="date" name="{{ field.name }}_0" value="{{ field.value|date:"Y-m-d" }}">
-      </label>
-      <label for="" class="form-control grow">
-        <div class="label">Time</div>
-        <input class="input input-bordered" type="time" name="{{ field.name }}_1" value="{{ field.value|time:"H:i:s" }}">
-      </label>
-    </div>
-    {% elif field.field.widget.input_type == 'text' %}
-    <input type="{{ field.field.widget.input_type }}" class="input input-bordered w-full" id="{{ field.id_for_label }}"
-      placeholder="{{ field.label }}" name="{{ field.name }}" value="{{ field.value }}">
-    {% elif field.field.widget.input_type == 'select' %}
-    <select class="select select-bordered w-full" id="{{ field.id_for_label }}" name="{{ field.name }}">
-      {% for option in field.field.choices %}
-      <option value="{{ option.0 }}" {% if field.value == option.0 %}selected{% endif %}>{{ option.1 }}</option>
-      {% endfor %}
-    </select>
-    {% elif field.field.widget.input_type == 'checkbox' %}
-    <div id="{{ field.auto_id }}" class="overflow-y-auto max-h-40">
-      {% for query in field.field.queryset %}
-      <div class="form-control">
-        <label class="label cursor-pointer justify-start gap-2" for="{{ field.auto_id }}_{{ forloop.counter|add:'-1' }}">
-          <input type="checkbox" class="checkbox" name="{{ field.name }}" value="{{ query.id }}"
-            id="{{ field.auto_id }}_{{ forloop.counter|add:'-1' }}" {% if query.id in field.value %}checked{% endif %}>
-          <span class="label-text">{{ query }}</span>
+<div class="flex flex-col justify-center items-center">
+  <h2 class="text-2xl mb-4">
+    ToDo
+    {% if "create" in request.path %}
+    생성
+    {% else %}
+    수정
+    {% endif %}
+  </h2>
+  
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="mb-4">
+      <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {% if field.name == 'start_at' or field.name == 'end_at' %}
+      <div class="flex gap-4">
+        <label for="" class="form-control grow">
+          <div class="label">Date</div>
+          <input class="input input-bordered" type="date" name="{{ field.name }}_0" value="{{ field.value|date:"Y-m-d" }}">
+        </label>
+        <label for="" class="form-control grow">
+          <div class="label">Time</div>
+          <input class="input input-bordered" type="time" name="{{ field.name }}_1" value="{{ field.value|time:"H:i:s" }}">
         </label>
       </div>
-      {% endfor %}
-    </div>
-    {% elif field.field.widget.attrs.data_widget_type == 'textarea' %}
-    <textarea class="textarea textarea-bordered w-full" id="{{ field.id_for_label }}" placeholder="{{ field.label }}"
-      name="{{ field.name }}">{{ field.value }}</textarea>
-    {% else %}
-    {{ field }}
-    {% endif %}
-    <div class="text-error">
-      {% for error in field.errors %}
-      <span>{{ error }}</span>
-      {% endfor %}
-    </div>
-  </div>
-  {% endfor %}
-  <div class="text-end">
-    <button class="btn btn-outline" id="backBtn">취소</button>
-    <button class="btn btn-primary">ToDo
-      {% if "create" in request.path %}
-      추가
+      {% elif field.field.widget.input_type == 'text' %}
+      <input type="{{ field.field.widget.input_type }}" class="input input-bordered w-full" id="{{ field.id_for_label }}"
+        placeholder="{{ field.label }}" name="{{ field.name }}" value="{{ field.value }}">
+      {% elif field.field.widget.input_type == 'select' %}
+      <select class="select select-bordered w-full" id="{{ field.id_for_label }}" name="{{ field.name }}">
+        {% for option in field.field.choices %}
+        <option value="{{ option.0 }}" {% if field.value == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+        {% endfor %}
+      </select>
+      {% elif field.field.widget.input_type == 'checkbox' %}
+      <div id="{{ field.auto_id }}" class="overflow-y-auto max-h-40">
+        {% for query in field.field.queryset %}
+        <div class="form-control">
+          <label class="label cursor-pointer justify-start gap-2" for="{{ field.auto_id }}_{{ forloop.counter|add:'-1' }}">
+            <input type="checkbox" class="checkbox" name="{{ field.name }}" value="{{ query.id }}"
+              id="{{ field.auto_id }}_{{ forloop.counter|add:'-1' }}" {% if query.id in field.value %}checked{% endif %}>
+            <span class="label-text">{{ query }}</span>
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+      {% elif field.field.widget.attrs.data_widget_type == 'textarea' %}
+      <textarea class="textarea textarea-bordered w-full" id="{{ field.id_for_label }}" placeholder="{{ field.label }}"
+        name="{{ field.name }}">{{ field.value }}</textarea>
       {% else %}
-      수정
+      {{ field }}
       {% endif %}
-    </button>
-  </div>
-</form>
+      <div class="text-error">
+        {% for error in field.errors %}
+        <span>{{ error }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    <div class="text-end">
+      <button class="btn btn-outline" id="backBtn">취소</button>
+      <button class="btn btn-primary">ToDo
+        {% if "create" in request.path %}
+        추가
+        {% else %}
+        수정
+        {% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+  // 뒤로가기 버튼
+  document.getElementById("backBtn").addEventListener("click", (event) => {
+  event.preventDefault();
+  history.back();
+  });
+</script>
 {% endblock %}

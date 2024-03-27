@@ -11,9 +11,3 @@ for (i = 0; i < dropdowns.length; i++) {
         }
     });
 }
-
-// 뒤로가기 버튼
-document.getElementById("backBtn").addEventListener("click", (event) => {
-    event.preventDefault();
-    history.back();
-});
