@@ -183,16 +183,30 @@ class StudyDetail(DetailView):
     """
 
     model = Study
+    template_name = "studies/study_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["study_members"] = StudyMember.objects.filter(
-            study=self.object, is_accepted=True
+
+        study_members = StudyMember.objects.filter(
+            study=self.object, user=self.request.user
         )
+        accept_members = study_members.filter(is_accepted=True, user=self.request.user)
+
+        context["study_members"] = {
+            "accept": accept_members,
+            "pending": study_members,
+        }
+
+        context["request_user"] = {
+            "apply": study_members.filter(is_accepted=False, user=self.request.user),
+        }
+
         schedules = Schedule.objects.filter(study=self.object)
         for schedule in schedules:
             schedule.day_display = dict(Schedule.day_choices).get(schedule.day, "")
         context["schedules"] = schedules
+        print(context["study_members"])
         return context
 
     def get_object(self, queryset=None):

@@ -45,8 +45,8 @@
         <!-- 스터디 상세 페이지 파트 2 [목표, 기간, 시간, 소개, 링크 등] -->
 
         <!-- 스터디 그룹 리더 [수정과 삭제 버튼 표시] -->
-        {% for studymember in study_members %}
-        {% if user == studymember.user and studymember.is_manager %}
+        {% for study_member in study_members.accept %}
+        {% if user == study_member.user and study_member.is_manager %}
         <div class="flex gap-4">
             <details class="dropdown">
                 <summary class="btn btn-primary">스터디 관리</summary>
@@ -65,14 +65,14 @@
         {% endif %}
 
         <!-- 스터디 그룹 멤버 [스터디 탈퇴 버튼 표시] -->
-        {% if user == studymember.user and not studymember.is_manager %}
+        {% if user == study_member.user and not study_member.is_manager %}
         <form action="{% url 'studies:withdraw_study' study.id %}" method="POST">
             {% csrf_token %}
             <input type="submit" value="스터디 탈퇴">
         </form>
         {% endif %}
         {% endfor %}
-        
+
         <div class="flex flex-col gap-4">
             <div>
                 <p class="font-bold text-lg">스터디 목표</p>
@@ -125,16 +125,19 @@
         <!-- 스터디 상세 페이지 파트 3 [댓글] -->
         <div>
             <!-- 현재 유저가 로그인한 유저이고 스터디 멤버가 아닌 경우에만 표시 -->
-            
-            {% if user not in study_members %}
+
+            {% if not study_members.pending  %}
             <form action="{% url 'studies:apply_study_join' study.id %}" method="POST">
                 {% csrf_token %}
                 <input type="submit" value="가입 신청">
             </form>
-            {% elif user in study_members %}
-                신청 완료
             {% endif %}
-            
+            {% for apply_user in request_user.apply %}
+            {% if user == apply_user.user %}
+            <p>신청 완료</p>
+            {% endif %}
+            {% endfor %}
+
             <!-- 댓글 리스트 -->
             <p class="font-bold text-lg mb-4">댓글</p>
             <!-- 댓글 작성 -->
