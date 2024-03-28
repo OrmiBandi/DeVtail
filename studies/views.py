@@ -86,7 +86,7 @@ class MyStudyList(LoginRequiredMixin, ListView):
 
     template_name = "studies/my_study_list.html"
     context_object_name = "mystudies"
-    paginate_by = 10
+    paginate_by = 6
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -148,9 +148,10 @@ class StudyCreate(LoginRequiredMixin, CreateView):
         tags_input = form.cleaned_data["tags"]
         tags_list = tags_input.strip(",").split(",")
 
-        for tag in tags_list:
-            tag = Tag.objects.get_or_create(name=tag.strip())[0]
-            study.tag.add(tag)
+        if len(tags_list) > 1:
+            for tag in tags_list:
+                tag = Tag.objects.get_or_create(name=tag.strip())[0]
+                study.tag.add(tag)
 
         days = form.cleaned_data["days"]
 
@@ -182,16 +183,30 @@ class StudyDetail(DetailView):
     """
 
     model = Study
+    template_name = "studies/study_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["study_members"] = StudyMember.objects.filter(
-            study=self.object, is_accepted=True
+
+        study_members = StudyMember.objects.filter(
+            study=self.object, user=self.request.user
         )
+        accept_members = study_members.filter(is_accepted=True, user=self.request.user)
+
+        context["study_members"] = {
+            "accept": accept_members,
+            "pending": study_members,
+        }
+
+        context["request_user"] = {
+            "apply": study_members.filter(is_accepted=False, user=self.request.user),
+        }
+
         schedules = Schedule.objects.filter(study=self.object)
         for schedule in schedules:
             schedule.day_display = dict(Schedule.day_choices).get(schedule.day, "")
         context["schedules"] = schedules
+
         return context
 
     def get_object(self, queryset=None):
@@ -223,14 +238,14 @@ class StudyUpdate(UserPassesTestMixin, UpdateView):
 
     def form_valid(self, form):
         study = form.save(commit=False)
+        study.tag.clear()
 
         tags_input = form.cleaned_data["tags"]
         tags_list = tags_input.strip(",").split(",")
-
-        study.tag.clear()
-        for tag in tags_list:
-            tag = Tag.objects.get_or_create(name=tag.strip())[0]
-            study.tag.add(tag)
+        if len(tags_list) > 1:
+            for tag in tags_list:
+                tag = Tag.objects.get_or_create(name=tag.strip())[0]
+                study.tag.add(tag)
 
         days = form.cleaned_data["days"]
         start_time = form.cleaned_data["start_time"]
@@ -643,6 +658,7 @@ class FaveriteStudyList(LoginRequiredMixin, ListView):
     model = Favorite
     template_name = "studies/favorite_study_list.html"
     context_object_name = "favorite_studies"
+    paginate_by = 6
 
     def get_queryset(self):
         queryset = super().get_queryset()
