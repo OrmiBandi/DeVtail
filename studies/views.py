@@ -86,7 +86,7 @@ class MyStudyList(LoginRequiredMixin, ListView):
 
     template_name = "studies/my_study_list.html"
     context_object_name = "mystudies"
-    paginate_by = 10
+    paginate_by = 6
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -206,7 +206,7 @@ class StudyDetail(DetailView):
         for schedule in schedules:
             schedule.day_display = dict(Schedule.day_choices).get(schedule.day, "")
         context["schedules"] = schedules
-        print(context["study_members"])
+
         return context
 
     def get_object(self, queryset=None):
@@ -658,6 +658,7 @@ class FaveriteStudyList(LoginRequiredMixin, ListView):
     model = Favorite
     template_name = "studies/favorite_study_list.html"
     context_object_name = "favorite_studies"
+    paginate_by = 6
 
     def get_queryset(self):
         queryset = super().get_queryset()
