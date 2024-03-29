@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ko-KR">
     <head>
@@ -16,7 +17,11 @@
         <a href="{% url 'studies:study_list' %}?tq={{ tag_value }}">#{{ tag_value }} </a>
         {% endfor %}
         <h2>{{ study.title }}</h2>
-        <img src="{{ study.thumbnail.url }}" alt="{{ study.title }}">
+        {% if study.thumbnail %}
+            <img src="{{ study.thumbnail.url }}" alt="{{ study.title }}">
+        {% else %}
+            <img src="{% static 'assets/images/study_thumbnail.png' %}" alt="{{ study.title }}">
+        {% endif %}
         <p>{{ study.introduce }}</p>
         <p>{{ study.created_at }}</p>
         <p>{{ study.updated_at }}</p>
