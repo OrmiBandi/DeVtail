@@ -31,8 +31,8 @@
                 <div class="card-body">
                     <div class="flex justify-between">
                         <div>
-                            <button class="btn btn-outline px-4" onClick="event.preventDefault(); location.href='{% url 'studies:my_study_list' %}?category={{ mystudy.study.category }}'"><span class="w-4">{{ mystudy.study.category }}</span></button>
-                            <button class="btn btn-outline px-4" onClick="event.preventDefault(); location.href='{% url 'studies:my_study_list' %}?difficulty={{ mystudy.study.difficulty }}'"><span class="w-4">{{ mystudy.study.difficulty }}</span></button>
+                            <button class="btn btn-outline btn-primary px-4" onClick="event.preventDefault(); location.href='{% url 'studies:my_study_list' %}?category={{ mystudy.study.category }}'"><span class="w-4">{{ mystudy.study.category }}</span></button>
+                            <button class="btn btn-outline btn-primary px-4" onClick="event.preventDefault(); location.href='{% url 'studies:my_study_list' %}?difficulty={{ mystudy.study.difficulty }}'"><span class="w-4">{{ mystudy.study.difficulty }}</span></button>
                         </div>
                         <div>
                             {% if mystudy.study.favorites.all %}
@@ -75,11 +75,22 @@
         </a>
         {% endfor %}
     </div>
-
+    <div class="flex gap-4 justify-center mt-4">
+        {% if is_paginated %}
+            {% if page_obj.has_previous %}
+                <button class="join-item btn btn-outline btn-primary" onclick="location.href='?page=1'">&laquo; 처음</button>
+                <button class="join-item btn btn-primary" onclick="location.href='?page={{ page_obj.previous_page_number }}'">이전</button>
+            {% endif %}
+            {% if page_obj.has_next %}
+                <button class="join-item btn btn-primary" onclick="location.href='?page={{ page_obj.next_page_number }}'">다음</button>
+                <button class="join-item btn btn-outline btn-primary" onclick="location.href='?page={{ page_obj.paginator.num_pages }}'">끝 &raquo;</button>
+            {% endif %}
+        {% endif %}
+    </div>
     <div class="mx-auto w-11/12 px-2 py-2 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
         <div class="flex gap-4 justify-end">
-            <button class="btn btn-outline" onClick="location.href='{% url 'studies:study_create' %}'">스터디 생성</button>
-            <button class="btn btn-outline" onClick="location.href='{% url 'studies:favorite_study_list' %}'">즐겨찾기 목록</button>
+            <button class="btn btn-primary" onClick="location.href='{% url 'studies:study_create' %}'">스터디 생성</button>
+            <button class="btn btn-primary" onClick="location.href='{% url 'studies:favorite_study_list' %}'">즐겨찾기 목록</button>
         </div>
     </div>
 {% endblock %}

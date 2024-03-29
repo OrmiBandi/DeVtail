@@ -1,122 +1,280 @@
-<!DOCTYPE html>
-<html lang="ko-KR">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>DeVtail</title>
-    </head>
-    <body>
-        <!-- 스터디 상세 페이지 -->
-        <h1>Study Detail</h1>
-        <h2>스터디 그룹의 리더 : {{ study.get_study_leader.user }}</h2>
-        <h2>현재 로그인한 사용자 : {{ user }}</h2>
-        <h2>{{ study.category }}</h2>
-        {% for tag_value in study.tag.all %}
-        <a href="{% url 'studies:study_list' %}?tq={{ tag_value }}">#{{ tag_value }} </a>
-        {% endfor %}
-        <h2>{{ study.title }}</h2>
-        <img src="{{ study.thumbnail.url }}" alt="{{ study.title }}">
-        <p>{{ study.introduce }}</p>
-        <p>{{ study.created_at }}</p>
-        <p>{{ study.updated_at }}</p>
-        <div style="display:flex;">
-            {% for schedule in schedules %}
-            <div style="border:1px solid black; margin-right:10px; padding: 0 10px;">
-                <p>{{ schedule.day_display }}</p>
-                <p>{{ schedule.start_time }}</p>
-                <p>{{ schedule.end_time }}</p>
+{% extends "base.html" %}
+{% block title %}
+스터디 상세 페이지
+{% endblock %}
+{% block content %}
+<p class="font-bold text-2xl text-nowrap mx-auto w-4/5 px-2 sm:px-6 lg:px-8">스터디 상세 페이지</p>
+<div class="mx-auto w-4/5 px-2 py-2 sm:px-6 sm:py-6 xl:px-8 xl:py-8 xl:flex xl:justify-center xl:gap-36">
+    <!-- 스터디 상세 페이지 파트 1 [썸네일, 제목, 그룹장 정보, 태그, 카테고리] -->
+    <div class="border-2 rounded-lg lg:h-4/5 mb-4 lg:mb-0">
+        <img src="/media/{{ study.thumbnail }}" class="h-full w-full mb-4 rounded-lg" id="thumbnail-add">
+        <button class="btn btn-outline mx-4" onClick="event.preventDefault(); location.href='{% url 'studies:study_list' %}?category={{ study.category }}'"><span class="w-4">{{ study.category }}</span></button>
+        <p class="m-4 font-bold text-xl">{{ study.title }}</p>
+        
+        <!-- 스터디 그룹 장의 정보 출력 [프로필 이미지] -->
+        <div class="flex gap-1">
+            <div class="avatar mx-4">
+                <div class="w-16 h-16 rounded-full border-4 border-slate-500">
+                    {% if not study.get_study_leader.user.profile_image %}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M304 128a80 80 0 1 0 -160 0 80 80 0 1 0 160 0zM96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM49.3 464H398.7c-8.9-63.3-63.3-112-129-112H178.3c-65.7 0-120.1 48.7-129 112zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3z"/></svg>
+                    {% elif 'http' in study.get_study_leader.user.profile_image.url %}
+                    <img src="{{ study.get_study_leader.user.profile_image }}" class="bg-current"/>
+                    {% else %}
+                    <img src="{{ study.get_study_leader.user.profile_image.url }}" class="bg-current"/>
+                    {% endif %}
+                </div>
             </div>
-            {% endfor %}
+            <div class="flex flex-col justify-center">
+                <div class="text-lg">{{ study.get_study_leader.user.nickname }}</div>
+                <div class="text-sm">{{ study.start_at }}</div>
+            </div>
         </div>
-        <h2>참조 링크</h2>
-        {% for ref_link in study.ref_links.all %}
-        <div class="flex">
-            <span>{{ ref_link.link_type }}</span>
-            <a href="{{ ref_link.url }}">- {{ ref_link.url }}</a>
+        
+        <!-- 스터디 그룹 장의 정보 출력 [닉네임, 스터디 시작일, 스터디 인원수]-->
+        <div class="flex gap-3 self-center m-4">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" class="h-6 w-6 fill-current mr-2"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M72 88a56 56 0 1 1 112 0A56 56 0 1 1 72 88zM64 245.7C54 256.9 48 271.8 48 288s6 31.1 16 42.3V245.7zm144.4-49.3C178.7 222.7 160 261.2 160 304c0 34.3 12 65.8 32 90.5V416c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V389.2C26.2 371.2 0 332.7 0 288c0-61.9 50.1-112 112-112h32c24 0 46.2 7.5 64.4 20.3zM448 416V394.5c20-24.7 32-56.2 32-90.5c0-42.8-18.7-81.3-48.4-107.7C449.8 183.5 472 176 496 176h32c61.9 0 112 50.1 112 112c0 44.7-26.2 83.2-64 101.2V416c0 17.7-14.3 32-32 32H480c-17.7 0-32-14.3-32-32zm8-328a56 56 0 1 1 112 0A56 56 0 1 1 456 88zM576 245.7v84.7c10-11.3 16-26.1 16-42.3s-6-31.1-16-42.3zM320 32a64 64 0 1 1 0 128 64 64 0 1 1 0-128zM240 304c0 16.2 6 31 16 42.3V261.7c-10 11.3-16 26.1-16 42.3zm144-42.3v84.7c10-11.3 16-26.1 16-42.3s-6-31.1-16-42.3zM448 304c0 44.7-26.2 83.2-64 101.2V448c0 17.7-14.3 32-32 32H288c-17.7 0-32-14.3-32-32V405.2c-37.8-18-64-56.5-64-101.2c0-61.9 50.1-112 112-112h32c61.9 0 112 50.1 112 112z"/></svg>
+            <span>인원 : {{ study.get_current_member }}/{{ study.max_member }}</span>
         </div>
+        
+        {% for tag_value in study.tag.all %}
+        <button class="btn btn-outline mx-4 mb-4" onClick="event.preventDefault(); location.href='{% url 'studies:study_list' %}?tq={{ tag_value }}'"><span class="w-4">#{{ tag_value }}</span></button>
         {% endfor %}
-        
-        {% for studymember in study_members %}
-        <!-- 스터디 그룹 리더일 경우에만 표시 -->
-        {% if user == studymember.user and studymember.is_manager %}
-        <form action="{% url 'studies:study_update' study.id %}" method="GET">
-            {% csrf_token %}
-            <input type="submit" value="수정">
-        </form>
-        <form action="{% url 'studies:study_delete' study.id %}" method="POST">
-            {% csrf_token %}
-            <input type="submit" value="삭제">
-        </form>
-        <!-- 스터디 그룹 리더만 접속 가능한 가입 신청 리스트 페이지 이동 링크 -->
-        <a href="{% url 'studies:study_member_apply_list' study.id %}">가입 신청 리스트</a>
-        <a href="{% url 'studies:study_member_list' study.id %}">멤버 관리 리스트</a>
-        <a href="{% url 'studies:blacklist_user_list' study.id %}">블랙리스트</a>
+    </div>
+    
+    <div class="flex flex-col gap-4 sm:mt-4 lg:w-4/5">
+        <!-- 스터디 상세 페이지 파트 2 [목표, 기간, 시간, 소개, 링크 등] -->
+
+        <!-- 스터디 그룹 리더 [수정과 삭제 버튼 표시] -->
+        {% for study_member in study_members.accept %}
+        {% if user == study_member.user and study_member.is_manager %}
+        <div class="flex gap-4">
+            <details class="dropdown">
+                <summary class="btn btn-primary">스터디 관리</summary>
+                <ul class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-52">
+                    <li><a href="{% url 'studies:study_update' study.id %}">수정 페이지로 이동</a></li>
+                    <li><a href="{% url 'studies:study_member_apply_list' study.id %}">가입 신청 리스트</a></li>
+                    <li><a href="{% url 'studies:study_member_list' study.id %}">멤버 관리 리스트</a></li>
+                    <li><a href="{% url 'studies:blacklist_user_list' study.id %}">블랙리스트</a></li>
+                </ul>
+            </details>
+            <form action="{% url 'studies:study_delete' study.id %}" method="POST">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-primary" value="삭제">
+            </form>
+        </div>
         {% endif %}
-        
-        <!-- 스터디 그룹 리더가 아닌 기본 스터디 그룹 멤버일 경우에만 표시 -->
-        {% if user == studymember.user and not studymember.is_manager %}
+
+        <!-- 스터디 그룹 멤버 [스터디 탈퇴 버튼 표시] -->
+        {% if user == study_member.user and not study_member.is_manager %}
         <form action="{% url 'studies:withdraw_study' study.id %}" method="POST">
             {% csrf_token %}
-            <input type="submit" value="스터디 탈퇴">
+            <input type="submit" class="btn btn-primary" value="스터디 탈퇴">
         </form>
         {% endif %}
-
         {% endfor %}
-        <!-- 현재 유저가 로그인한 유저이고 스터디 멤버가 아닌 경우에만 표시 -->
-        {% if user not in study_members %}
+        <!-- 스터디 그룹 멤버 [스터디 가입 신청 버튼 표시] -->
+        {% if not study_members.pending  %}
         <form action="{% url 'studies:apply_study_join' study.id %}" method="POST">
             {% csrf_token %}
-            <input type="submit" value="가입 신청">
+            <input type="submit" class="btn btn-primary" value="가입 신청">
         </form>
         {% endif %}
-        
+        <!-- 스터디 그룹 멤버 [스터디 가입 신청 완료 표시] -->
+        {% for apply_user in request_user.apply %}
+        {% if user == apply_user.user %}
+        <p class="badge badge-primary p-4 font-bold">가입 심사가 진행중입니다.</p>
+        {% endif %}
+        {% endfor %}
 
-        <a href="{% url 'studies:study_list' %}">목록으로</a>
-
-        <!-- 댓글 리스트 -->
-        <h2>Comment List</h2>
-        <!-- 댓글 작성 -->
-        <form action="{% url 'studies:comment_create' study.id %}" method="POST">
-            {% csrf_token %}
-            <input name="content" id="">
-            <input type="submit" value="Create">
-        </form>
-        <ul>
-            {% for comment in study.comments.all %}
-                <li>{{ comment.content }}</li>
-                <!-- 댓글 수정 -->
-                <form action="{% url 'studies:comment_update' study.id comment.id %}" method="POST">
-                    {% csrf_token %}
-                    <input type="submit" value="Update">
-                </form>
-                <!-- 댓글 삭제 -->
-                <form action="{% url 'studies:comment_delete' study.id comment.id %}" method="POST">
-                    {% csrf_token %}
-                    <input type="submit" value="Delete">
-                </form>
-                <!-- 대댓글 작성 -->
-                <form action="{% url 'studies:recomment_create' study.id comment.id %}" method="POST">
-                    {% csrf_token %}
-                    <input name="content" id="">
-                    <input type="submit" value="Create">
-                </form>
-                <!-- 대댓글 리스트 -->
-                {% for recomment in comment.recomments.all %}
-                    <p>대댓글 : {{ recomment.content }}</p>
-                    <!-- 대댓글 수정 -->
-                    <form action="{% url 'studies:recomment_update' study.id comment.id recomment.id %}" method="POST">
-                        {% csrf_token %}
-                        <input type="submit" value="Update">
-                    </form>
-                    <!-- 대댓글 삭제 -->
-                    <form action="{% url 'studies:recomment_delete' study.id comment.id recomment.id %}" method="POST">
-                        {% csrf_token %}
-                        <input type="submit" value="Delete">
-                    </form>
+        <div class="flex flex-col gap-4">
+            <div>
+                <p class="font-bold text-lg">스터디 목표</p>
+                <p>{{ study.goal }}</p>
+            </div>
+            <div>
+                <p class="font-bold text-lg">스터디 기간</p>
+                {{ study.start_at }} ~ {{ study.end_at }}
+                {% for schedule in schedules %}
+                <div>
+                    <p>{{ schedule.day_display }}</p>
+                </div>
                 {% endfor %}
-            {% endfor %}
-        </ul>
-        
+            </div>
+            <div>
+                <p class="font-bold text-lg">스터디 시간</p>
+                {% for schedule in schedules %}
+                <div>
+                    <p>{{ schedule.start_time }} ~ {{ schedule.end_time }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div>
+                <p class="font-bold text-lg">스터디 소개</p>
+                <p>{{ study.introduce }}</p>
+            </div>
+            <div>
+                <p class="font-bold text-lg">참고 링크</p>
+                {% if study.ref_links.all %}
+                {% for ref_link in study.ref_links.all %}
+                <div>
+                    {% if ref_link.link_type == "google form" %}
+                    <span>ㆍ 구글폼 :</span>
+                    {% elif ref_link.link_type == "book" %}
+                    <span>ㆍ 서적 :</span>
+                    {% elif ref_link.link_type == "discord" %}
+                    <span>ㆍ 디스코드 :</span>
+                    {% elif ref_link.link_type == "other" %}
+                    <span>ㆍ 기타 :</span>
+                    {% endif %}
+                    <a class="link link-primary" href="{{ ref_link.url }}">{{ ref_link.url }}</a>
+                </div>
+                {% endfor %}
+                {% else %}
+                필요한 참고 링크를 추가해 보세요!
+                {% endif %}
+            </div>
+        </div>
+        <hr class="max-w-xl">
+        <!-- 스터디 상세 페이지 파트 3 [댓글] -->
+        <div>
+            <!-- 댓글 리스트 -->
+            <div class="collapse rounded-none">
+                <input type="checkbox"/> 
+                <div class="collapse-title font-bold text-lg mb-4 pl-0">
+                    댓글
+                </div>
+                <div class="collapse-content p-0"> 
+                    <!-- 댓글 작성 -->
+                    <form action="{% url 'studies:comment_create' study.id %}" method="POST" class="flex gap-4 mb-4">
+                        {% csrf_token %}
+                        <textarea placeholder="댓글을 입력하세요" class="textarea textarea-bordered textarea-sm w-full max-w-xs h-10 resize-none" name="content"></textarea>
+                        <input class="btn btn-primary h-auto" type="submit" value="확인">
+                    </form>
+                    <ul>
+                        {% for comment in study.comments.all %}
+                            <div class="flex flex-col gap-4 mb-4">
+                                <div class="flex gap-4">
+                                    <div class="avatar mt-4">
+                                        <div class="w-10 h-10 rounded-full border-2 border-slate-500">
+                                            {% if not comment.user.profile_image %}
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M304 128a80 80 0 1 0 -160 0 80 80 0 1 0 160 0zM96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM49.3 464H398.7c-8.9-63.3-63.3-112-129-112H178.3c-65.7 0-120.1 48.7-129 112zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3z"/></svg>
+                                            {% elif 'http' in comment.user.profile_image.url %}
+                                            <img src="{{ comment.user.profile_image }}" class="bg-current"/>
+                                            {% else %}
+                                            <img src="{{ comment.user.profile_image.url }}" class="bg-current"/>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="self-center mt-4">{{ comment.user.nickname }}</div>
+                                </div>
+                                <div class="flex justify-between">
+                                    <li>{{ comment.content }}</li>
+                                    {% if user == comment.user %}
+                                    <div class="flex gap-2 justify-end">
+                                        <!-- 댓글 수정 -->
+                                        <form action="{% url 'studies:comment_update' study.id comment.id %}" method="POST">
+                                            {% csrf_token %}
+                                            <input type="submit" value="수정">
+                                        </form>
+                                        <!-- 댓글 삭제 -->
+                                        <form action="{% url 'studies:comment_delete' study.id comment.id %}" method="POST">
+                                            {% csrf_token %}
+                                            <input type="submit" value="삭제">
+                                        </form>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if comment.recomments.all %}
+                            <!-- 대댓글 리스트 -->
+                            <div class="collapse rounded-none">
+                                <input type="checkbox"/> 
+                                <div class="collapse-title p-0 text-right">
+                                    답글 목록
+                                </div>
+                                <div class="collapse-content p-0"> 
+                                    {% for recomment in comment.recomments.all %}
+                                    <div class="flex flex-col gap-4 mb-4 ml-10">
+                                        <div class="flex gap-4">
+                                            <div class="avatar mt-4">
+                                                <div class="w-10 h-10 rounded-full border-2 border-slate-500">
+                                                    {% if not recomment.user.profile_image %}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M304 128a80 80 0 1 0 -160 0 80 80 0 1 0 160 0zM96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM49.3 464H398.7c-8.9-63.3-63.3-112-129-112H178.3c-65.7 0-120.1 48.7-129 112zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3z"/></svg>
+                                                    {% elif 'http' in recomment.user.profile_image.url %}
+                                                    <img src="{{ recomment.user.profile_image }}" class="bg-current"/>
+                                                    {% else %}
+                                                    <img src="{{ recomment.user.profile_image.url }}" class="bg-current"/>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="self-center mt-4">{{ recomment.user.nickname }}</div>
+                                        </div>
+                                        <div class="">
+                                            <li>{{ recomment.content }}</li>
+                                            {% if user == recomment.user %}
+                                            <div class="flex gap-2 justify-end">
+                                                <!-- 댓글 수정 -->
+                                                <form action="{% url 'studies:recomment_update' study.id comment.id recomment.id %}" method="POST">
+                                                    {% csrf_token %}
+                                                    <input type="submit" value="수정">
+                                                </form>
+                                                <!-- 댓글 삭제 -->
+                                                <form action="{% url 'studies:recomment_delete' study.id comment.id recomment.id %}" method="POST">
+                                                    {% csrf_token %}
+                                                    <input type="submit" value="삭제">
+                                                </form>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                    {% if user.is_authenticated %}
+                                    <!-- 대댓글 작성 -->
+                                    <div class="collapse rounded-none">
+                                        <input type="checkbox"/> 
+                                        <div class="collapse-title p-0 text-right">
+                                            답글 작성
+                                        </div>
+                                        <div class="collapse-content p-0"> 
+                                            <form action="{% url 'studies:recomment_create' study.id comment.id %}" method="POST" class="flex gap-4">
+                                                {% csrf_token %}
+                                                <textarea placeholder="답글을 입력하세요" class="textarea textarea-bordered textarea-sm w-full max-w-xs h-10 resize-none" name="content"></textarea>
+                                                <input class="btn btn-primary h-auto " type="submit" value="확인">
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% else %}
+                            {% if user.is_authenticated %}
+                                    <!-- 대댓글 작성 -->
+                                    <div class="collapse rounded-none">
+                                        <input type="checkbox"/> 
+                                        <div class="collapse-title p-0 text-right">
+                                            답글
+                                        </div>
+                                        <div class="collapse-content p-0"> 
+                                            <form action="{% url 'studies:recomment_create' study.id comment.id %}" method="POST" class="flex gap-4">
+                                                {% csrf_token %}
+                                                <textarea placeholder="답글을 입력하세요" class="textarea textarea-bordered textarea-sm w-full max-w-xs h-10 resize-none" name="content"></textarea>
+                                                <input class="btn btn-primary h-auto " type="submit" value="확인">
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+    
+    
+
+{% endblock %}
     </body>
 </html>
