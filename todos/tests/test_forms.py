@@ -108,6 +108,7 @@ class StudyToDoFormTest(TestCase):
             },
             study_id=self.study.id,
         )
+        print(form.errors)
         self.assertTrue(form.is_valid())
 
     def test_both_start_at_and_end_at_should_be_filled(self):

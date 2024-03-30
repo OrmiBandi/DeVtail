@@ -69,7 +69,7 @@ class TestAccountSignupEmail(TestCase):
         """
         비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우
         """
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우 BEGIN --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우 BEGIN --")
         self.signup_data["password1"] = "test1!@"
         self.signup_data["password2"] = "test1!@"
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
@@ -78,13 +78,13 @@ class TestAccountSignupEmail(TestCase):
             response.context["error_password1"],
             "비밀번호는 8자리 이상, 15자리 이하로 입력해주세요.",
         )
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우 END --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우 END --")
 
     def test_password_over_16(self):
         """
         비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우
         """
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우 BEGIN --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우 BEGIN --")
         self.signup_data["password1"] = "testtesttest12!@"
         self.signup_data["password2"] = "testtesttest12!@"
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
@@ -93,13 +93,13 @@ class TestAccountSignupEmail(TestCase):
             response.context["error_password1"],
             "비밀번호는 8자리 이상, 15자리 이하로 입력해주세요.",
         )
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우 END --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우 END --")
 
     def test_password_no_special(self):
         """
         비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우
         """
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우 BEGIN --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우 BEGIN --")
         self.signup_data["password1"] = "testtest12"
         self.signup_data["password2"] = "testtest12"
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
@@ -107,13 +107,13 @@ class TestAccountSignupEmail(TestCase):
         self.assertEqual(
             response.context["error_password1"], "비밀번호에 특수문자를 포함해주세요."
         )
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우 END --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우 END --")
 
     def test_password_no_number(self):
         """
         비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우
         """
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우 BEGIN --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우 BEGIN --")
         self.signup_data["password1"] = "testtest!@"
         self.signup_data["password2"] = "testtest!@"
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
@@ -121,13 +121,13 @@ class TestAccountSignupEmail(TestCase):
         self.assertEqual(
             response.context["error_password1"], "비밀번호에 숫자를 포함해주세요."
         )
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우 END --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우 END --")
 
     def test_password_no_alphabet(self):
         """
         비밀번호 유효성 테스트 - 비밀번호에 영문자가 없을 경우
         """
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호에 영문자가 없을 경우 BEGIN --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호에 영문자가 없을 경우 BEGIN --")
         self.signup_data["password1"] = "12!@12!@"
         self.signup_data["password2"] = "12!@12!@"
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
@@ -135,67 +135,67 @@ class TestAccountSignupEmail(TestCase):
         self.assertEqual(
             response.context["error_password1"], "비밀번호에 영문자를 포함해주세요."
         )
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호에 영문자가 없을 경우 END --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호에 영문자가 없을 경우 END --")
 
     def test_password_empty(self):
         """
         비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우
         """
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우 BEGIN --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우 BEGIN --")
         self.signup_data["password1"] = ""
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.context["error_password1"], "비밀번호를 입력해주세요."
         )
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우 END --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우 END --")
 
     def test_password2_empty(self):
         """
         비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우
         """
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우 BEGIN --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우 BEGIN --")
         self.signup_data["password2"] = ""
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.context["error_password2"], "비밀번호 확인을 입력해주세요."
         )
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우 END --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우 END --")
 
     def test_password_different(self):
         """
         비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우
         """
-        # print(
-        #     "-- 비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우 BEGIN --"
+        )
         self.signup_data["password2"] = "testtest12!@#"
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.context["error_password2"], "비밀번호가 일치하지 않습니다."
         )
-        # print("-- 비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우 END --")
+        print("-- 비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우 END --")
 
     def test_development_field_empty(self):
         """
         개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우
         """
-        # print("-- 개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우 BEGIN --")
+        print("-- 개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우 BEGIN --")
         self.signup_data["development_field"] = ""
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.context["error_development_field"], "개발 분야를 선택해주세요."
         )
-        # print("-- 개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우 END --")
+        print("-- 개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우 END --")
 
     def test_development_field_wrong(self):
         """
         개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우
         """
-        # print("-- 개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우 BEGIN --")
+        print("-- 개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우 BEGIN --")
         self.signup_data["development_field"] = "test"
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
@@ -203,13 +203,13 @@ class TestAccountSignupEmail(TestCase):
             response.context["error_development_field"],
             "항목에 포함된 개발 분야를 선택해주세요.",
         )
-        # print("-- 개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우 END --")
+        print("-- 개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우 END --")
 
     def test_auth_url_success(self):
         """
         인증 URL 테스트 - 전송 성공&전송 인증 메일 확인 완료 테스트
         """
-        # print("-- 인증 URL 테스트 - 전송 성공&전송 인증 메일 확인 완료 테스트 BEGIN --")
+        print("-- 인증 URL 테스트 - 전송 성공&전송 인증 메일 확인 완료 테스트 BEGIN --")
         response = self.client.post(
             reverse("accounts:signup"), self.signup_data, format="multipart"
         )
@@ -243,13 +243,13 @@ class TestAccountSignupEmail(TestCase):
         self.assertIsNone(user.auth_code)
         self.signup_data["email"] = "test@gmail.com"
         self.signup_data["nickname"] = "test1"
-        # print("-- 인증 URL 테스트 - 전송 성공&전송 인증 메일 확인 완료 테스트 END --")
+        print("-- 인증 URL 테스트 - 전송 성공&전송 인증 메일 확인 완료 테스트 END --")
 
     def test_nickname_below_2(self):
         """
         닉네임 유효성 테스트 - 닉네임이 1자리일 경우
         """
-        # print("-- 닉네임 유효성 테스트 - 닉네임이 1자리일 경우 BEGIN --")
+        print("-- 닉네임 유효성 테스트 - 닉네임이 1자리일 경우 BEGIN --")
         self.signup_data["nickname"] = "t"
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
@@ -257,13 +257,13 @@ class TestAccountSignupEmail(TestCase):
             response.context["error_nickname"],
             "닉네임은 2자리 이상, 15자리 이하로 입력해주세요.",
         )
-        # print("-- 닉네임 유효성 테스트 - 닉네임이 1자리일 경우 END --")
+        print("-- 닉네임 유효성 테스트 - 닉네임이 1자리일 경우 END --")
 
     def test_nickname_over_16(self):
         """
         닉네임 유효성 테스트 - 닉네임이 16자리 이상일 경우
         """
-        # print("-- 닉네임 유효성 테스트 - 닉네임이 16자리 이상일 경우 BEGIN --")
+        print("-- 닉네임 유효성 테스트 - 닉네임이 16자리 이상일 경우 BEGIN --")
         self.signup_data["nickname"] = "testtesttesttest"
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
@@ -271,13 +271,13 @@ class TestAccountSignupEmail(TestCase):
             response.context["error_nickname"],
             "닉네임은 2자리 이상, 15자리 이하로 입력해주세요.",
         )
-        # print("-- 닉네임 유효성 테스트 - 닉네임이 16자리 이상일 경우 END --")
+        print("-- 닉네임 유효성 테스트 - 닉네임이 16자리 이상일 경우 END --")
 
     def test_nickname_special(self):
         """
         닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우
         """
-        # print("-- 닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우 BEGIN --")
+        print("-- 닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우 BEGIN --")
         self.signup_data["nickname"] = "test!@"
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
@@ -285,24 +285,24 @@ class TestAccountSignupEmail(TestCase):
             response.context["error_nickname"],
             "닉네임에 특수문자를 포함할 수 없습니다.",
         )
-        # print("-- 닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우 END --")
+        print("-- 닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우 END --")
 
     def test_nickname_empty(self):
         """
         닉네임 유효성 테스트 - 닉네임이 비어있을 경우
         """
-        # print("-- 닉네임 유효성 테스트 - 닉네임이 비어있을 경우 BEGIN --")
+        print("-- 닉네임 유효성 테스트 - 닉네임이 비어있을 경우 BEGIN --")
         self.signup_data["nickname"] = ""
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.context["error_nickname"], "닉네임을 입력해주세요.")
-        # print("-- 닉네임 유효성 테스트 - 닉네임이 비어있을 경우 END --")
+        print("-- 닉네임 유효성 테스트 - 닉네임이 비어있을 경우 END --")
 
     def test_nickname_duplicate(self):
         """
         닉네임 유효성 테스트 - 중복된 닉네임일 경우
         """
-        # print("-- 닉네임 유효성 테스트 - 중복된 닉네임일 경우 BEGIN --")
+        print("-- 닉네임 유효성 테스트 - 중복된 닉네임일 경우 BEGIN --")
         User.objects.create_user(
             email="test@test.com",
             password="testtest12!@",
@@ -314,35 +314,35 @@ class TestAccountSignupEmail(TestCase):
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.context["error_nickname"], "중복된 닉네임입니다.")
-        # print("-- 닉네임 유효성 테스트 - 중복된 닉네임일 경우 END --")
+        print("-- 닉네임 유효성 테스트 - 중복된 닉네임일 경우 END --")
 
     def test_email_wrong(self):
         """
         이메일 유효성 테스트 - 이메일 형식이 아닐 경우
         """
-        # print("-- 이메일 유효성 테스트 - 이메일 형식이 아닐 경우 BEGIN --")
+        print("-- 이메일 유효성 테스트 - 이메일 형식이 아닐 경우 BEGIN --")
         self.signup_data["email"] = "test"
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.context["error_email"], "이메일 형식을 확인해주세요.")
-        # print("-- 이메일 유효성 테스트 - 이메일 형식이 아닐 경우 END --")
+        print("-- 이메일 유효성 테스트 - 이메일 형식이 아닐 경우 END --")
 
     def test_email_empty(self):
         """
         이메일 유효성 테스트 - 이메일이 비어있을 경우
         """
-        # print("-- 이메일 유효성 테스트 - 이메일이 비어있을 경우 BEGIN --")
+        print("-- 이메일 유효성 테스트 - 이메일이 비어있을 경우 BEGIN --")
         self.signup_data["email"] = ""
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.context["error_email"], "이메일을 입력해주세요.")
-        # print("-- 이메일 유효성 테스트 - 이메일이 비어있을 경우 END --")
+        print("-- 이메일 유효성 테스트 - 이메일이 비어있을 경우 END --")
 
     def test_email_duplicate(self):
         """
         이메일 유효성 테스트 - 중복된 이메일일 경우
         """
-        # print("-- 이메일 유효성 테스트 - 중복된 이메일일 경우 BEGIN --")
+        print("-- 이메일 유효성 테스트 - 중복된 이메일일 경우 BEGIN --")
         User.objects.create_user(
             email="elwl5515@gmail.com",
             password="testtest12!@",
@@ -353,7 +353,7 @@ class TestAccountSignupEmail(TestCase):
         response = self.client.post(reverse("accounts:signup"), self.signup_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.context["error_email"], "중복된 이메일입니다.")
-        # print("-- 이메일 유효성 테스트 - 중복된 이메일일 경우 END --")
+        print("-- 이메일 유효성 테스트 - 중복된 이메일일 경우 END --")
 
 
 class TestAccountLogin(TestCase):
@@ -384,7 +384,7 @@ class TestAccountLogin(TestCase):
         """
         정상 로그인 테스트
         """
-        # print("-- 로그인 테스트 - 정상 로그인 테스트 BEGIN --")
+        print("-- 로그인 테스트 - 정상 로그인 테스트 BEGIN --")
         response = self.client.post(
             reverse("accounts:login"),
             {
@@ -395,13 +395,13 @@ class TestAccountLogin(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["user"].is_authenticated)
-        # print("-- 로그인 테스트 - 정상 로그인 테스트 END --")
+        print("-- 로그인 테스트 - 정상 로그인 테스트 END --")
 
     def test_no_user(self):
         """
         없는 사용자 테스트
         """
-        # print("-- 로그인 테스트 - 없는 사용자 테스트 BEGIN --")
+        print("-- 로그인 테스트 - 없는 사용자 테스트 BEGIN --")
         response = self.client.post(
             reverse("accounts:login"),
             {"username": "test@test.com", "password": self.singup_data["password1"]},
@@ -412,13 +412,13 @@ class TestAccountLogin(TestCase):
             response.context["error_username"],
             "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다.",
         )
-        # print("-- 로그인 테스트 - 없는 사용자 테스트 END --")
+        print("-- 로그인 테스트 - 없는 사용자 테스트 END --")
 
     def test_wrong_password(self):
         """
         비밀번호 불일치 테스트
         """
-        # print("-- 로그인 테스트 - 비밀번호 불일치 테스트 BEGIN --")
+        print("-- 로그인 테스트 - 비밀번호 불일치 테스트 BEGIN --")
         response = self.client.post(
             reverse("accounts:login"),
             {"username": self.singup_data["email"], "password": "testtest12!@#"},
@@ -429,33 +429,33 @@ class TestAccountLogin(TestCase):
             response.context["error_password"],
             "존재하지 않는 사용자이거나 비밀번호가 일치하지 않습니다.",
         )
-        # print("-- 로그인 테스트 - 비밀번호 불일치 테스트 END --")
+        print("-- 로그인 테스트 - 비밀번호 불일치 테스트 END --")
 
     def test_no_email(self):
         """
         이메일을 입력하지 않은 경우 테스트
         """
-        # print("-- 로그인 테스트 - 이메일을 입력하지 않은 경우 테스트 BEGIN --")
+        print("-- 로그인 테스트 - 이메일을 입력하지 않은 경우 테스트 BEGIN --")
         response = self.client.post(
             reverse("accounts:login"),
             {"username": "", "password": self.singup_data["password1"]},
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.context["error_username"], "이메일을 입력해주세요.")
-        # print("-- 로그인 테스트 - 이메일을 입력하지 않은 경우 테스트 END --")
+        print("-- 로그인 테스트 - 이메일을 입력하지 않은 경우 테스트 END --")
 
     def test_no_password(self):
         """
         비밀번호를 입력하지 않은 경우 테스트
         """
-        # print("-- 로그인 테스트 - 비밀번호를 입력하지 않은 경우 테스트 BEGIN --")
+        print("-- 로그인 테스트 - 비밀번호를 입력하지 않은 경우 테스트 BEGIN --")
         response = self.client.post(
             reverse("accounts:login"),
             {"username": self.singup_data["email"], "password": ""},
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.context["error_password"], "비밀번호를 입력해주세요.")
-        # print("-- 로그인 테스트 - 비밀번호를 입력하지 않은 경우 테스트 END --")
+        print("-- 로그인 테스트 - 비밀번호를 입력하지 않은 경우 테스트 END --")
 
 
 class TestAccountLogout(TestCase):
@@ -484,32 +484,32 @@ class TestAccountLogout(TestCase):
         """
         정상 로그아웃 테스트
         """
-        # print("-- 로그아웃 테스트 - 정상 로그아웃 테스트 BEGIN --")
+        print("-- 로그아웃 테스트 - 정상 로그아웃 테스트 BEGIN --")
         self.client.force_login(
             User.objects.get(email=self.singup_data["email"]), backend=None
         )
         response = self.client.post(reverse("accounts:logout"), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context["user"].is_authenticated)
-        # print("-- 로그아웃 테스트 - 정상 로그아웃 테스트 END --")
+        print("-- 로그아웃 테스트 - 정상 로그아웃 테스트 END --")
 
     def test_no_user(self):
         """
         로그인하지 않은 사용자 테스트
         """
-        # print("-- 로그아웃 테스트 - 로그인하지 않은 사용자 테스트 BEGIN --")
+        print("-- 로그아웃 테스트 - 로그인하지 않은 사용자 테스트 BEGIN --")
         response = self.client.post(reverse("accounts:logout"), follow=True)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.content.decode("utf-8"), "로그인되지 않은 사용자입니다."
         )
-        # print("-- 로그아웃 테스트 - 로그인하지 않은 사용자 테스트 END --")
+        print("-- 로그아웃 테스트 - 로그인하지 않은 사용자 테스트 END --")
 
     def test_login_after_logout(self):
         """
         로그아웃 후 로그인 테스트
         """
-        # print("-- 로그아웃 테스트 - 로그아웃 후 로그인 테스트 BEGIN --")
+        print("-- 로그아웃 테스트 - 로그아웃 후 로그인 테스트 BEGIN --")
         self.client.force_login(
             User.objects.get(email=self.singup_data["email"]), backend=None
         )
@@ -527,7 +527,7 @@ class TestAccountLogout(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context["user"].is_authenticated)
-        # print("-- 로그아웃 테스트 - 로그아웃 후 로그인 테스트 END --")
+        print("-- 로그아웃 테스트 - 로그아웃 후 로그인 테스트 END --")
 
 
 class TestAccountProfile(TestCase):
@@ -558,7 +558,7 @@ class TestAccountProfile(TestCase):
         """
         프로필 테스트 - 정상 프로필 응답 테스트
         """
-        # print("-- 프로필 테스트 - 정상 프로필 응답 테스트 BEGIN --")
+        print("-- 프로필 테스트 - 정상 프로필 응답 테스트 BEGIN --")
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -574,13 +574,13 @@ class TestAccountProfile(TestCase):
             response.context["user_profile"].development_field,
             self.signup_data["development_field"],
         )
-        # print("-- 프로필 테스트 - 정상 프로필 응답 테스트 END --")
+        print("-- 프로필 테스트 - 정상 프로필 응답 테스트 END --")
 
     def test_no_user(self):
         """
         프로필 테스트 - 존재하지 않는 사용자의 프로필 요청 테스트
         """
-        # print("-- 프로필 테스트 - 존재하지 않는 사용자의 프로필 요청 테스트 BEGIN --")
+        print("-- 프로필 테스트 - 존재하지 않는 사용자의 프로필 요청 테스트 BEGIN --")
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -591,19 +591,19 @@ class TestAccountProfile(TestCase):
         self.assertEqual(
             response.content.decode("utf-8"), "존재하지 않는 사용자입니다."
         )
-        # print("-- 프로필 테스트 - 존재하지 않는 사용자의 프로필 요청 테스트 END --")
+        print("-- 프로필 테스트 - 존재하지 않는 사용자의 프로필 요청 테스트 END --")
 
     def test_no_login(self):
         """
         프로필 테스트 - 로그인하지 않은 사용자의 프로필 요청 테스트
         """
-        # print("-- 프로필 테스트 - 로그인하지 않은 사용자의 프로필 요청 테스트 BEGIN --")
+        print("-- 프로필 테스트 - 로그인하지 않은 사용자의 프로필 요청 테스트 BEGIN --")
         response = self.client.get(reverse("accounts:profile", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, 401)
         self.assertEqual(
             response.content.decode("utf-8"), "로그인되지 않은 사용자입니다."
         )
-        # print("-- 프로필 테스트 - 로그인하지 않은 사용자의 프로필 요청 테스트 END --")
+        print("-- 프로필 테스트 - 로그인하지 않은 사용자의 프로필 요청 테스트 END --")
 
 
 class TestAccountUpdate(TestCase):
@@ -647,23 +647,23 @@ class TestAccountUpdate(TestCase):
         """
         로그인하지 않은 사용자의 사용자 정보 수정 테스트
         """
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 로그인하지 않은 사용자의 사용자 정보 수정 테스트 BEGIN --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 로그인하지 않은 사용자의 사용자 정보 수정 테스트 BEGIN --"
+        )
         response = self.client.post(reverse("accounts:account_update"))
         self.assertEqual(response.status_code, 401)
         self.assertEqual(
             response.content.decode("utf-8"), "로그인되지 않은 사용자입니다."
         )
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 로그인하지 않은 사용자의 사용자 정보 수정 테스트 END --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 로그인하지 않은 사용자의 사용자 정보 수정 테스트 END --"
+        )
 
     def test_success(self):
         """
         정상 사용자 정보 수정 테스트
         """
-        # print("-- 사용자 정보 수정 테스트 - 정상 사용자 정보 수정 테스트 BEGIN --")
+        print("-- 사용자 정보 수정 테스트 - 정상 사용자 정보 수정 테스트 BEGIN --")
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -680,15 +680,15 @@ class TestAccountUpdate(TestCase):
         self.assertEqual(user.nickname, self.update_data["nickname"])
         self.assertEqual(user.development_field, self.update_data["development_field"])
         self.assertEqual(user.content, self.update_data["content"])
-        # print("-- 사용자 정보 수정 테스트 - 정상 사용자 정보 수정 테스트 END --")
+        print("-- 사용자 정보 수정 테스트 - 정상 사용자 정보 수정 테스트 END --")
 
     def test_nickname_below_2(self):
         """
         닉네임 유효성 테스트 - 닉네임이 1자리일 경우
         """
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 1자리일 경우 BEGIN --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 1자리일 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -701,17 +701,17 @@ class TestAccountUpdate(TestCase):
             response.context["error_nickname"],
             "닉네임은 2자리 이상, 15자리 이하로 입력해주세요.",
         )
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 1자리일 경우 END --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 1자리일 경우 END --"
+        )
 
     def test_nickname_over_16(self):
         """
         닉네임 유효성 테스트 - 닉네임이 16자리 이상일 경우
         """
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 16자리 이상일 경우 BEGIN --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 16자리 이상일 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -724,17 +724,17 @@ class TestAccountUpdate(TestCase):
             response.context["error_nickname"],
             "닉네임은 2자리 이상, 15자리 이하로 입력해주세요.",
         )
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 16자리 이상일 경우 END --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 16자리 이상일 경우 END --"
+        )
 
     def test_nickname_special(self):
         """
         닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우
         """
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우 BEGIN --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -747,17 +747,17 @@ class TestAccountUpdate(TestCase):
             response.context["error_nickname"],
             "닉네임에 특수문자를 포함할 수 없습니다.",
         )
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우 END --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임에 특수문자가 있을 경우 END --"
+        )
 
     def test_nickname_empty(self):
         """
         닉네임 유효성 테스트 - 닉네임이 비어있을 경우
         """
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 비어있을 경우 BEGIN --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 비어있을 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -767,17 +767,17 @@ class TestAccountUpdate(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.context["error_nickname"], "닉네임을 입력해주세요.")
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 비어있을 경우 END --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 닉네임이 비어있을 경우 END --"
+        )
 
     def test_nickname_duplicate(self):
         """
         닉네임 유효성 테스트 - 중복된 닉네임일 경우
         """
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 중복된 닉네임일 경우 BEGIN --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 중복된 닉네임일 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -791,17 +791,17 @@ class TestAccountUpdate(TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.context["error_nickname"], "중복된 닉네임입니다.")
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 중복된 닉네임일 경우 END --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 닉네임 유효성 테스트 - 중복된 닉네임일 경우 END --"
+        )
 
     def test_development_field_empty(self):
         """
         개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우
         """
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우 BEGIN --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -813,17 +813,17 @@ class TestAccountUpdate(TestCase):
         self.assertEqual(
             response.context["error_development_field"], "개발 분야를 선택해주세요."
         )
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우 END --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 개발 분야 유효성 테스트 - 개발 분야가 비어있을 경우 END --"
+        )
 
     def test_development_field_wrong(self):
         """
         개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우
         """
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우 BEGIN --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -836,9 +836,9 @@ class TestAccountUpdate(TestCase):
             response.context["error_development_field"],
             "항목에 포함된 개발 분야를 선택해주세요.",
         )
-        # print(
-        #     "-- 사용자 정보 수정 테스트 - 개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우 END --"
-        # )
+        print(
+            "-- 사용자 정보 수정 테스트 - 개발 분야 유효성 테스트 - 개발 항목에 없는 분야일 경우 END --"
+        )
 
 
 class TestAccountSecession(TestCase):
@@ -872,9 +872,9 @@ class TestAccountSecession(TestCase):
         """
         로그인하지 않은 사용자의 회원 탈퇴 테스트
         """
-        # print(
-        #     "-- 회원 탈퇴 테스트 - 로그인하지 않은 사용자의 회원 탈퇴 테스트 BEGIN --"
-        # )
+        print(
+            "-- 회원 탈퇴 테스트 - 로그인하지 않은 사용자의 회원 탈퇴 테스트 BEGIN --"
+        )
         response = self.client.post(
             reverse("accounts:account_delete"), data=self.delete_data
         )
@@ -882,26 +882,26 @@ class TestAccountSecession(TestCase):
         self.assertEqual(
             response.content.decode("utf-8"), "로그인되지 않은 사용자입니다."
         )
-        # print("-- 회원 탈퇴 테스트 - 로그인하지 않은 사용자의 회원 탈퇴 테스트 END --")
+        print("-- 회원 탈퇴 테스트 - 로그인하지 않은 사용자의 회원 탈퇴 테스트 END --")
 
     def test_password_empty(self):
         """
         비밀번호를 입력하지 않은 경우 테스트
         """
-        # print("-- 회원 탈퇴 테스트 - 비밀번호를 입력하지 않은 경우 테스트 BEGIN --")
+        print("-- 회원 탈퇴 테스트 - 비밀번호를 입력하지 않은 경우 테스트 BEGIN --")
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
         response = self.client.post(reverse("accounts:account_delete"), data={})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.context["error_password"], "비밀번호를 입력해주세요.")
-        # print("-- 회원 탈퇴 테스트 - 비밀번호를 입력하지 않은 경우 테스트 END --")
+        print("-- 회원 탈퇴 테스트 - 비밀번호를 입력하지 않은 경우 테스트 END --")
 
     def test_password_wrong(self):
         """
         비밀번호가 일치하지 않는 경우 테스트
         """
-        # print("-- 회원 탈퇴 테스트 - 비밀번호가 일치하지 않는 경우 테스트 BEGIN --")
+        print("-- 회원 탈퇴 테스트 - 비밀번호가 일치하지 않는 경우 테스트 BEGIN --")
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -913,13 +913,13 @@ class TestAccountSecession(TestCase):
         self.assertEqual(
             response.context["error_password"], "비밀번호가 일치하지 않습니다."
         )
-        # print("-- 회원 탈퇴 테스트 - 비밀번호가 일치하지 않는 경우 테스트 END --")
+        print("-- 회원 탈퇴 테스트 - 비밀번호가 일치하지 않는 경우 테스트 END --")
 
     def test_success(self):
         """
         정상 회원 탈퇴 테스트
         """
-        # print("-- 회원 탈퇴 테스트 - 정상 회원 탈퇴 테스트 BEGIN --")
+        print("-- 회원 탈퇴 테스트 - 정상 회원 탈퇴 테스트 BEGIN --")
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -929,7 +929,7 @@ class TestAccountSecession(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context["user"].is_authenticated)
         self.assertEqual(User.objects.count(), 0)
-        # print("-- 회원 탈퇴 테스트 - 정상 회원 탈퇴 테스트 END --")
+        print("-- 회원 탈퇴 테스트 - 정상 회원 탈퇴 테스트 END --")
 
 
 class TestPasswordChange(TestCase):
@@ -973,9 +973,9 @@ class TestPasswordChange(TestCase):
         """
         로그인하지 않은 사용자의 비밀번호 변경 테스트
         """
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 로그인하지 않은 사용자의 비밀번호 변경 테스트 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 로그인하지 않은 사용자의 비밀번호 변경 테스트 BEGIN --"
+        )
         response = self.client.post(
             reverse("accounts:password_change"), self.password_change_data
         )
@@ -983,15 +983,15 @@ class TestPasswordChange(TestCase):
         self.assertEqual(
             response.content.decode("utf-8"), "로그인되지 않은 사용자입니다."
         )
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 로그인하지 않은 사용자의 비밀번호 변경 테스트 END --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 로그인하지 않은 사용자의 비밀번호 변경 테스트 END --"
+        )
 
     def test_success(self):
         """
         정상 비밀번호 변경 테스트
         """
-        # print("-- 비밀번호 변경 테스트 - 정상 비밀번호 변경 테스트 BEGIN --")
+        print("-- 비밀번호 변경 테스트 - 정상 비밀번호 변경 테스트 BEGIN --")
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -1003,15 +1003,15 @@ class TestPasswordChange(TestCase):
             str(list(get_messages(response.wsgi_request))[0]),
             "비밀번호가 변경되었습니다.",
         )
-        # print("-- 비밀번호 변경 테스트 - 정상 비밀번호 변경 테스트 END --")
+        print("-- 비밀번호 변경 테스트 - 정상 비밀번호 변경 테스트 END --")
 
     def test_wrong_old_password(self):
         """
         이전 비밀번호가 일치하지 않는 경우 테스트
         """
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 이전 비밀번호가 일치하지 않는 경우 테스트 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 이전 비밀번호가 일치하지 않는 경우 테스트 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -1023,17 +1023,17 @@ class TestPasswordChange(TestCase):
         self.assertEqual(
             response.context["error_old_password"], "이전 비밀번호가 일치하지 않습니다."
         )
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 이전 비밀번호가 일치하지 않는 경우 테스트 END --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 이전 비밀번호가 일치하지 않는 경우 테스트 END --"
+        )
 
     def test_password_below_8(self):
         """
         비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우
         """
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -1047,17 +1047,17 @@ class TestPasswordChange(TestCase):
             response.context["error_new_password1"],
             "비밀번호는 8자리 이상, 15자리 이하로 입력해주세요.",
         )
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우 END --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 8자리 이하일 경우 END --"
+        )
 
     def test_password_over_16(self):
         """
         비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우
         """
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -1071,17 +1071,17 @@ class TestPasswordChange(TestCase):
             response.context["error_new_password1"],
             "비밀번호는 8자리 이상, 15자리 이하로 입력해주세요.",
         )
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우 END --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 16자리 이상일 경우 END --"
+        )
 
     def test_password_no_special(self):
         """
         비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우
         """
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -1095,17 +1095,17 @@ class TestPasswordChange(TestCase):
             response.context["error_new_password1"],
             "비밀번호에 특수문자를 포함해주세요.",
         )
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우 END --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 특수문자가 없을 경우 END --"
+        )
 
     def test_password_no_number(self):
         """
         비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우
         """
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -1118,17 +1118,17 @@ class TestPasswordChange(TestCase):
         self.assertEqual(
             response.context["error_new_password1"], "비밀번호에 숫자를 포함해주세요."
         )
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우 END --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 숫자가 없을 경우 END --"
+        )
 
     def test_password_no_alphabet(self):
         """
         비밀번호 유효성 테스트 - 비밀번호에 영문이 없을 경우
         """
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 영문이 없을 경우 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 영문이 없을 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -1141,17 +1141,17 @@ class TestPasswordChange(TestCase):
         self.assertEqual(
             response.context["error_new_password1"], "비밀번호에 영문을 포함해주세요."
         )
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 영문이 없을 경우 END --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호에 영문이 없을 경우 END --"
+        )
 
     def test_password_empty(self):
         """
         비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우
         """
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -1163,17 +1163,17 @@ class TestPasswordChange(TestCase):
         self.assertEqual(
             response.context["error_new_password1"], "새 비밀번호를 입력해주세요."
         )
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우 END --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호가 비어있을 경우 END --"
+        )
 
     def test_password_confirm_empty(self):
         """
         비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우
         """
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -1185,17 +1185,17 @@ class TestPasswordChange(TestCase):
         self.assertEqual(
             response.context["error_new_password2"], "새 비밀번호 확인을 입력해주세요."
         )
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우 END --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호 확인이 비어있을 경우 END --"
+        )
 
     def test_password_not_match(self):
         """
         비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우
         """
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우 BEGIN --"
+        )
         self.client.force_login(
             User.objects.get(email=self.signup_data["email"]), backend=None
         )
@@ -1207,9 +1207,9 @@ class TestPasswordChange(TestCase):
         self.assertEqual(
             response.context["error_new_password2"], "새 비밀번호가 일치하지 않습니다."
         )
-        # print(
-        #     "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우 END --"
-        # )
+        print(
+            "-- 비밀번호 변경 테스트 - 비밀번호 유효성 테스트 - 비밀번호와 비밀번호 확인이 다를 경우 END --"
+        )
 
 
 class TestPasswordReset(TestCase):
@@ -1238,7 +1238,7 @@ class TestPasswordReset(TestCase):
         """
         이메일 전송 테스트 - 정상 전송
         """
-        # print("-- 비밀번호 찾기 테스트 - 이메일 전송 테스트 - 정상 전송 BEGIN --")
+        print("-- 비밀번호 찾기 테스트 - 이메일 전송 테스트 - 정상 전송 BEGIN --")
         response = self.client.post(
             reverse("accounts:password_reset"), {"email": self.signup_data["email"]}
         )
@@ -1247,15 +1247,15 @@ class TestPasswordReset(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, "deVtail 비밀번호 변경 메일입니다.")
         self.assertEqual(mail.outbox[0].to, [self.signup_data["email"]])
-        # print("-- 비밀번호 찾기 테스트 - 이메일 전송 테스트 - 정상 전송 END --")
+        print("-- 비밀번호 찾기 테스트 - 이메일 전송 테스트 - 정상 전송 END --")
 
     def test_send_no_user(self):
         """
         이메일 전송 테스트 - 존재하지 않는 이메일
         """
-        # print(
-        #     "-- 비밀번호 찾기 테스트 - 이메일 전송 테스트 - 존재하지 않는 이메일 BEGIN --"
-        # )
+        print(
+            "-- 비밀번호 찾기 테스트 - 이메일 전송 테스트 - 존재하지 않는 이메일 BEGIN --"
+        )
         response = self.client.post(
             reverse("accounts:password_reset"), {"email": "test@gmail.com"}
         )
@@ -1263,6 +1263,6 @@ class TestPasswordReset(TestCase):
         self.assertEqual(
             response.content.decode("utf-8"), "존재하지 않는 이메일입니다."
         )
-        # print(
-        #     "-- 비밀번호 찾기 테스트 - 이메일 전송 테스트 - 존재하지 않는 이메일 END --"
-        # )
+        print(
+            "-- 비밀번호 찾기 테스트 - 이메일 전송 테스트 - 존재하지 않는 이메일 END --"
+        )
