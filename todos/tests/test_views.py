@@ -381,7 +381,7 @@ class StudyToDoList(TestCase):
         사용자가 속해있는 스터디가 없을 때 아무것도 없는 상태인지 확인
         """
         test_user = User.objects.create_user(
-            nickname="testuser", email="testuser@example.com", password = "3HJ1vRV0Z&2iD"
+            nickname="testuser", email="testuser@example.com", password="3HJ1vRV0Z&2iD"
         )
 
         login = self.client.login(
