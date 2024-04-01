@@ -152,7 +152,7 @@
                     <!-- 댓글 작성 -->
                     <form action="{% url 'studies:comment_create' study.id %}" method="POST" class="flex gap-4 mb-4">
                         {% csrf_token %}
-                        <textarea placeholder="댓글을 입력하세요" class="textarea textarea-bordered textarea-sm w-full max-w-xs h-10 resize-none" name="content"></textarea>
+                        <textarea placeholder="댓글을 입력하세요" class="textarea textarea-bordered textarea-sm w-full max-w-xs h-10 resize-none" name="content" required></textarea>
                         <input class="btn btn-primary h-auto" type="submit" value="확인">
                     </form>
                     <ul>
@@ -243,7 +243,7 @@
                                         <div class="collapse-content p-0"> 
                                             <form action="{% url 'studies:recomment_create' study.id comment.id %}" method="POST" class="flex gap-4">
                                                 {% csrf_token %}
-                                                <textarea placeholder="답글을 입력하세요" class="textarea textarea-bordered textarea-sm w-full max-w-xs h-10 resize-none" name="content"></textarea>
+                                                <textarea placeholder="답글을 입력하세요" class="textarea textarea-bordered textarea-sm w-full max-w-xs h-10 resize-none" name="content" required></textarea>
                                                 <input class="btn btn-primary h-auto " type="submit" value="확인">
                                             </form>
                                         </div>
@@ -262,7 +262,7 @@
                                         <div class="collapse-content p-0"> 
                                             <form action="{% url 'studies:recomment_create' study.id comment.id %}" method="POST" class="flex gap-4">
                                                 {% csrf_token %}
-                                                <textarea placeholder="답글을 입력하세요" class="textarea textarea-bordered textarea-sm w-full max-w-xs h-10 resize-none" name="content"></textarea>
+                                                <textarea placeholder="답글을 입력하세요" class="textarea textarea-bordered textarea-sm w-full max-w-xs h-10 resize-none" name="content" required></textarea>
                                                 <input class="btn btn-primary h-auto " type="submit" value="확인">
                                             </form>
                                         </div>
@@ -277,9 +277,4 @@
         </div>
     </div>
 </div>
-    
-    
-
 {% endblock %}
-    </body>
-</html>

@@ -39,7 +39,7 @@ class TestFavorite(TestCase):
         self.study_object_first = Study.objects.get(pk=1)
         self.study_object_second = Study.objects.get(pk=2)
         tag = Tag.objects.create(name="tag_test")
-        self.study_object_first.tags.add(tag)
+        self.study_object_first.tag.add(tag)
 
         # 테스트용 스터디 멤버 생성
         StudyMember.objects.create(

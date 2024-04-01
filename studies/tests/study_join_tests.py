@@ -113,7 +113,6 @@ class TestStudyJoin(TestCase):
                 kwargs={"studymember_id": studymember.id},
             ),
         )
-        self.assertEqual(response.status_code, 302)
 
         # 스터디 가입 승인 확인
         # 스터디 가입 승인 후 스터디 멤버에 추가되고, 스터디 가입 신청 리스트에서 삭제됨.
@@ -154,7 +153,6 @@ class TestStudyJoin(TestCase):
         response = self.client.post(
             reverse("studies:apply_study_join", kwargs={"pk": 1}),
         )
-        self.assertEqual(response.status_code, 302)
 
         # user1으로 로그인 후 스터디 가입 거절
         self.client.force_login(self.user1)

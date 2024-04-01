@@ -27,6 +27,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 
 User = get_user_model()
 
@@ -421,7 +422,6 @@ class RecommentDelete(UserPassesTestMixin, DeleteView):
             "studies:study_detail", kwargs={"pk": self.object.comment.study.pk}
         )
 
-
 class ApproveStudyJoinDetail(UserPassesTestMixin, DetailView):
     """
     스터디 가입 승인
@@ -437,12 +437,13 @@ class ApproveStudyJoinDetail(UserPassesTestMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["study_leader"] = StudyMember.objects.get(
-            study=self.object, is_manager=True
-        )
-        context["study_members"] = StudyMember.objects.filter(
-            study=self.object, is_accepted=False
-        )
+        study_members_list = StudyMember.objects.filter(study=self.object, is_accepted=False)
+        
+        paginator = Paginator(study_members_list, 10)
+        page = self.request.GET.get('page')
+        study_members = paginator.get_page(page)
+        
+        context['study_members'] = study_members
         return context
 
     def test_func(self):
@@ -465,12 +466,17 @@ class ManageStudyMemberList(UserPassesTestMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["study_leader"] = StudyMember.objects.get(
-            study=self.object, is_manager=True
-        )
-        context["study_members"] = StudyMember.objects.filter(
+        members = StudyMember.objects.filter(
             study=self.object, is_accepted=True
         )
+        leader = StudyMember.objects.filter(
+            study=self.object, is_accepted=True, is_manager=True,
+        )
+        context["study_members"] = {
+            "leader": leader,
+            "members": members,
+        }
+        
         return context
 
     def test_func(self):
@@ -748,7 +754,7 @@ def approve_study_join(request, studymember_id):
     studymember.is_manager = False
     studymember.save()
 
-    return redirect("studies:study_detail", pk=studymember.study.pk)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
 @login_required
@@ -765,4 +771,4 @@ def reject_study_join(request, studymember_id):
 
     studymember.delete()
 
-    return redirect("studies:study_detail", pk=studymember.study.pk)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
