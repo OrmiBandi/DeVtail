@@ -27,6 +27,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 
 User = get_user_model()
 
@@ -421,7 +422,6 @@ class RecommentDelete(UserPassesTestMixin, DeleteView):
             "studies:study_detail", kwargs={"pk": self.object.comment.study.pk}
         )
 
-from django.core.paginator import Paginator
 class ApproveStudyJoinDetail(UserPassesTestMixin, DetailView):
     """
     스터디 가입 승인
@@ -476,7 +476,7 @@ class ManageStudyMemberList(UserPassesTestMixin, DetailView):
             "leader": leader,
             "members": members,
         }
-        print(context["study_members"])
+        
         return context
 
     def test_func(self):

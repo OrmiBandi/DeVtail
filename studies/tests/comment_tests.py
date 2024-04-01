@@ -54,6 +54,7 @@ class TestComment(TestCase):
         """
 
         # 기존 댓글 1개 조회
+        self.client.login(email="test1@naver.com", password="test1")
         response = self.client.get("/study/1/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["study"].comments.count(), 1)
@@ -76,7 +77,7 @@ class TestComment(TestCase):
         """
 
         # user1으로 로그인 후 댓글 생성 요청
-        self.client.force_login(self.user1)
+        self.client.login(email="test1@naver.com", password="test1")
         response = self.client.post("/study/1/comment/create/", {"content": "test"})
 
         # 댓글 생성 성공 시 302 리다이렉트
@@ -98,7 +99,7 @@ class TestComment(TestCase):
         """
 
         # user1으로 로그인 후 댓글 생성 요청
-        self.client.force_login(self.user1)
+        self.client.login(email="test1@naver.com", password="test1")
         response = self.client.post("/study/1/comment/create/", {"content": ""})
 
         # 댓글에 빈 값이 들어오면 ValidationError 발생
@@ -110,7 +111,7 @@ class TestComment(TestCase):
         """
 
         # user2로 로그인 후 댓글 수정 요청
-        self.client.force_login(self.user2)
+        self.client.login(email="test2@naver.com", password="test2")
         response = self.client.post(
             "/study/1/comment/1/update/", {"content": "update_test"}
         )
@@ -124,7 +125,7 @@ class TestComment(TestCase):
         """
 
         # user1로 로그인 후 댓글 수정 요청
-        self.client.force_login(self.user1)
+        self.client.login(email="test1@naver.com", password="test1")
         response = self.client.post(
             "/study/1/comment/1/update/", {"content": "update_test"}
         )
@@ -148,7 +149,7 @@ class TestComment(TestCase):
         """
 
         # user1로 로그인 후 댓글 수정 요청
-        self.client.force_login(self.user1)
+        self.client.login(email="test1@naver.com", password="test1")
         response = self.client.post("/study/1/comment/1/update/", {"content": ""})
 
         # 댓글에 빈 값이 들어오면 ValidationError 발생
@@ -160,7 +161,7 @@ class TestComment(TestCase):
         """
 
         # user2로 로그인 후 댓글 삭제 요청
-        self.client.force_login(self.user2)
+        self.client.login(email="test2@naver.com", password="test2")
         response = self.client.post("/study/1/comment/1/delete/")
 
         # user2에게는 댓글 삭제 권한이 없으므로 403 리턴
@@ -172,7 +173,7 @@ class TestComment(TestCase):
         """
 
         # user1로 로그인 후 댓글 삭제 요청
-        self.client.force_login(self.user1)
+        self.client.login(email="test1@naver.com", password="test1")
         response = self.client.post("/study/1/comment/1/delete/")
 
         # 댓글 삭제 성공 시 302 리다이렉트
@@ -233,11 +234,12 @@ class TestRecomment(TestCase):
         Recomment.objects.create(
             comment=Comment.objects.get(pk=1), user=self.user1, content="test"
         )
-
+        
     def test_recomment_list(self):
         """
         대댓글 조회 테스트
         """
+        self.client.login(email="test1@naver.com", password="test1")
         response = self.client.get("/study/1/")
         self.assertEqual(response.status_code, 200)
 
@@ -266,7 +268,7 @@ class TestRecomment(TestCase):
         """
 
         # user2로 로그인 후 대댓글 생성 요청
-        self.client.force_login(self.user2)
+        self.client.login(email="test2@naver.com", password="test2")
         response = self.client.post(
             "/study/1/comment/1/recomment/", {"content": "test"}
         )
@@ -289,7 +291,7 @@ class TestRecomment(TestCase):
         """
 
         # user2로 로그인 후 대댓글 생성 요청
-        self.client.force_login(self.user2)
+        self.client.login(email="test2@naver.com", password="test2")
         response = self.client.post("/study/1/comment/1/recomment/", {"content": ""})
 
         # 대댓글에 빈 값이 들어오면 ValidationError 발생
@@ -301,7 +303,7 @@ class TestRecomment(TestCase):
         """
 
         # user2로 로그인 후 대댓글 수정 요청
-        self.client.force_login(self.user2)
+        self.client.login(email="test2@naver.com", password="test2")
         response = self.client.post(
             "/study/1/comment/1/recomment/1/update/", {"content": "update_test"}
         )
@@ -315,7 +317,7 @@ class TestRecomment(TestCase):
         """
 
         # user1로 로그인 후 대댓글 수정 요청
-        self.client.force_login(self.user1)
+        self.client.login(email="test1@naver.com", password="test1")
         response = self.client.post(
             "/study/1/comment/1/recomment/1/update/", {"content": "update_test"}
         )
@@ -340,7 +342,7 @@ class TestRecomment(TestCase):
         """
 
         # user1로 로그인 후 대댓글 수정 요청
-        self.client.force_login(self.user1)
+        self.client.login(email="test1@naver.com", password="test1")
         response = self.client.post(
             "/study/1/comment/1/recomment/1/update/", {"content": ""}
         )
@@ -354,7 +356,7 @@ class TestRecomment(TestCase):
         """
 
         # user2로 로그인 후 대댓글 삭제 요청
-        self.client.force_login(self.user2)
+        self.client.login(email="test2@naver.com", password="test2")
         response = self.client.post("/study/1/comment/1/recomment/1/delete/")
 
         # user2에게는 대댓글 삭제 권한이 없으므로 403 리턴
@@ -366,7 +368,7 @@ class TestRecomment(TestCase):
         """
 
         # user1로 로그인 후 대댓글 삭제 요청
-        self.client.force_login(self.user1)
+        self.client.login(email="test1@naver.com", password="test1")
         response = self.client.post("/study/1/comment/1/recomment/1/delete/")
 
         # 대댓글 삭제 성공 시 302 리다이렉트
