@@ -1,9 +1,8 @@
-from datetime import date
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.shortcuts import redirect
 from django.views.generic import ListView
 from django.views.generic.detail import DetailView
@@ -59,7 +58,7 @@ class PersonalToDoList(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["scheduled_todos"] = ToDo.objects.filter(
-            study__isnull=True, start_at__isnull=False, start_at__gte=date.today()
+            study__isnull=True, start_at__isnull=False, start_at__gte=timezone.now()
         )[:3]
         return context
 
@@ -108,7 +107,7 @@ class StudyToDoList(LoginRequiredMixin, UserPassesTestMixin, ListView):
         if study_id:
             selected_study = Study.objects.get(id=study_id)
             context["scheduled_todos"] = ToDo.objects.filter(
-                study__id=study_id, start_at__isnull=False, start_at__gte=date.today()
+                study__id=study_id, start_at__isnull=False, start_at__gte=timezone.now()
             )[:3]
             context["members"] = {
                 selected_study: StudyMember.objects.filter(study=selected_study)
@@ -118,7 +117,7 @@ class StudyToDoList(LoginRequiredMixin, UserPassesTestMixin, ListView):
             context["scheduled_todos"] = ToDo.objects.filter(
                 study__id=first_study.id,
                 start_at__isnull=False,
-                start_at__gte=date.today(),
+                start_at__gte=timezone.now(),
             )[:3]
             context["members"] = {
                 first_study: StudyMember.objects.filter(study=first_study)
