@@ -20,7 +20,8 @@ for (i = 0; i < dropdowns.length; i++) {
                 dropdowns[j].removeAttribute('open');
             }
         }
-    });
+    })
+}
 
 $theme_btn.addEventListener('click', () => {
     const current_theme = localStorage.getItem('theme');
