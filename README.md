@@ -2,7 +2,7 @@
 
 |김나영|김재민|오정배|황병헌|
 |:---:|:---:|:---:|:---:|
-|<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/7fb52bfc-0c36-4af2-b631-47eeb085b6a0" width="300">|<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/97935960-0fed-4ca3-ac27-e5bf36911566" width="300">|<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/d7c54593-10b7-4363-a879-93f6d41b2e34" width="300">|<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/e380f227-cb07-4c7e-b1bf-4e702b147141" width="300">|
+|<div background="black" width="150">|<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/97935960-0fed-4ca3-ac27-e5bf36911566" width="150">|<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/d7c54593-10b7-4363-a879-93f6d41b2e34" width="150">|<img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/e380f227-cb07-4c7e-b1bf-4e702b147141" width="150">|
 |<a href="https://github.com/nayeongdev">🔗 kim Na Young</a>|<a href="https://github.com/jmkim648">🔗 Kim Jae Min</a>|<a href="https://github.com/Alexmint001">🔗 Oh Jeong Bae</a>|<a href="https://github.com/Ruler-H">🔗 Hwang Byeong Heon</a>|
 
 ## 목차
@@ -52,23 +52,29 @@
 ## 3. 개발 기술, 환경 및 배포 URL
 ### 3-1. 개발 기술
 #### [Front-End]
+<div>
 <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white"/>
 <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white"/>
 <img src="https://img.shields.io/badge/javascript-F7DF1E?style=flat-square&logo=javascript&logoColor=white">
 <img src="https://img.shields.io/badge/tailwindcss-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white"/>
+</div>
 
 #### [Back-End]
+<div>
 <img src="https://img.shields.io/badge/python-3776AB?style=flat-square&logo=python&logoColor=white"/>
 <img src="https://img.shields.io/badge/django-092E20?style=flat-square&logo=django&logoColor=white"/>
+</div>
 
 #### [Database]
 <img src="https://img.shields.io/badge/postgresql-4169E1?style=flat-square&logo=postgresql&logoColor=white"/>
 
 ### 3-2. 개발 환경
+<div>
 <img src="https://img.shields.io/badge/visualstudio-007ACC?style=flat-square&logo=visualstudio&logoColor=whithe">
 <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white"/>
 <img src="https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=Figma&logoColor=white"/>
 <img src="https://img.shields.io/badge/discord-5865F2?style=flat-square&logo=discord&logoColor=white"/>
+</div>
 
 ### 3-3. 배포 URL
 
