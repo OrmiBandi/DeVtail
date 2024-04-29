@@ -28,9 +28,9 @@
 - 개발자에게 최적화된 회원 관리 기능
 - 스터디의 목표와 기간을 기준으로 스터디원 모집을 제공하는 기능
 - 커뮤니티 게시판 이외의 개발자 간 1대1 소통 기능 (메신저 기능)
-- 해당 서비스에서 제공하는 일정 이외의 일정까지 통합하여 일정을 관리해주는 기능
-- 커뮤니티 게시판 기능 제공(분야별 개발자 게시판 포함)
-- 분야별 참여형 Open CheatSheet 기능 제공  
+<!-- - 해당 서비스에서 제공하는 일정 이외의 일정까지 통합하여 일정을 관리해주는 기능 -->
+<!-- - 커뮤니티 게시판 기능 제공(분야별 개발자 게시판 포함) -->
+<!-- - 분야별 참여형 Open CheatSheet 기능 제공   -->
 #### [Flow Chart]
 <img src="https://github.com/OrmiBandi/DeVtail/assets/63395993/6234ac54-b2bf-4299-a67f-6e4639e6d3f3" width="60%">
 
@@ -51,15 +51,17 @@
 
 ## 3. 개발 기술, 환경 및 배포 URL
 ### 3-1. 개발 기술
-<!-- FRONT -->
+#### [Front-End]
 <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white"/>
 <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white"/>
 <img src="https://img.shields.io/badge/javascript-F7DF1E?style=flat-square&logo=javascript&logoColor=white">
 <img src="https://img.shields.io/badge/tailwindcss-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white"/>
-<!-- BACK -->
+
+#### [Back-End]
 <img src="https://img.shields.io/badge/python-3776AB?style=flat-square&logo=python&logoColor=white"/>
 <img src="https://img.shields.io/badge/django-092E20?style=flat-square&logo=django&logoColor=white"/>
-<!-- DB -->
+
+#### [Database]
 <img src="https://img.shields.io/badge/postgresql-4169E1?style=flat-square&logo=postgresql&logoColor=white"/>
 
 ### 3-2. 개발 환경

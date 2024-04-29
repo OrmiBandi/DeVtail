@@ -324,7 +324,6 @@ class PasswordChangeView(LoginRequiredMixin, UpdateView):
         return response
 
     def post(self, request: HttpRequest, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
         form = self.get_form()
         if not form.is_valid():
             context = {}
@@ -336,6 +335,7 @@ class PasswordChangeView(LoginRequiredMixin, UpdateView):
                 context,
                 status=HttpResponseBadRequest.status_code,
             )
+        response = super().post(request, *args, **kwargs)
         return response
 
     def get_form_kwargs(self):
